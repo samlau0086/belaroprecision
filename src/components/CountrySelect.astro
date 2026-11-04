@@ -1,0 +1,152 @@
+---
+const codes = 'AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW'.split(' ');
+const names = new Intl.DisplayNames(['en'], { type: 'region' });
+const countries = codes.map(code => ({ code, name: names.of(code)! })).sort((a, b) => a.name.localeCompare(b.name, 'en'));
+---
+<div class="country-field" data-country-select>
+  <label for="country-select">Country / Region *</label>
+  <select id="country-select" name="country" autocomplete="country-name" required>
+    <option value="">Select country / region</option>
+    {countries.map(({ code, name }) => <option value={name} data-code={code}>{name}</option>)}
+  </select>
+  <div class="country-combobox" hidden>
+    <div class="country-input-wrap">
+      <input id="country-search" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="country-options" autocomplete="off" placeholder="Search country / region" disabled />
+      <button type="button" class="country-toggle" aria-label="Show countries and regions" aria-controls="country-options" aria-expanded="false" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+    <div class="country-popup" hidden>
+      <ul id="country-options" role="listbox" aria-label="Countries and regions"></ul>
+      <p class="country-empty" role="status" hidden>No countries or regions found.</p>
+    </div>
+    <span class="country-announcement" role="status" aria-live="polite"></span>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-country-select]').forEach(field => {
+    const select = field.querySelector('select')!;
+    const label = field.querySelector('label')!;
+    const combo = field.querySelector<HTMLElement>('.country-combobox')!;
+    const input = field.querySelector('input')!;
+    const toggle = field.querySelector('button')!;
+    const popup = field.querySelector<HTMLElement>('.country-popup')!;
+    const list = field.querySelector('ul')!;
+    const empty = field.querySelector<HTMLElement>('.country-empty')!;
+    const announcement = field.querySelector<HTMLElement>('.country-announcement')!;
+    const countries = Array.from(select.options).filter(option => option.value).map(option => ({ name: option.value, code: option.dataset.code! }));
+    let filtered = countries;
+    let active = -1;
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const validate = () => {
+      const match = countries.find(country => normalize(country.name) === normalize(input.value));
+      input.setCustomValidity(input.value && !match ? 'Please select a country or region from the list.' : '');
+      return match;
+    };
+    const close = () => {
+      popup.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      active = -1;
+    };
+    const highlight = (index: number) => {
+      active = index;
+      Array.from(list.children).forEach((option, i) => {
+        option.classList.toggle('is-active', i === active);
+      });
+      const option = list.children[active];
+      if (option) {
+        input.setAttribute('aria-activedescendant', option.id);
+        option.scrollIntoView({ block: 'nearest' });
+      } else input.removeAttribute('aria-activedescendant');
+    };
+    const choose = (name: string) => {
+      input.value = name;
+      validate();
+      close();
+      input.focus();
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    const open = (query = '') => {
+      const term = normalize(query);
+      filtered = countries.filter(country => normalize(country.name).includes(term) || country.code.toLowerCase().includes(term));
+      list.replaceChildren(...filtered.map((country, index) => {
+        const option = document.createElement('li');
+        option.id = `country-option-${country.code}`;
+        option.setAttribute('role', 'option');
+        option.setAttribute('aria-selected', String(country.name === input.value));
+        option.textContent = country.name;
+        option.addEventListener('click', () => choose(country.name));
+        option.addEventListener('pointermove', () => highlight(index));
+        return option;
+      }));
+      empty.hidden = filtered.length > 0;
+      announcement.textContent = `${filtered.length} countries and regions available.`;
+      popup.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-expanded', 'true');
+      highlight(-1);
+    };
+    input.value = select.value;
+    select.hidden = true;
+    select.disabled = true;
+    select.removeAttribute('name');
+    combo.hidden = false;
+    input.disabled = false;
+    input.required = true;
+    input.name = 'country';
+    label.htmlFor = input.id;
+    validate();
+    input.addEventListener('focus', () => open());
+    input.addEventListener('click', () => { if (popup.hidden) open(); });
+    input.addEventListener('input', () => { validate(); open(input.value); });
+    input.addEventListener('blur', () => {
+      const match = validate();
+      if (match) input.value = match.name;
+    });
+    // Keep focus on the combobox until an option's click has selected its value.
+    list.addEventListener('pointerdown', event => event.preventDefault());
+    toggle.addEventListener('pointerdown', event => event.preventDefault());
+    toggle.addEventListener('click', () => {
+      if (popup.hidden) { input.focus(); open(); } else close();
+    });
+    input.addEventListener('keydown', event => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (popup.hidden) open(input.value);
+        const direction = event.key === 'ArrowDown' ? 1 : -1;
+        if (filtered.length) highlight(active < 0 ? (direction === 1 ? 0 : filtered.length - 1) : (active + direction + filtered.length) % filtered.length);
+      } else if (event.key === 'Enter' && !popup.hidden) {
+        event.preventDefault();
+        if (active >= 0) choose(filtered[active].name);
+        else if (filtered.length === 1) choose(filtered[0].name);
+      } else if (event.key === 'Escape' && !popup.hidden) {
+        event.preventDefault();
+        close();
+      } else if (event.key === 'Tab') close();
+    });
+    field.addEventListener('focusout', event => {
+      if (!field.contains(event.relatedTarget as Node | null)) close();
+    });
+    document.addEventListener('pointerdown', event => {
+      if (!field.contains(event.target as Node)) close();
+    });
+    input.form?.addEventListener('reset', () => { input.value = ''; validate(); close(); });
+  });
+</script>
+
+<style>
+  .country-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+  .country-combobox{position:relative}
+  .country-input-wrap{position:relative}
+  .country-field .country-input-wrap input{padding-right:40px}
+  .country-toggle{position:absolute;right:1px;top:1px;bottom:1px;display:grid;place-items:center;width:38px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+  .country-popup{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:10;border:1px solid var(--line);background:#fff;box-shadow:0 10px 25px rgba(16,31,53,.12);font-size:16px;font-weight:400}
+  .country-popup ul{list-style:none;margin:0;padding:5px 0;max-height:250px;overflow-y:auto;overscroll-behavior:contain}
+  .country-popup li{padding:10px 13px;cursor:pointer;overflow-wrap:anywhere}
+  .country-popup li.is-active{background:#fff0e5;color:var(--ink)}
+  .country-popup li[aria-selected=true]{font-weight:700;color:var(--orange2)}
+  .country-empty{margin:0;padding:12px 13px;color:var(--muted)}
+  .country-field [hidden]{display:none}
+  .country-announcement{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+</style>
