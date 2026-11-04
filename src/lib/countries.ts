@@ -7,14 +7,21 @@ const callingCodes = new Map(getCountries().map(code => [code as string, `+${get
 const europe = new Set('AD AL AT AX BA BE BG BY CH CY CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT JE LI LT LU LV MC MD ME MF MK MT NL NO PL PT RO RS RU SE SI SJ SK SM UA VA'.split(' '));
 const americas = new Set('AI AG AR AW BB BL BM BO BQ BS BZ CA CL CO CR CU CW DM DO EC FK GD GF GL GP GT GU GY HN HT JM KN KY LC MF MQ MS MX NI PA PE PM PR PY RE SR SV SX TC TT UY VC VE VG VI'.split(' '));
 const oceania = new Set('AS AU CC CK FJ FM GU HM KI MH MP NC NF NR NU NZ PF PG PN PW SB TK TL TO TV UM VU WF WS'.split(' '));
+const pinned = new Map([
+  ['US', 0],
+  ['DE', 1],
+  ['FR', 2],
+  ['GB', 3],
+  ['ES', 4],
+  ['IT', 5],
+]);
 
 const priority = (code: string) => {
-  if (code === 'US') return 0;
-  if (code === 'DE') return 1;
-  if (code === 'GB') return 2;
-  if (europe.has(code) || americas.has(code)) return 3;
-  if (oceania.has(code)) return 4;
-  return 5;
+  const explicit = pinned.get(code);
+  if (explicit !== undefined) return explicit;
+  if (europe.has(code) || americas.has(code)) return 6;
+  if (oceania.has(code)) return 7;
+  return 8;
 };
 
 export const countries = countryCodes

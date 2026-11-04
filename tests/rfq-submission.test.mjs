@@ -63,6 +63,9 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
       assert.equal(await page.locator('#phone-country-code').inputValue(), '+86');
       assert.match(await page.locator('.phone-current-flag').getAttribute('class'), /fi-cn/);
       await page.locator('.phone-country-toggle').click();
+      assert.deepEqual(await page.locator('#phone-country-options li').evaluateAll(options => options.slice(0, 6).map(option => option.textContent?.trim().replace(/\+\d+$/, ''))), [
+        'United States', 'Germany', 'France', 'United Kingdom', 'Spain', 'Italy'
+      ]);
       await page.getByLabel('Search phone country or code').fill('United Kingdom');
       await page.getByRole('option', { name: /United Kingdom \+44/, exact: false }).click();
       assert.equal(await page.locator('#phone-country-code').inputValue(), '+44');
@@ -96,7 +99,9 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     const status = page.locator('#form-status');
     const submit = page.locator('button[type=submit]');
     await page.goto(`${baseUrl}/contact/`);
-    assert.deepEqual(await page.locator('#country-select option').evaluateAll(options => options.slice(1, 4).map(option => option.value)), ['United States', 'Germany', 'United Kingdom']);
+    assert.deepEqual(await page.locator('#country-select option').evaluateAll(options => options.slice(1, 9).map(option => option.value)), [
+      'United States', 'Germany', 'France', 'United Kingdom', 'Spain', 'Italy', 'Åland Islands', 'Albania'
+    ]);
     assert.equal(await page.locator('[name=consent]').isChecked(), true);
     assert.equal(await page.getByText('(optional)', { exact: true }).count(), 0);
     assert.equal(await page.getByText('Country code follows your country / region. You can edit it.', { exact: true }).count(), 0);
