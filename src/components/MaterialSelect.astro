@@ -1,0 +1,32 @@
+---
+import SearchDropdown from './SearchDropdown.astro';
+const materials = [
+  ['Aluminium 6061', 'aluminum al 6061'],
+  ['Aluminium 6082', 'aluminum al 6082'],
+  ['Aluminium 7075', 'aluminum al 7075'],
+  ['Aluminium 5052', 'aluminum al 5052'],
+  ['Aluminium 2024', 'aluminum al 2024'],
+  ['Stainless Steel 303', 'ss sus inox 303'],
+  ['Stainless Steel 304', 'ss sus inox 304'],
+  ['Stainless Steel 316', 'ss sus inox 316'],
+  ['Stainless Steel 316L', 'ss sus inox 316l'],
+  ['Stainless Steel 17-4 PH', 'ss sus inox 17-4ph'],
+  ['Carbon Steel 1018', 'mild steel 1018'],
+  ['Carbon Steel 1045', 'medium carbon steel c45 1045'],
+  ['Alloy Steel 4140', 'chromoly 4140'],
+  ['Brass C360', 'copper alloy c360'],
+  ['Copper C110', 'c110'],
+  ['Bronze C932', 'c932'],
+  ['Titanium Grade 2', 'ti gr2'],
+  ['Titanium Grade 5', 'ti gr5 ti6al4v ti-6al-4v'],
+  ['POM / Acetal', 'delrin plastic'],
+  ['Nylon / PA', 'polyamide plastic'],
+  ['PEEK', 'plastic'],
+  ['PTFE', 'teflon plastic'],
+  ['ABS', 'plastic'],
+  ['Polycarbonate / PC', 'plastic'],
+  ['PMMA / Acrylic', 'plastic'],
+  ['Not sure — please advise', 'unsure recommend'],
+].map(([name, code]) => ({ name, code }));
+---
+<SearchDropdown name="material" label="Material" placeholder="Search or enter material" options={materials} allowCustom/>
