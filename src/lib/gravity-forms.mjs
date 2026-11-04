@@ -1,6 +1,9 @@
 export const rfqFields = ['name', 'email', 'company', 'country', 'process', 'material', 'quantity', 'delivery', 'tolerance', 'attachment', 'details', 'consent', 'phone'];
 
-export function submissionRequest(values, config) {
+export function submissionRequest(values, config, turnstileToken) {
+  if (!config.turnstileSiteKey || typeof turnstileToken !== 'string' || !turnstileToken.trim()) {
+    throw new Error('Complete the human verification before submitting.');
+  }
   const url = new URL(config.graphqlUrl);
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) {
     throw new Error('Configure a GraphQL URL without credentials, query or fragment.');
@@ -53,17 +56,17 @@ export function submissionRequest(values, config) {
     variables: { input: { id: config.formId, fieldValues, saveAsDraft: false, sourcePage: 1, targetPage: 0 } },
   };
   /** @type {RequestInit} */
-  const init = { method: 'POST', credentials: 'omit', redirect: 'error' };
+  const init = { method: 'POST', credentials: 'omit', redirect: 'error', headers: { 'X-Turnstile-Token': turnstileToken.trim() } };
   if (upload) {
     // A custom header makes cross-origin uploads preflight before WordPress accepts them.
-    init.headers = { 'GraphQL-Require-Preflight': '1' };
+    init.headers['GraphQL-Require-Preflight'] = '1';
     const body = new FormData();
     body.append('operations', JSON.stringify(operation));
     body.append('map', JSON.stringify({ 0: [`variables.input.fieldValues.${uploadIndex}.fileUploadValues.0`] }));
     body.append('0', upload, upload.name);
     init.body = body;
   } else {
-    init.headers = { 'Content-Type': 'application/json' };
+    init.headers['Content-Type'] = 'application/json';
     init.body = JSON.stringify(operation);
   }
   return { url: url.href, init };

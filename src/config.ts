@@ -28,4 +28,5 @@ export const gravityForms = {
     consent: { id: 14, type: 'consent' },
   },
   uploadsEnabled: true,
+  turnstileSiteKey: import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '',
 };

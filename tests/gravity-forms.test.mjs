@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { rfqFields, submissionRequest, submissionResult } from '../src/lib/gravity-forms.mjs';
 
 const config = () => ({ graphqlUrl: 'https://example.com/graphql', formId: 42, uploadsEnabled: true,
+  turnstileSiteKey: 'test-site-key',
   fields: Object.fromEntries(rfqFields.map((field, i) => [field, { id: i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])) });
 const values = () => {
   const data = new FormData();
@@ -13,10 +14,11 @@ const values = () => {
 };
 
 test('JSON submission uses configurable form ID and typed GraphQL inputs', () => {
-  const request = submissionRequest(values(), config());
+  const request = submissionRequest(values(), config(), 'test-token');
   const operation = JSON.parse(request.init.body);
   assert.equal(request.url, 'https://example.com/graphql');
   assert.equal(request.init.headers['Content-Type'], 'application/json');
+  assert.equal(request.init.headers['X-Turnstile-Token'], 'test-token');
   assert.equal(request.init.credentials, 'omit');
   assert.equal(operation.variables.input.id, 42);
   const fields = operation.variables.input.fieldValues;
@@ -28,10 +30,15 @@ test('JSON submission uses configurable form ID and typed GraphQL inputs', () =>
   assert.equal(operation.variables.input.saveAsDraft, false);
 });
 
+test('submissions require both a public site key and a non-empty verified token', () => {
+  assert.throws(() => submissionRequest(values(), config(), ''), /human verification/);
+  assert.throws(() => submissionRequest(values(), {...config(), turnstileSiteKey: ''}, 'test-token'), /human verification/);
+});
+
 test('multipart upload maps file placeholder to exact field and preserves bytes', async () => {
   const data = values();
   data.set('attachment', new File(['drawing bytes'], 'part.step'));
-  const request = submissionRequest(data, config());
+  const request = submissionRequest(data, config(), 'test-token');
   assert.equal(request.init.headers['GraphQL-Require-Preflight'], '1');
   assert.equal(request.init.headers['Content-Type'], undefined);
   const body = request.init.body;
@@ -40,31 +47,31 @@ test('multipart upload maps file placeholder to exact field and preserves bytes'
   assert.deepEqual(JSON.parse(body.get('map')), {'0':['variables.input.fieldValues.9.fileUploadValues.0']});
   assert.equal(await body.get('0').text(), 'drawing bytes');
   assert.equal(body.get('0').name, 'part.step');
-  assert.throws(() => submissionRequest(data, {...config(), uploadsEnabled:false}), /Upload/);
+  assert.throws(() => submissionRequest(data, {...config(), uploadsEnabled:false}, 'test-token'), /Upload/);
 });
 
 test('incomplete or duplicate IDs, unsupported types and invalid endpoints fail before sending', () => {
   for (const id of [0, -1, 1.5, '1', 1]) {
     const settings = config(); settings.fields.material.id = id;
-    assert.throws(() => submissionRequest(values(), settings));
+    assert.throws(() => submissionRequest(values(), settings, 'test-token'));
   }
-  for (const formId of [0, -1, 1.5, '1']) assert.throws(() => submissionRequest(values(), {...config(), formId}));
-  for (const graphqlUrl of ['', 'javascript:alert(1)', 'https://user:password@example.com', 'https://example.com/?key=x']) assert.throws(() => submissionRequest(values(), {...config(), graphqlUrl}));
+  for (const formId of [0, -1, 1.5, '1']) assert.throws(() => submissionRequest(values(), {...config(), formId}, 'test-token'));
+  for (const graphqlUrl of ['', 'javascript:alert(1)', 'https://user:password@example.com', 'https://example.com/?key=x']) assert.throws(() => submissionRequest(values(), {...config(), graphqlUrl}, 'test-token'));
   const settings = config(); settings.fields.email.type = 'unknown';
-  assert.throws(() => submissionRequest(values(), settings));
+  assert.throws(() => submissionRequest(values(), settings, 'test-token'));
 });
 
 test('consent supports a standard checkbox with explicit choice mapping', () => {
   const settings = config(); settings.fields.consent = { id:12, type:'checkbox', inputId:12.1, choiceValue:'Agreed' };
-  const checked = JSON.parse(submissionRequest(values(), settings).init.body).variables.input.fieldValues.find(field => field.id === 12);
+  const checked = JSON.parse(submissionRequest(values(), settings, 'test-token').init.body).variables.input.fieldValues.find(field => field.id === 12);
   assert.deepEqual(checked, {id:12, checkboxValues:[{inputId:12.1,value:'Agreed'}]});
-  const empty = JSON.parse(submissionRequest(new FormData(), settings).init.body).variables.input.fieldValues.find(field => field.id === 12);
+  const empty = JSON.parse(submissionRequest(new FormData(), settings, 'test-token').init.body).variables.input.fieldValues.find(field => field.id === 12);
   assert.deepEqual(empty.checkboxValues, []);
 });
 
 test('optional phone combines the editable calling code without duplicating international numbers', () => {
   const data = values();
-  const phoneValue = () => JSON.parse(submissionRequest(data, config()).init.body).variables.input.fieldValues.find(field => field.id === 13).value;
+  const phoneValue = () => JSON.parse(submissionRequest(data, config(), 'test-token').init.body).variables.input.fieldValues.find(field => field.id === 13).value;
   data.set('phoneCountryCode', '+86');
   data.set('phone', '');
   assert.equal(phoneValue(), '');

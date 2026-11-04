@@ -22,10 +22,11 @@ import { gravityForms } from '../../config';
     </div>
     <p class="file-error" id="drawing-error" role="alert" hidden></p>
   </div><label class="full-field">Project details<textarea name="details" rows="4" placeholder="Describe the component, application, quantity forecast or any other useful details."></textarea></label><label class="consent full-field"><input type="checkbox" name="consent" required checked/> I agree that Belaro Precision may contact me about this enquiry. *</label></div>
-  <button class="button button-orange button-large" type="submit" disabled>Submit RFQ <span>↗</span></button><noscript><p>Please enable JavaScript to submit this form, or contact us by email.</p></noscript><p class="form-status" id="form-status" aria-live="polite">Please do not submit export-controlled or highly sensitive technical data without first agreeing appropriate handling arrangements.</p>
+  <div class="turnstile-wrap full-field"><div class="cf-turnstile" data-sitekey={gravityForms.turnstileSiteKey} data-action="rfq" data-theme="light"></div></div><button class="button button-orange button-large" type="submit" disabled>Submit RFQ <span>↗</span></button><noscript><p>Please enable JavaScript to submit this form, or contact us by email.</p></noscript><p class="form-status" id="form-status" aria-live="polite">Please do not submit export-controlled or highly sensitive technical data without first agreeing appropriate handling arrangements.</p>
 </form></div></section></main><Footer/><script>
   import type { gravityForms as GravityFormsConfig } from '../../config';
   import { submissionRequest, submissionResult } from '../../lib/gravity-forms.mjs';
+  declare global { interface Window { turnstile?: { render: (target: HTMLElement, options: Record<string, unknown>) => string; reset: () => void } } }
   const form = document.querySelector<HTMLFormElement>('#rfq-form');
   const gravityForms: typeof GravityFormsConfig = JSON.parse(form?.dataset.gravityForms || '{}');
   const status = document.querySelector('#form-status');
@@ -101,7 +102,28 @@ import { gravityForms } from '../../config';
     });
   }
   const submitButton = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
-  if (submitButton) submitButton.disabled = false;
+  const turnstileWidget = form?.querySelector<HTMLElement>('.cf-turnstile');
+  let turnstileToken = '';
+  if (!gravityForms.turnstileSiteKey || !turnstileWidget) {
+    if (status) status.textContent = 'Online enquiries are temporarily unavailable. Please contact us by email.';
+  } else {
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    script.addEventListener('load', () => {
+      const api = window.turnstile;
+      if (!api || !turnstileWidget) return;
+      api.render(turnstileWidget, {
+        sitekey: gravityForms.turnstileSiteKey,
+        action: 'rfq',
+        callback: (token: string) => { turnstileToken = token; if (submitButton) submitButton.disabled = false; },
+        'expired-callback': () => { turnstileToken = ''; if (submitButton) submitButton.disabled = true; },
+        'error-callback': () => { turnstileToken = ''; if (submitButton) submitButton.disabled = true; },
+      });
+    });
+    document.head.append(script);
+  }
   let submitting = false;
   let submitted = false;
   form?.addEventListener('submit', async event => {
@@ -118,7 +140,7 @@ import { gravityForms } from '../../config';
     if (!form.reportValidity()) return;
     let request;
     try {
-      request = submissionRequest(new FormData(form), gravityForms);
+      request = submissionRequest(new FormData(form), gravityForms, turnstileToken);
     } catch {
       status.textContent = 'Online enquiries are temporarily unavailable. Please contact us by email.';
       status.dataset.state = 'error';
@@ -169,6 +191,8 @@ import { gravityForms } from '../../config';
       status.textContent = 'We could not confirm receipt of your enquiry. Your details have been kept. Please contact us by email, or check before submitting again.';
       status.dataset.state = 'error';
     } finally {
+      turnstileToken = '';
+      window.turnstile?.reset();
       submitting = false;
       submitButton.disabled = submitted;
       form.removeAttribute('aria-busy');

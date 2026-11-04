@@ -13,7 +13,7 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
       const path = new URL(req.url, 'http://localhost').pathname;
       let body = await readFile(new URL(`../dist${path.endsWith('/') ? `${path}index.html` : path}`, import.meta.url));
       if (path === '/contact/') {
-        const config = { graphqlUrl: `${baseUrl}/graphql`, formId: 42, uploadsEnabled: true, fields: Object.fromEntries(rfqFields.map((field, i) => [field, { id: i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])) };
+        const config = { graphqlUrl: `${baseUrl}/graphql`, formId: 42, uploadsEnabled: true, turnstileSiteKey: 'test-site-key', fields: Object.fromEntries(rfqFields.map((field, i) => [field, { id: i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])) };
         if (!configured) config.fields.attachment.id = 0;
         body = Buffer.from(body.toString().replace(/data-gravity-forms="[^"]*"/, `data-gravity-forms="${JSON.stringify(config).replace(/"/g, '&quot;')}"`));
       }
@@ -31,12 +31,14 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     await page.route('**/*', route => route.request().url().startsWith(baseUrl) ? route.continue() : route.abort());
+    await page.route('https://challenges.cloudflare.com/turnstile/v0/api.js*', route => route.fulfill({ contentType: 'text/javascript', body: `let widgetOptions;window.turnstile={render:(target,options)=>{widgetOptions=options;options.callback('test-token');return 'test-widget'},reset:()=>{widgetOptions?.callback('test-token')}};` }));
     let mode = 'validation';
     let requests = 0;
     let release;
     await page.route(`${baseUrl}/graphql`, async route => {
       requests++;
       assert.equal(route.request().url(), `${baseUrl}/graphql`);
+      assert.equal(route.request().headers()['x-turnstile-token'], 'test-token');
       const payload = route.request().postDataBuffer().toString();
       assert.match(payload, /"id":42/);
       assert.match(payload, /"nameValues":\{"first":"Test","last":"Buyer"\}/);
