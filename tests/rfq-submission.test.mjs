@@ -97,6 +97,7 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     const submit = page.locator('button[type=submit]');
     await page.goto(`${baseUrl}/contact/`);
     assert.deepEqual(await page.locator('#country-select option').evaluateAll(options => options.slice(1, 4).map(option => option.value)), ['United States', 'Germany', 'United Kingdom']);
+    assert.equal(await page.locator('[name=consent]').isChecked(), true);
     assert.equal(await page.getByText('(optional)', { exact: true }).count(), 0);
     assert.equal(await page.getByText('Country code follows your country / region. You can edit it.', { exact: true }).count(), 0);
     assert.equal(await page.getByLabel('Phone', { exact: true }).count(), 1);
