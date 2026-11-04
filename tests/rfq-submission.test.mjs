@@ -61,16 +61,25 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
       await page.getByLabel('Company name *', { exact: true }).fill('Test Company');
       await page.locator('#country-search').fill('China');
       assert.equal(await page.locator('#phone-country-code').inputValue(), '+86');
-      await page.locator('#phone-country-code').fill('+44');
+      assert.match(await page.locator('.phone-current-flag').getAttribute('class'), /fi-cn/);
+      await page.locator('.phone-country-toggle').click();
+      await page.getByLabel('Search phone country or code').fill('United Kingdom');
+      await page.getByRole('option', { name: /United Kingdom \+44/, exact: false }).click();
+      assert.equal(await page.locator('#phone-country-code').inputValue(), '+44');
+      assert.match(await page.locator('.phone-current-flag').getAttribute('class'), /fi-gb/);
       await page.locator('#phone-number').fill('13800138000');
       assert.equal(await page.locator('#phone-number').getAttribute('required'), null);
-      // Leaving the country field must preserve a manual override for the same country.
+      // Leaving the country field must preserve a calling-country override for the same country.
       await page.locator('#country-search').focus();
       await page.locator('#phone-number').focus();
       assert.equal(await page.locator('#phone-country-code').inputValue(), '+44');
       await page.locator('#country-search').fill('United Stat');
-      await page.getByRole('option', { name: 'United States', exact: true }).click();
+      const usCountryOption = page.getByRole('option', { name: 'United States', exact: true });
+      assert.ok(parseFloat(await usCountryOption.evaluate(element => getComputedStyle(element).paddingLeft)) > 0);
+      assert.equal(await usCountryOption.locator('.fi-us').count(), 1);
+      await usCountryOption.click();
       assert.equal(await page.locator('#phone-country-code').inputValue(), '+1');
+      assert.match(await page.locator('.phone-current-flag').getAttribute('class'), /fi-us/);
       assert.equal(await page.locator('#phone-number').inputValue(), '13800138000');
       await page.locator('#country-search').fill('Hong Kong');
       await page.locator('#country-search').press('ArrowDown');
@@ -87,6 +96,10 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     const status = page.locator('#form-status');
     const submit = page.locator('button[type=submit]');
     await page.goto(`${baseUrl}/contact/`);
+    assert.deepEqual(await page.locator('#country-select option').evaluateAll(options => options.slice(1, 4).map(option => option.value)), ['United States', 'Germany', 'United Kingdom']);
+    assert.equal(await page.getByText('(optional)', { exact: true }).count(), 0);
+    assert.equal(await page.getByText('Country code follows your country / region. You can edit it.', { exact: true }).count(), 0);
+    assert.equal(await page.getByLabel('Phone', { exact: true }).count(), 1);
     await fill();
     await submit.click();
     await page.waitForFunction(() => document.querySelector('#form-status').dataset.state === 'error');
@@ -120,7 +133,13 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     assert.equal(await page.locator('#material-search').inputValue(), 'Custom alloy');
     assert.match(await status.textContent(), /enquiry has been received/);
     assert.equal(await page.locator('form').getAttribute('aria-busy'), null);
-    if (process.env.RFQ_SCREENSHOT_PATH) await page.locator('#rfq-form').screenshot({ path: process.env.RFQ_SCREENSHOT_PATH });
+    if (process.env.RFQ_SCREENSHOT_PATH) {
+      await page.locator('#rfq-form').screenshot({ path: process.env.RFQ_SCREENSHOT_PATH });
+      await page.locator('.phone-country-toggle').click();
+      await page.getByLabel('Search phone country or code').fill('United');
+      await page.locator('#rfq-form').screenshot({ path: process.env.RFQ_SCREENSHOT_PATH.replace(/\.png$/i, '-dropdown.png') });
+      await page.getByLabel('Search phone country or code').press('Escape');
+    }
     await page.setViewportSize({ width: 390, height: 844 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
     assert.ok((await page.locator('#phone-number').boundingBox()).width > 100);

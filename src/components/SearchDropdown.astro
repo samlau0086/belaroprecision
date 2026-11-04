@@ -6,10 +6,11 @@ interface Props {
   options: { name: string; code: string; callingCode?: string }[];
   required?: boolean;
   allowCustom?: boolean;
+  showFlags?: boolean;
 }
-const { name, label, placeholder, options, required = false, allowCustom = false } = Astro.props;
+const { name, label, placeholder, options, required = false, allowCustom = false, showFlags = false } = Astro.props;
 ---
-<div class="country-field" data-search-dropdown data-allow-custom={String(allowCustom)} data-label={label}>
+<div class="country-field" data-search-dropdown data-allow-custom={String(allowCustom)} data-show-flags={String(showFlags)} data-label={label}>
   <label for={allowCustom ? `${name}-search` : `${name}-select`}>{label}{required ? ' *' : ''}</label>
   <select id={`${name}-select`} name={allowCustom ? undefined : name} required={required && !allowCustom} hidden={allowCustom} disabled={allowCustom}>
     <option value="">{placeholder}</option>
@@ -17,6 +18,7 @@ const { name, label, placeholder, options, required = false, allowCustom = false
   </select>
   <div class="country-combobox" hidden={!allowCustom}>
     <div class="country-input-wrap">
+      <span class="country-selected-flag" aria-hidden="true" hidden></span>
       <input id={`${name}-search`} name={allowCustom ? name : undefined} type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls={`${name}-options`} autocomplete="off" placeholder={placeholder} disabled={!allowCustom} required={required && allowCustom}/>
       <button type="button" class="country-toggle" aria-label={`Show ${label.toLowerCase()} options`} aria-controls={`${name}-options`} aria-expanded="false" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
@@ -40,6 +42,8 @@ const { name, label, placeholder, options, required = false, allowCustom = false
     const empty = field.querySelector<HTMLElement>('.country-empty')!;
     const announcement = field.querySelector<HTMLElement>('.country-announcement')!;
     const allowCustom = field.dataset.allowCustom === 'true';
+    const showFlags = field.dataset.showFlags === 'true';
+    const selectedFlag = field.querySelector<HTMLElement>('.country-selected-flag')!;
     const name = select.name || input.name;
     const required = select.required || input.required;
     const countries = Array.from(select.options).filter(option => option.value).map(option => ({ name: option.value, code: option.dataset.code! }));
@@ -49,6 +53,9 @@ const { name, label, placeholder, options, required = false, allowCustom = false
     const validate = () => {
       const match = countries.find(country => normalize(country.name) === normalize(input.value));
       input.setCustomValidity(!allowCustom && input.value && !match ? 'Please select a country or region from the list.' : '');
+      selectedFlag.className = `country-selected-flag${match && showFlags ? ` fi fi-${match.code.toLowerCase()}` : ''}`;
+      selectedFlag.hidden = !match || !showFlags;
+      input.classList.toggle('has-flag', Boolean(match && showFlags));
       return match;
     };
     const close = () => {
@@ -84,7 +91,13 @@ const { name, label, placeholder, options, required = false, allowCustom = false
         option.id = `${name}-option-${index}`;
         option.setAttribute('role', 'option');
         option.setAttribute('aria-selected', String(country.name === input.value));
-        option.textContent = country.name;
+        if (showFlags) {
+          const flag = document.createElement('span');
+          flag.className = `fi fi-${country.code.toLowerCase()}`;
+          flag.setAttribute('aria-hidden', 'true');
+          option.append(flag);
+        }
+        option.append(document.createTextNode(country.name));
         option.addEventListener('click', () => choose(country.name));
         option.addEventListener('pointermove', () => highlight(index));
         return option;
@@ -150,12 +163,15 @@ const { name, label, placeholder, options, required = false, allowCustom = false
   .country-combobox{position:relative}
   .country-input-wrap{position:relative}
   .country-field .country-input-wrap input{padding-right:40px}
+  .country-field .country-input-wrap input.has-flag{padding-left:43px}
+  .country-selected-flag{position:absolute;left:13px;top:50%;z-index:1;transform:translateY(-50%);width:20px;box-shadow:0 0 0 1px rgba(16,31,53,.12)}
   .country-toggle{position:absolute;right:1px;top:1px;bottom:1px;display:grid;place-items:center;width:38px;border:0;background:transparent;color:var(--muted);cursor:pointer}
   .country-popup{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:10;border:1px solid var(--line);background:#fff;box-shadow:0 10px 25px rgba(16,31,53,.12);font-size:16px;font-weight:400}
-  .country-popup ul{list-style:none;margin:0;padding:5px 0;max-height:250px;overflow-y:auto;overscroll-behavior:contain}
-  .country-popup li{padding:10px 13px;cursor:pointer;overflow-wrap:anywhere}
-  .country-popup li.is-active{background:#fff0e5;color:var(--ink)}
-  .country-popup li[aria-selected=true]{font-weight:700;color:var(--orange2)}
+  .country-popup :global(ul){list-style:none;margin:0;padding:5px 0;max-height:250px;overflow-y:auto;overscroll-behavior:contain}
+  .country-popup :global(li){display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;overflow-wrap:anywhere}
+  .country-popup :global(li .fi){width:20px;flex:0 0 20px;box-shadow:0 0 0 1px rgba(16,31,53,.12)}
+  .country-popup :global(li.is-active){background:#fff0e5;color:var(--ink)}
+  .country-popup :global(li[aria-selected=true]){font-weight:700;color:var(--orange2)}
   .country-empty{margin:0;padding:12px 13px;color:var(--muted)}
   .country-field [hidden]{display:none}
   .country-announcement{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}

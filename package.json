@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "astro": "^5.7.0",
+    "flag-icons": "^7.6.0",
     "libphonenumber-js": "^1.13.15"
   }
 }

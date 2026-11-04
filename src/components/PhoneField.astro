@@ -1,38 +1,162 @@
-<div class="phone-field">
-  <label for="phone-number">Phone <span>(optional)</span></label>
+---
+import { countries } from '../lib/countries';
+---
+<div class="phone-field" data-phone-field>
+  <label for="phone-number">Phone</label>
   <div class="phone-inputs">
-    <input id="phone-country-code" name="phoneCountryCode" type="tel" inputmode="tel" autocomplete="tel-country-code" aria-label="Phone country code" placeholder="+Code" pattern="\+[1-9][0-9]{0,2}" title="Enter a country calling code, such as +86 or +1." aria-describedby="phone-help"/>
-    <input id="phone-number" name="phone" type="tel" autocomplete="tel-national" placeholder="Phone number" aria-describedby="phone-help"/>
+    <input id="phone-country-code" name="phoneCountryCode" type="hidden" value=""/>
+    <div class="phone-country">
+      <button type="button" class="phone-country-toggle" aria-label="Select phone country code" aria-expanded="false" aria-controls="phone-country-popup">
+        <span class="phone-current-flag" aria-hidden="true"></span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="phone-country-popup" id="phone-country-popup" hidden>
+        <div class="phone-country-search-wrap">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input class="phone-country-search" type="search" role="combobox" aria-label="Search phone country or code" aria-autocomplete="list" aria-expanded="false" aria-controls="phone-country-options" autocomplete="off" placeholder="Search country or code"/>
+        </div>
+        <ul id="phone-country-options" role="listbox" aria-label="Phone country codes"></ul>
+        <p class="phone-country-empty" hidden>No countries or codes found.</p>
+      </div>
+    </div>
+    <input id="phone-number" name="phone" type="tel" autocomplete="tel-national" placeholder="Phone number"/>
   </div>
-  <small id="phone-help">Country code follows your country / region. You can edit it.</small>
 </div>
 
-<script>
-  const country = document.querySelector<HTMLInputElement>('#country-search');
-  const fallbackCountry = document.querySelector<HTMLSelectElement>('#country-select');
-  const callingCode = document.querySelector<HTMLInputElement>('#phone-country-code');
-  if (country && fallbackCountry && callingCode) {
+<script define:vars={{ countries }}>
+  const field = document.querySelector('[data-phone-field]');
+  const country = document.querySelector('#country-search');
+  const fallbackCountry = document.querySelector('#country-select');
+  const callingCode = field?.querySelector('#phone-country-code');
+  const numberInput = field?.querySelector('#phone-number');
+  const toggle = field?.querySelector('.phone-country-toggle');
+  const currentFlag = field?.querySelector('.phone-current-flag');
+  const popup = field?.querySelector('.phone-country-popup');
+  const search = field?.querySelector('.phone-country-search');
+  const list = field?.querySelector('#phone-country-options');
+  const empty = field?.querySelector('.phone-country-empty');
+  if (field && country && fallbackCountry && callingCode && numberInput && toggle && currentFlag && popup && search && list && empty) {
+    const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
     let previousCountry = '';
+    let selected = null;
+    let filtered = countries.filter(item => item.callingCode);
+    let active = -1;
+    const close = () => {
+      popup.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      search.setAttribute('aria-expanded', 'false');
+      search.removeAttribute('aria-activedescendant');
+      active = -1;
+    };
+    const highlight = index => {
+      active = index;
+      Array.from(list.children).forEach((option, i) => option.classList.toggle('is-active', i === active));
+      const option = list.children[active];
+      if (option) {
+        search.setAttribute('aria-activedescendant', option.id);
+        option.scrollIntoView({ block: 'nearest' });
+      } else search.removeAttribute('aria-activedescendant');
+    };
+    const choose = item => {
+      selected = item;
+      callingCode.value = item.callingCode || '';
+      currentFlag.className = `phone-current-flag fi fi-${item.code.toLowerCase()}`;
+      toggle.setAttribute('aria-label', `${item.name} ${item.callingCode}`);
+      search.value = '';
+      close();
+      numberInput.focus();
+    };
+    const render = query => {
+      const term = normalize(query);
+      filtered = countries.filter(item => item.callingCode && (normalize(item.name).includes(term) || item.code.toLowerCase().includes(term) || item.callingCode.includes(term)));
+      list.replaceChildren(...filtered.map((item, index) => {
+        const option = document.createElement('li');
+        option.id = `phone-country-option-${index}`;
+        option.setAttribute('role', 'option');
+        option.setAttribute('aria-selected', String(item.code === selected?.code));
+        const flag = document.createElement('span');
+        flag.className = `fi fi-${item.code.toLowerCase()}`;
+        flag.setAttribute('aria-hidden', 'true');
+        const name = document.createElement('span');
+        name.className = 'phone-country-name';
+        name.textContent = item.name;
+        const code = document.createElement('span');
+        code.className = 'phone-calling-code';
+        code.textContent = item.callingCode || '';
+        option.append(flag, name, code);
+        option.addEventListener('click', () => choose(item));
+        option.addEventListener('pointermove', () => highlight(index));
+        return option;
+      }));
+      empty.hidden = filtered.length > 0;
+      popup.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      search.setAttribute('aria-expanded', 'true');
+      highlight(-1);
+    };
     const syncCallingCode = () => {
       const value = country.disabled ? fallbackCountry.value : country.value.trim();
-      const match = Array.from(fallbackCountry.options).find(option => option.value.toLowerCase() === value.toLowerCase());
-      if (!match || match.value === previousCountry) return;
-      previousCountry = match.value;
-      callingCode.value = match.dataset.callingCode || '';
+      const match = countries.find(item => normalize(item.name) === normalize(value));
+      if (!match || match.name === previousCountry) return;
+      previousCountry = match.name;
+      choose(match);
     };
+    toggle.addEventListener('click', () => popup.hidden ? (render(''), search.focus()) : close());
+    search.addEventListener('input', () => render(search.value));
+    search.addEventListener('keydown', event => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const direction = event.key === 'ArrowDown' ? 1 : -1;
+        if (filtered.length) highlight(active < 0 ? (direction === 1 ? 0 : filtered.length - 1) : (active + direction + filtered.length) % filtered.length);
+      } else if (event.key === 'Enter' && active >= 0) {
+        event.preventDefault();
+        choose(filtered[active]);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        toggle.focus();
+      }
+    });
+    list.addEventListener('pointerdown', event => event.preventDefault());
+    document.addEventListener('pointerdown', event => { if (!field.contains(event.target)) close(); });
     country.addEventListener('input', syncCallingCode);
     country.addEventListener('change', syncCallingCode);
     fallbackCountry.addEventListener('change', syncCallingCode);
-    country.form?.addEventListener('reset', () => { previousCountry = ''; });
+    country.form?.addEventListener('reset', () => {
+      previousCountry = '';
+      selected = null;
+      callingCode.value = '';
+      currentFlag.className = 'phone-current-flag';
+      toggle.setAttribute('aria-label', 'Select phone country code');
+      search.value = '';
+      close();
+    });
     syncCallingCode();
   }
 </script>
 
 <style>
   .phone-field{display:flex;flex-direction:column;gap:7px;min-width:0}
-  .phone-field label{display:block}
-  .phone-field label span{font-weight:400;color:var(--muted)}
-  .phone-inputs{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px}
-  .phone-inputs input{min-width:0}
-  .phone-field small{line-height:1.5}
+  .phone-field>label{display:block;font-size:16px;font-weight:700;color:#344256}
+  .phone-inputs{display:grid;grid-template-columns:78px minmax(0,1fr);min-width:0}
+  .phone-country{position:relative;min-width:0}
+  .phone-country-toggle{width:100%;height:100%;min-height:51px;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid #dce2e9;border-right:0;background:#fbfcfd;color:var(--muted);cursor:pointer;padding:0 12px}
+  .phone-country-toggle:focus-visible,.phone-country:focus-within .phone-country-toggle{position:relative;z-index:2;border-color:var(--orange);box-shadow:0 0 0 3px rgba(244,123,53,.1);outline:0}
+  .phone-current-flag{width:22px;min-height:15px;flex:0 0 22px;box-shadow:0 0 0 1px rgba(16,31,53,.14)}
+  .phone-current-flag:not(.fi){background:linear-gradient(135deg,#e7ebef 0 48%,#cfd6de 48% 52%,#e7ebef 52%)}
+  .phone-field :global(#phone-number){min-width:0;border-left-color:#c9d0d8}
+  .phone-country-popup{position:absolute;top:calc(100% + 5px);left:0;z-index:12;width:min(365px,calc(100vw - 70px));border:1px solid var(--line);background:#fff;box-shadow:0 10px 25px rgba(16,31,53,.14);font-size:16px;font-weight:400}
+  .phone-country-search-wrap{position:relative;padding:9px;border-bottom:1px solid var(--line)}
+  .phone-country-search-wrap>svg{position:absolute;left:21px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+  .phone-field :global(.phone-country-search){padding:9px 10px 9px 38px;width:100%;height:42px}
+  .phone-country-popup :global(ul){list-style:none;margin:0;padding:5px 0;max-height:250px;overflow-y:auto;overscroll-behavior:contain}
+  .phone-country-popup :global(li){display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:11px;padding:10px 13px;cursor:pointer}
+  .phone-country-popup :global(li .fi){width:22px;box-shadow:0 0 0 1px rgba(16,31,53,.12)}
+  .phone-country-popup :global(li.is-active){background:#fff0e5}
+  .phone-country-popup :global(li[aria-selected=true]){font-weight:700;color:var(--orange2)}
+  .phone-country-popup :global(.phone-country-name){overflow-wrap:anywhere}
+  .phone-country-popup :global(.phone-calling-code){color:var(--muted);font-variant-numeric:tabular-nums}
+  .phone-country-empty{margin:0;padding:12px 13px;color:var(--muted)}
+  .phone-field [hidden]{display:none}
+  @media(max-width:420px){.phone-country-popup{width:min(325px,calc(100vw - 70px))}}
 </style>
