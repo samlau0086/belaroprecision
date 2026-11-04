@@ -6,7 +6,7 @@
 
 网站采用静态输出；浏览器通过 GraphQL 向独立的 WordPress 服务提交询价。当前仓库不包含完整 WordPress 站点、数据库或后台管理系统，仅包含一个配套 MU 插件。制造、报价、检验和交付流程属于页面介绍内容，不代表本仓库实现了相应业务系统，也不构成对企业实际能力的验证。
 
-本说明于 **2026 年 11 月 4 日**根据工作区代码和配置核查。原文中的历史联调记录保留于后文，并单独标注其验证边界。
+本说明于 **2026 年 11 月 4 日**根据工作区代码和配置核查。原文中的历史联调记录保留于后文，并单独标注其验证边界。**2026 年 11 月 5 日**新增 Machined Parts 分类展示页、全站入口与询价预填流程，相关验证记录见第 10 节。
 
 ## 2. 技术栈与依赖
 
@@ -37,8 +37,9 @@
 ├── src/
 │   ├── config.ts             # 站点公开信息、GraphQL 地址、表单字段映射
 │   ├── layouts/BaseLayout.astro # 页面外壳、SEO、字体、移动导航脚本
-│   ├── pages/                # 首页及五个子页面
-│   ├── components/           # 页头、页脚、轮播、国家/材料/电话字段等
+│   ├── pages/                # 首页及七个子页面，包含独立铣削服务页
+│   ├── components/           # 页头、页脚、轮播、零件示意图及表单字段等
+│   ├── data/                 # Machined Parts 分类与评审内容
 │   ├── lib/                  # 国家数据、GraphQL 请求构造与结果解析
 │   └── styles/global.css     # 全局样式和响应式规则
 ├── tests/                    # 表单单元测试及浏览器测试
@@ -55,13 +56,15 @@
 | 路由 | 当前实现 |
 | --- | --- |
 | `/` | 首页、四张首屏轮播、服务/行业/质量概览和询价入口 |
+| `/machined-parts/` | 六类按图加工零件展示、应用方向、工艺归类、图纸评审要点、询价准备资料和 FAQ；零件图为概念示意，不代表客户案例或库存产品 |
 | `/services/` | CNC 铣削、车削及小批量生产介绍；锚点为 `milling`、`turning`、`production` |
+| `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
 | `/industries/` | 自动化、工业机械、液压/气动、实验室设备四个目标领域介绍；页面明确不代表已有客户关系 |
 | `/quality/` | 图纸评审、检验流程和公差适用条件说明；没有在线检验管理功能 |
 | `/about/` | 企业定位和合作原则介绍 |
 | `/contact/` | 询价字段、国家搜索、电话区号、材料自定义输入、单附件上传、Turnstile 与 GraphQL 提交 |
 
-公共组件包含桌面/移动导航、页脚、年份更新和章节标题。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
+公共组件包含桌面/移动导航、页脚、年份更新和章节标题。页头、移动菜单、页脚和首页均提供 Machined Parts 入口。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
 
 首页四步 RFQ 流程使用橙色顶部边框和浅灰背景卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
 
@@ -107,7 +110,7 @@ npm run preview
 
 1. **配置生产 RFQ 地址。** 原文记录本地 Gravity Forms 曾联调成功；生产环境需修改 `src/config.ts` 的 `gravityForms`，安装下述后台兼容插件，并从正式域名验证条目保存、附件及通知。历史成功不代表当前 Turnstile 配置已验证。
 2. **确认联系邮箱。** 核实 `src/config.ts` 中的 `sales@belaroprecision.com` 是否有人接收处理。
-3. **替换占位图片。** Unsplash 图片为展示占位，应换成授权且优化过的真实加工、零件和检验图片；未经确认不得暗示图示设备归企业所有。
+3. **替换占位图片。** 原有 Unsplash 摄影图片为展示占位，应换成授权且优化过的真实加工、零件和检验图片；Machined Parts 的 SVG 为概念示意，应在获得已授权素材后补充真实零件照片和经核实的案例。未经确认不得暗示图示设备归企业所有或图示零件来自真实客户。
 4. **核实能力描述。** ±0.01–0.02 mm 仅为附条件的典型值；上线前确认实际工艺、车削、材料、批量和检验文件能力。材料下拉选项不代表已验证的可加工范围。
 5. **补齐企业信息。** 法定名称、地址、电话、营业时间、交付条款和认证均须确认后再发布；当前 `site.phone` 为空。
 6. **补充法律页面。** 隐私政策、必要的 Cookie 说明、条款和图纸保密/文件处理政策尚需落实，明确 CAD 文件保存、访问和删除规则。
@@ -203,7 +206,13 @@ RFQ 提交需要 Cloudflare Turnstile。在 Cloudflare 控制台中打开 Turnst
 
 先阅读根目录 `AGENTS.md`，遵循现有 Astro、TypeScript 和原生 CSS 结构。页面位于 `src/pages/`；公共布局、导航和表单控件优先复用；颜色、字体和通用间距优先使用 `src/styles/global.css` 的现有变量与规则。公开联系方式、域名和字段配置位于 `src/config.ts`。后台上传及验证逻辑位于 PHP MU 插件，修改后需单独部署至 WordPress。
 
-当前图片是 Unsplash 占位资源；上线使用有授权的真实图片，优化尺寸并保留有意义的 Alt。字体通过 Google Fonts 外部加载，可根据实际需求考虑自托管。当前没有站内数据库初始化、迁移或页面内容 CMS 发布命令。
+原有摄影图片是 Unsplash 占位资源；上线使用有授权的真实图片，优化尺寸并保留有意义的 Alt。Machined Parts 分类内容统一维护在 `src/data/machined-parts.ts`，代码原生 SVG 示意图维护在 `src/components/PartIllustration.astro`；这些图形仅用于解释零件类型，不是客户案例或标准库存件，实际加工能力仍需以图纸评审为准。
+
+Machined Parts 卡片通过 `/contact/?part=<id>#rfq-form` 进入询价页。联系页只接受 `src/data/machined-parts.ts` 中的分类 ID，并仅在对应字段为空时预填加工工艺和项目详情；该流程没有新增后端字段，也不会把任意 URL 文本写入表单。字体通过 Google Fonts 外部加载，可根据实际需求考虑自托管。当前没有站内数据库初始化、迁移或页面内容 CMS 发布命令。
+
+CNC Milling 页面位于 `src/pages/services/cnc-milling/index.astro`，沿用公共布局、设计变量和零件 SVG 组件；三类铣削零件由共享数据按 `CNC Milling` 工艺筛选。首页、Capabilities 铣削区、Machined Parts 的铣削工艺标签和页脚均已连接到独立页面，原 `/services/#milling` 锚点保留。
+
+铣削询价入口为 `/contact/?process=milling#rfq-form`，只将空的加工工艺字段预选为 `CNC Milling`，项目详情保持空白并可自由编辑。`process` 参数仅接受固定值 `milling`；与有效 `part` 参数同时存在时，零件工艺优先。未新增后端字段、依赖或环境变量。页面不承诺未经核实的设备轴数、尺寸上限、通用公差或交期，示意图不代表客户案例。
 
 ## 10. 测试与质量检查
 
@@ -219,6 +228,12 @@ node --test tests/hero-slider.test.mjs tests/rfq-submission.test.mjs
 
 # 首页流程卡片：顺序、样式及 320–1440px 响应式布局
 node --test tests/process-flow.test.mjs
+
+# Machined Parts：内容、SEO、响应式、导航、FAQ 与六类询价预填
+node --test tests/machined-parts.test.mjs
+
+# CNC Milling：页面入口、正文链接、响应式、FAQ、SEO 与工艺预选
+node --test tests/cnc-milling.test.mjs
 ```
 
 轮播浏览器测试覆盖切换、自动播放/暂停、焦点、离屏、触摸、320/390/768/1440 像素宽度及无 JavaScript 等场景。RFQ 浏览器测试覆盖字段映射、附件、校验、网络/服务端异常、防重复提交、成功状态和移动端溢出检查。它们不验证真实 WordPress、Cloudflare、邮件、外部图片/字体或全站无障碍合规。
@@ -243,6 +258,27 @@ node --test tests/process-flow.test.mjs
 | 安装、真实后台联调与生产部署 | 未执行；本次不安装依赖，不创建外部条目或发布站点 |
 
 构建及 Node 测试首次在沙箱中因 `spawn EPERM` 被阻断，获准在沙箱外重试后通过，该现象未判定为业务代码错误。临时开发和预览服务已停止。
+
+### Machined Parts 验证（2026 年 11 月 5 日）
+
+| 检查 | 结果 |
+| --- | --- |
+| `npm run build` | 通过，输出七个静态页面 |
+| `node --test tests/machined-parts.test.mjs tests/gravity-forms.test.mjs tests/process-flow.test.mjs tests/rfq-submission.test.mjs tests/hero-slider.test.mjs` | 11 项通过 |
+| Machined Parts 响应式检查 | 通过 320、390、700、701、768、1024、1100、1101、1280、1440 像素宽度的溢出、单双列和导航检查 |
+| 桌面与手机截图复核 | 已检查 1440 和 390 像素长截图，未发现明显遮挡或错位 |
+| 真实后台、外部资源与生产部署 | 未执行；浏览器测试阻断外部网络，不创建 WordPress 询盘，不验证真实 Turnstile、邮件、外部图片或字体 |
+
+### CNC Milling 验证（2026 年 11 月 5 日）
+
+| 检查 | 结果 |
+| --- | --- |
+| `npm run build` | 通过，输出八个静态页面；沙箱内因 `spawn EPERM` 受阻，获准重试后通过 |
+| `node --test tests/cnc-milling.test.mjs tests/machined-parts.test.mjs tests/gravity-forms.test.mjs tests/process-flow.test.mjs tests/rfq-submission.test.mjs tests/hero-slider.test.mjs` | 12 项通过 |
+| 新页面验证 | SEO、正文目标链接与锚点、首页/Capabilities/零件页入口、FAQ 键盘操作及无 JavaScript 内容通过 |
+| 响应式与截图 | 320、390、700、701、768、1024、1100、1101、1440 像素宽度无横向溢出，卡片列数正确；1440 与 390 像素截图已复核 |
+| 工艺预选 | 铣削预选、用户可修改、未知参数忽略、与零件入口共存时零件工艺优先，均通过 |
+| 验证边界 | 浏览器测试模拟外部服务，未创建真实询盘；未执行生产部署、完整类型检查或 ESLint，项目没有相应检查工具 |
 
 ## 11. 构建与部署
 

@@ -1,0 +1,68 @@
+---
+import type { MachinedPartId } from '../data/machined-parts';
+interface Props { kind: MachinedPartId }
+const { kind } = Astro.props;
+---
+<!-- 装饰性零件示意，邻近文字提供类别名称；不表示实际加工案例。 -->
+<svg viewBox="0 0 400 250" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <g stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+    {kind === 'mounting-brackets' && <g>
+      <path fill="#c7d2de" d="m100 164 132 39 80-47-133-39Z"/>
+      <path fill="#91a5bb" d="m100 164 132 39v15l-132-39Zm132 39 80-47v15l-80 47Z"/>
+      <path fill="#e0e7ee" d="M100 164V73l21-12 133 39v91l-22 12v-91L100 73"/>
+      <path fill="#b2c1d0" d="m232 112 22-12v91l-22 12Z"/>
+      <ellipse cx="142" cy="109" rx="10" ry="14" transform="rotate(-18 142 109)" fill="#61778f"/>
+      <ellipse cx="199" cy="126" rx="10" ry="14" transform="rotate(-18 199 126)" fill="#61778f"/>
+      <ellipse cx="271" cy="160" rx="12" ry="6" fill="#61778f"/>
+    </g>}
+    {kind === 'machined-blocks' && <g>
+      <path fill="#dce5ed" d="m92 102 132-53 94 48-133 57Z"/>
+      <path fill="#9eafc1" d="m92 102 93 52v65l-93-52Z"/>
+      <path fill="#bdcad7" d="m185 154 133-57v65l-133 57Z"/>
+      <path fill="#7d92a9" d="m159 99 60-25 39 20-60 26Z"/>
+      <path d="m159 99 39 21v15m0 0 60-26V94"/>
+      <ellipse cx="131" cy="106" rx="10" ry="5" fill="#61778f"/>
+      <ellipse cx="221" cy="130" rx="10" ry="5" fill="#61778f"/>
+      <ellipse cx="269" cy="164" rx="10" ry="14" transform="rotate(25 269 164)" fill="#61778f"/>
+    </g>}
+    {kind === 'precision-shafts' && <g>
+      <path fill="#b7c6d5" d="m68 143 83-36 17 34-83 36Z"/>
+      <ellipse cx="77" cy="160" rx="13" ry="20" transform="rotate(-24 77 160)" fill="#e0e7ee"/>
+      <path fill="#9eafc1" d="m146 90 88-39 40 77-88 39Z"/>
+      <ellipse cx="166" cy="128" rx="25" ry="43" transform="rotate(-24 166 128)" fill="#dce5ed"/>
+      <path fill="#c7d2de" d="m183 106 110-48 24 46-110 49Z"/>
+      <ellipse cx="305" cy="81" rx="15" ry="26" transform="rotate(-24 305 81)" fill="#e0e7ee"/>
+      <path d="m225 89 24 46m-16-50 24 46m-16-49 24 46" stroke="#8a9eb4"/>
+    </g>}
+    {kind === 'bushings-sleeves' && <g>
+      <path fill="#a8b9ca" d="m143 102 88-39c22-9 52 10 66 42s8 63-14 72l-88 39Z"/>
+      <ellipse cx="169" cy="159" rx="44" ry="62" transform="rotate(-24 169 159)" fill="#dce5ed"/>
+      <ellipse cx="169" cy="159" rx="22" ry="35" transform="rotate(-24 169 159)" fill="#61778f"/>
+      <path d="m155 130 87-38m-55 96 87-38" stroke="#71879f"/>
+    </g>}
+    {kind === 'custom-connectors' && <g>
+      <path fill="#b7c6d5" d="m82 147 72-32 25 47-72 32Z"/>
+      <ellipse cx="95" cy="170" rx="15" ry="27" transform="rotate(-24 95 170)" fill="#dce5ed"/>
+      <path fill="#9eafc1" d="m148 98 60-27 38 17 20 49-18 30-60 27-38-17-20-49Z"/>
+      <path fill="#dce5ed" d="m148 98 38 17 20 49-18 30-38-17-20-49Z"/>
+      <path d="m186 115 60-27m-40 76 60-27"/>
+      <path fill="#b7c6d5" d="m216 99 66-29 28 53-66 30Z"/>
+      <ellipse cx="296" cy="97" rx="17" ry="30" transform="rotate(-24 296 97)" fill="#dce5ed"/>
+      <ellipse cx="296" cy="97" rx="8" ry="16" transform="rotate(-24 296 97)" fill="#61778f"/>
+      <path d="m103 139 24 47m-14-51 24 47m-14-51 24 47m119-101 26 51m-17-55 26 51" stroke="#71879f"/>
+    </g>}
+    {kind === 'plates-housings' && <g>
+      <path fill="#dce5ed" d="m83 115 136-60 103 48-136 62Z"/>
+      <path fill="#9eafc1" d="m83 115 103 50v45L83 160Z"/>
+      <path fill="#b7c6d5" d="m186 165 136-62v45l-136 62Z"/>
+      <path fill="#71879f" d="m129 117 91-40 56 27-91 41Z"/>
+      <path fill="#a8b9ca" d="m129 117 56 28 91-41v20l-91 41-56-28Z"/>
+      <path d="M185 145v20"/>
+      <ellipse cx="108" cy="116" rx="7" ry="4" fill="#61778f"/>
+      <ellipse cx="218" cy="66" rx="7" ry="4" fill="#61778f"/>
+      <ellipse cx="298" cy="105" rx="7" ry="4" fill="#61778f"/>
+      <ellipse cx="186" cy="154" rx="7" ry="4" fill="#61778f"/>
+    </g>}
+  </g>
+  <g stroke="#f47b35" stroke-width="1" opacity=".7"><path d="M62 211v16m0-8h64m202-180v16m-8-8h16"/><path d="m65 219 6-3m-6 3 6 3m249-172 8-3"/></g>
+</svg>

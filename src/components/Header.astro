@@ -2,10 +2,16 @@
   <div class="container nav-wrap">
     <a class="brand" href="/" aria-label="Belaro Precision home"><span class="brand-mark">B</span><span class="brand-copy"><strong>BELARO</strong><small>PRECISION</small></span></a>
     <nav class="desktop-nav" aria-label="Main navigation">
-      <a href="/services/">Capabilities</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a>
+      <a href="/services/">Capabilities</a><a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a>
     </nav>
     <a class="button button-small button-orange nav-cta" href="/contact/">Request a Quote <span>↗</span></a>
     <button class="menu-toggle" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation"><i></i><i></i></button>
   </div>
-  <nav class="mobile-nav" data-mobile-menu aria-label="Mobile navigation"><a href="/services/">Capabilities</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a><a href="/contact/">Request a Quote →</a></nav>
+  <nav class="mobile-nav" data-mobile-menu aria-label="Mobile navigation"><a href="/services/">Capabilities</a><a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a><a href="/contact/">Request a Quote →</a></nav>
 </header>
+
+<style>
+  /* 增加导航项后提前切换移动菜单，避免平板宽度下挤压。 */
+  .desktop-nav{gap:24px;margin-right:24px}
+  @media(min-width:701px) and (max-width:1100px){.desktop-nav,.nav-cta{display:none}.menu-toggle{display:flex;flex-direction:column;gap:5px;border:0;background:transparent;padding:10px}.menu-toggle i{display:block;width:23px;height:2px;background:var(--navy)}.mobile-nav{position:absolute;top:86px;left:0;right:0;background:#fff;padding:12px 24px 20px;border-bottom:1px solid var(--line);box-shadow:0 12px 20px #00000014}.mobile-nav.is-open{display:flex;flex-direction:column}.mobile-nav a{padding:12px 0;border-bottom:1px solid var(--line);font-weight:600}}
+</style>
