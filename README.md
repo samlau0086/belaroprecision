@@ -63,6 +63,8 @@
 
 公共组件包含桌面/移动导航、页脚、年份更新和章节标题。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
 
+首页四步 RFQ 流程使用橙色顶部边框和浅灰背景卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
+
 RFQ 必填项包括姓名、邮箱、公司、国家/地区、加工工艺、数量和联系同意；同意框当前默认勾选。电话、材料、交期、要求、附件和项目详情为可选项。国家搜索含国旗，材料既可选也可自填；电话区号随国家选择更新，并可独立修改。
 
 已实现页面 Title、Meta Description、Canonical、英文 `lang` 和图片 Alt。当前未实现 Open Graph、Twitter Card、结构化数据、sitemap、robots.txt、自定义 404、隐私/条款页面、分析统计、广告转化、自动报价、订单管理或站内登录。
@@ -214,6 +216,9 @@ node --test tests/gravity-forms.test.mjs
 # 浏览器测试依赖最新 dist/，执行前先构建
 npm run build
 node --test tests/hero-slider.test.mjs tests/rfq-submission.test.mjs
+
+# 首页流程卡片：顺序、样式及 320–1440px 响应式布局
+node --test tests/process-flow.test.mjs
 ```
 
 轮播浏览器测试覆盖切换、自动播放/暂停、焦点、离屏、触摸、320/390/768/1440 像素宽度及无 JavaScript 等场景。RFQ 浏览器测试覆盖字段映射、附件、校验、网络/服务端异常、防重复提交、成功状态和移动端溢出检查。它们不验证真实 WordPress、Cloudflare、邮件、外部图片/字体或全站无障碍合规。

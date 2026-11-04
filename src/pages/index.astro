@@ -14,7 +14,89 @@ import HeroSlider from '../components/HeroSlider.astro';
     <section class="section section-soft"><div class="container"><SectionHeading eyebrow="WHAT WE DO" title="CNC capabilities for production components" text="Focused machining services for industrial parts, built around the requirements in your drawings."/><div class="capability-grid"><article class="cap-card"><img src="https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=900&q=85" alt="CNC milling machine cutting a metal component"/><div class="cap-body"><span class="card-number">01 / MILLING</span><h3>CNC Milling</h3><p>Machined profiles, housings, brackets, plates and precision features for industrial assemblies.</p><a href="/services/#milling" class="text-link">Explore milling <span>→</span></a></div></article><article class="cap-card"><img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=900&q=85" alt="Precision manufacturing workshop"/><div class="cap-body"><span class="card-number">02 / TURNING</span><h3>CNC Turning</h3><p>Rotational components such as shafts, bushings, sleeves and turned features, subject to capability review.</p><a href="/services/#turning" class="text-link">Explore turning <span>→</span></a></div></article><article class="cap-card cap-card-dark"><div class="abstract-lines"></div><div class="cap-body"><span class="card-number">03 / OEM PRODUCTION</span><h3>Low-Volume<br/>Production</h3><p>Production-minded support for repeat orders and batch quantities aligned with your project needs.</p><a href="/services/#production" class="text-link text-link-light">How we work <span>→</span></a></div></article></div></div></section>
     <section class="section industries-preview"><div class="container"><div class="split-heading"><SectionHeading eyebrow="INDUSTRIES" title="Parts that keep industry moving" text="We focus on component requirements across selected industrial sectors."/><a class="button button-outline" href="/industries/">View industries <span>↗</span></a></div><div class="industry-grid"><a class="industry-card" href="/industries/#automation"><span>01</span><h3>Industrial<br/>Automation</h3><b>↗</b></a><a class="industry-card" href="/industries/#machinery"><span>02</span><h3>Industrial<br/>Machinery</h3><b>↗</b></a><a class="industry-card" href="/industries/#fluid"><span>03</span><h3>Hydraulic &<br/>Pneumatic</h3><b>↗</b></a><a class="industry-card" href="/industries/#laboratory"><span>04</span><h3>Laboratory &<br/>Testing Equipment</h3><b>↗</b></a></div></div></section>
     <section class="quality-band"><div class="container quality-band-grid"><div><span class="eyebrow eyebrow-light">QUALITY & CONTROL</span><h2>Precision is not a promise.<br/><em>It is a process to verify.</em></h2><p>Part requirements are reviewed against measurable inspection criteria. Tolerances and inspection documentation are confirmed for each project.</p><a class="button button-white" href="/quality/">Explore our quality approach <span>→</span></a></div><div class="quality-stat"><strong>±0.01–0.02</strong><span>mm</span><p>Typical achievable tolerance range on suitable features, subject to drawing, material, geometry and inspection conditions.</p></div></div></section>
-    <section class="section process-section"><div class="container"><SectionHeading eyebrow="HOW IT WORKS" title="A clear path from drawing to delivery" text="A straightforward RFQ process helps both teams align on technical and commercial requirements."/><div class="process-grid"><div><b>01</b><h3>Send your drawing</h3><p>Share CAD files, PDF drawings and project details.</p></div><div><b>02</b><h3>Technical review</h3><p>We review geometry, material, tolerances and quantity.</p></div><div><b>03</b><h3>Quotation</h3><p>Receive pricing and a proposed production timeline.</p></div><div><b>04</b><h3>Manufacture & inspect</h3><p>Production and inspection follow agreed requirements.</p></div></div></div></section>
+    <section class="section process-section">
+      <div class="container">
+        <SectionHeading eyebrow="HOW IT WORKS" title="A clear path from drawing to delivery" text="A straightforward RFQ process helps both teams align on technical and commercial requirements."/>
+        <ol class="process-flow" role="list">
+          <li class="process-card"><b>01</b><h3>Send your drawing</h3><p>Share CAD files, PDF drawings and project details.</p><span class="process-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></li>
+          <li class="process-card"><b>02</b><h3>Technical review</h3><p>We review geometry, material, tolerances and quantity.</p><span class="process-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></li>
+          <li class="process-card"><b>03</b><h3>Quotation</h3><p>Receive pricing and a proposed production timeline.</p><span class="process-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></li>
+          <li class="process-card"><b>04</b><h3>Manufacture & inspect</h3><p>Production and inspection follow agreed requirements.</p></li>
+        </ol>
+      </div>
+    </section>
     <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">HAVE A PART TO MAKE?</span><h2>Let’s review your next<br/><em>machining requirement.</em></h2><p>Send your drawing and key project details. We’ll review the requirements and respond with the next steps.</p></div><a class="button button-orange button-large" href="/contact/">Submit an RFQ <span>↗</span></a></div></section>
   </main><Footer />
 </BaseLayout>
+
+<style>
+  .process-flow {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 40px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .process-card {
+    position: relative;
+    min-width: 0;
+    padding: 26px 24px 30px;
+    border-top: 3px solid var(--orange);
+    background: var(--soft);
+  }
+
+  .process-card b {
+    color: var(--orange);
+    font: 700 16px var(--display);
+    letter-spacing: 1px;
+  }
+
+  .process-card h3 {
+    margin: 24px 0 12px;
+    font-size: 19px;
+    line-height: 1.4;
+    letter-spacing: -.5px;
+  }
+
+  .process-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  .process-arrow {
+    position: absolute;
+    top: 50%;
+    right: -32px;
+    width: 24px;
+    height: 24px;
+    color: var(--orange);
+    transform: translateY(-50%);
+  }
+
+  .process-arrow svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (max-width: 900px) {
+    .process-flow {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .process-card h3 {
+      margin-top: 16px;
+    }
+
+    .process-arrow {
+      top: auto;
+      right: auto;
+      bottom: -32px;
+      left: 50%;
+      transform: translateX(-50%) rotate(90deg);
+    }
+  }
+</style>
