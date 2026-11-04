@@ -3,7 +3,7 @@ interface Props {
   name: string;
   label: string;
   placeholder: string;
-  options: { name: string; code: string }[];
+  options: { name: string; code: string; callingCode?: string }[];
   required?: boolean;
   allowCustom?: boolean;
 }
@@ -13,7 +13,7 @@ const { name, label, placeholder, options, required = false, allowCustom = false
   <label for={allowCustom ? `${name}-search` : `${name}-select`}>{label}{required ? ' *' : ''}</label>
   <select id={`${name}-select`} name={allowCustom ? undefined : name} required={required && !allowCustom} hidden={allowCustom} disabled={allowCustom}>
     <option value="">{placeholder}</option>
-    {options.map(({ code, name }) => <option value={name} data-code={code}>{name}</option>)}
+    {options.map(({ code, name, callingCode }) => <option value={name} data-code={code} data-calling-code={callingCode}>{name}</option>)}
   </select>
   <div class="country-combobox" hidden={!allowCustom}>
     <div class="country-input-wrap">

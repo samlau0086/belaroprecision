@@ -1,0 +1,38 @@
+<div class="phone-field">
+  <label for="phone-number">Phone <span>(optional)</span></label>
+  <div class="phone-inputs">
+    <input id="phone-country-code" name="phoneCountryCode" type="tel" inputmode="tel" autocomplete="tel-country-code" aria-label="Phone country code" placeholder="+Code" pattern="\+[1-9][0-9]{0,2}" title="Enter a country calling code, such as +86 or +1." aria-describedby="phone-help"/>
+    <input id="phone-number" name="phone" type="tel" autocomplete="tel-national" placeholder="Phone number" aria-describedby="phone-help"/>
+  </div>
+  <small id="phone-help">Country code follows your country / region. You can edit it.</small>
+</div>
+
+<script>
+  const country = document.querySelector<HTMLInputElement>('#country-search');
+  const fallbackCountry = document.querySelector<HTMLSelectElement>('#country-select');
+  const callingCode = document.querySelector<HTMLInputElement>('#phone-country-code');
+  if (country && fallbackCountry && callingCode) {
+    let previousCountry = '';
+    const syncCallingCode = () => {
+      const value = country.disabled ? fallbackCountry.value : country.value.trim();
+      const match = Array.from(fallbackCountry.options).find(option => option.value.toLowerCase() === value.toLowerCase());
+      if (!match || match.value === previousCountry) return;
+      previousCountry = match.value;
+      callingCode.value = match.dataset.callingCode || '';
+    };
+    country.addEventListener('input', syncCallingCode);
+    country.addEventListener('change', syncCallingCode);
+    fallbackCountry.addEventListener('change', syncCallingCode);
+    country.form?.addEventListener('reset', () => { previousCountry = ''; });
+    syncCallingCode();
+  }
+</script>
+
+<style>
+  .phone-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+  .phone-field label{display:block}
+  .phone-field label span{font-weight:400;color:var(--muted)}
+  .phone-inputs{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px}
+  .phone-inputs input{min-width:0}
+  .phone-field small{line-height:1.5}
+</style>
