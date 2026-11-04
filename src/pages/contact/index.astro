@@ -43,6 +43,10 @@ import { gravityForms } from '../../config';
     const process = form.querySelector<HTMLSelectElement>('[name="process"]');
     if (process && !process.value) process.value = 'CNC Milling';
   }
+  if (query.get('process') === 'turning' && form) {
+    const process = form.querySelector<HTMLSelectElement>('[name="process"]');
+    if (process && !process.value) process.value = 'CNC Turning';
+  }
   const gravityForms: typeof GravityFormsConfig = JSON.parse(form?.dataset.gravityForms || '{}');
   const status = document.querySelector('#form-status');
   const fileInput = document.querySelector<HTMLInputElement>('#drawing-file');
