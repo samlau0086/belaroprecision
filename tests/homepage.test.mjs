@@ -37,7 +37,7 @@ test('首页九个模块：内容顺序、能力边界、链接、FAQ 与响应�
     ]);
     assert.equal(await page.locator('h1').count(), 1);
     assert.deepEqual(await page.locator('#core-services .cap-card h3').allTextContents(), [
-      '3-axis and simultaneous 5-axis machining',
+      '3-axis, 3+2 and simultaneous 5-axis machining',
       'Rotational parts and turned features',
     ]);
     assert.deepEqual(await page.locator('#representative-parts .parts-preview-card h3').allTextContents(), [

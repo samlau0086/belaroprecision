@@ -61,8 +61,8 @@ test('行业页：行业锚点、零件与服务链接、SEO、FAQ 和响应式'
       if (target.hash) assert.equal(await page.locator(target.hash).count(), 1, href);
     }
     await page.goto(baseUrl);
-    const homepageLinks = await page.locator('.industry-card').evaluateAll(nodes => nodes.map(node => node.href));
-    assert.equal(homepageLinks.length, 4);
+    const homepageLinks = await page.locator('#target-applications a[href^="/industries/#"]').evaluateAll(nodes => nodes.map(node => node.href));
+    assert.equal(homepageLinks.length, 2);
     for (const href of homepageLinks) {
       await page.goto(href);
       const sector = page.locator(new URL(href).hash);

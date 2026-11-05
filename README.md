@@ -59,7 +59,7 @@
 | `/machined-parts/` | 六类按图加工零件展示、应用方向、工艺归类、图纸评审要点、询价准备资料和 FAQ；零件图为概念示意，不代表客户案例或库存产品 |
 | `/services/` | CNC 铣削、车削及小批量生产介绍；锚点为 `milling`、`turning`、`production` |
 | `/services/production/` | OEM 与小批量生产专页，包含需求对齐、生产流程、重复订单、检验要求和项目讨论入口 |
-| `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
+| `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、3+2 CNC Milling、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
 | `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口 |
 | `/services/secondary-processes/` | 配套工艺专页，说明通过东莞及深圳供应商网络协调磨削、热处理、表面处理及其他二次工艺的方式、询价资料和能力边界 |
 | `/industries/` | 自动化、工业机械、液压/气动、实验室与测试设备四个目标领域的应用说明、概念零件图、零件分类链接、图纸评审重点、加工与配套工艺入口、RFQ 清单及 FAQ；不代表已有客户关系或行业认证 |
@@ -70,9 +70,9 @@
 | `/cookie-policy/` | 浏览器存储、字体/图片请求、安全服务及当前未启用广告与统计标签的说明 |
 | `/terms-of-use/` | 网站使用、按图评审、询价与订单边界、图纸权属及定制件商业条款说明 |
 
-公共组件包含桌面/移动导航、页脚、年份更新和章节标题。页头的 Capabilities 支持桌面端悬停/键盘聚焦下拉，并在移动菜单中展示 CNC Milling、3-Axis CNC Machining、5-Axis CNC Machining、CNC Turning、Secondary Processes 和 OEM & Low-Volume Production 子链接；页头、移动菜单、页脚和首页均提供 Machined Parts 入口。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
+公共组件包含桌面/移动导航、页脚、年份更新和章节标题。页头的 Capabilities 支持桌面端悬停/键盘聚焦下拉，并在移动菜单中展示 CNC Milling、3-Axis CNC Machining、3+2 CNC Milling、5-Axis CNC Machining、CNC Turning、Secondary Processes 和 OEM & Low-Volume Production 子链接；页头、移动菜单、页脚和首页均提供 Machined Parts 入口。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
 
-首页按九个业务模块组织：首屏定位、采购需求匹配、核心加工服务、代表性零件、加工能力概览、质量与检验、目标应用、合作流程、FAQ 与询价入口。能力概览只将 3 轴 CNC 铣削、联动五轴 CNC 铣削和 CNC 车削作为已确认工艺；材料、尺寸、公差与批量须按图纸和项目要求评审，不在首页展示未经确认的固定范围。代表性零件当前使用明确标注的概念示意，待取得授权的 Belaro 真实样件照片和说明后替换。
+首页按九个业务模块组织：首屏定位、采购需求匹配、核心加工服务、代表性零件、加工能力概览、质量与检验、目标应用、合作流程、FAQ 与询价入口。能力概览将 3 轴 CNC 铣削、3+2 定位铣削、联动五轴 CNC 铣削和 CNC 车削作为已确认工艺；材料、尺寸、公差与批量须按图纸和项目要求评审，不在首页展示未经确认的固定范围。代表性零件当前使用明确标注的概念示意，待取得授权的 Belaro 真实样件照片和说明后替换。
 
 首页四步 RFQ 流程为“提交图纸、技术评审与报价、确认生产、检验交付”，使用橙色顶部边框和白色卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
 
@@ -230,9 +230,9 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 Machined Parts 卡片通过 `/contact/?part=<id>#rfq-form` 进入询价页。联系页只接受 `src/data/machined-parts.ts` 中的分类 ID，并仅在对应字段为空时预填加工工艺和项目详情；该流程没有新增后端字段，也不会把任意 URL 文本写入表单。字体通过 Google Fonts 外部加载，可根据实际需求考虑自托管。当前没有站内数据库初始化、迁移或页面内容 CMS 发布命令。
 
-CNC Milling 页面位于 `src/pages/services/cnc-milling/index.astro`，沿用公共布局、设计变量和零件 SVG 组件；页面明确区分 3-axis 与 simultaneous 5-axis 铣削配置，三类铣削零件由共享数据按 `CNC Milling` 工艺筛选。首页、Capabilities 铣削区、Machined Parts 的铣削工艺标签和页脚均已连接到独立页面，原 `/services/#milling` 锚点保留。
+CNC Milling 页面位于 `src/pages/services/cnc-milling/index.astro`，沿用公共布局、设计变量和零件 SVG 组件；页面明确区分 3-axis、3+2 positional 与 simultaneous 5-axis 铣削配置，三类铣削零件由共享数据按 `CNC Milling` 工艺筛选。首页、Capabilities 铣削区、Machined Parts 的铣削工艺标签和页脚均已连接到独立页面，原 `/services/#milling` 锚点保留。
 
-铣削询价入口为 `/contact/?process=milling#rfq-form`，只将空的加工工艺字段预选为 `CNC Milling`，项目详情保持空白并可自由编辑。`process` 参数仅接受固定值 `milling`；与有效 `part` 参数同时存在时，零件工艺优先。3-axis 和 simultaneous 5-axis 是已确认的 Belaro 铣削能力，具体尺寸、材料、几何、精度和交期仍需按图纸逐项目确认。未新增后端字段、依赖或环境变量，示意图不代表客户案例。
+铣削询价入口为 `/contact/?process=milling#rfq-form`，只将空的加工工艺字段预选为 `CNC Milling`，项目详情保持空白并可自由编辑。`process` 参数仅接受固定值 `milling`；与有效 `part` 参数同时存在时，零件工艺优先。3-axis、3+2 positional 和 simultaneous 5-axis 是用户已确认的 Belaro 铣削能力，具体尺寸、材料、几何、精度和交期仍需按图纸逐项目确认。未新增后端字段、依赖或环境变量，示意图不代表客户案例。
 
 配套工艺页面位于 `src/pages/services/secondary-processes/index.astro`。网站将磨削、热处理、表面处理和其他二次工艺描述为依托东莞及深圳制造生态与供应商网络协调的项目支持，不将其表述为全部自营能力。具体供应商、工艺标准、证书、检验方式和交期必须在报价阶段按图纸确认。公共 `SecondaryProcessSupport.astro` 区块已用于首页、Machined Parts、CNC Milling、CNC Turning 和 OEM Production 页面；Capabilities、About、Quality、页头和页脚也提供相应说明或入口。该变更未新增依赖、环境变量或 RFQ 后端字段。
 
@@ -246,7 +246,16 @@ About 页面位于 `src/pages/about/index.astro`，以海外 OEM 按图加工需
 
 Google 官方参考（上线前核对当前要求）：[数据收集和使用政策](https://support.google.com/adspolicy/answer/6020956?hl=en)、[欧盟用户同意政策](https://www.google.com/about/company/user-consent-policy/)。应按所用产品与投放地区核对适用要求，不能将 Terms of Use、Cookie Policy 描述为所有 Google Ads 广告统一强制的独立页面。新增政策页面不代表生产 HTTPS、广告账户、追踪和适用法律已完成审核。
 
+2026 年 11 月 6 日补充 3+2 CNC Milling：铣削页新增 `#three-plus-two` 能力卡与工艺区别 FAQ，桌面和移动导航加入对应入口；首页、Capabilities、About、Industries 和 Machined Parts 同步展示。3+2 表述为旋转轴先定位、切削时保持固定角度的定位五轴加工，与联动五轴分别介绍。具体工艺仍按图纸、装夹和刀具可达性确认；没有新增设备型号、公差或加工尺寸承诺，也没有更改 RFQ 后台工艺值。
+
 ## 10. 测试与质量检查
+
+### 3+2 铣削能力验证（2026 年 11 月 6 日）
+
+- `npm run build` 通过，生成 14 个静态页面。
+- `node --test tests/cnc-milling.test.mjs tests/homepage.test.mjs tests/about.test.mjs` 的 3 项浏览器测试通过；`node --test tests/industries.test.mjs` 通过。行业页首次检查发现旧首页入口断言失效，已按当前两项应用入口同步测试后通过。
+- 覆盖新增能力卡、桌面与移动导航、锚点、FAQ、询价入口及响应式检查；铣削页 1440px 和 390px 截图已复核。
+- 测试阻断外部网络，不验证真实后台；本次未部署。项目未配置完整类型检查与 ESLint，未执行这两项检查。
 
 现有测试直接使用 Node.js 执行，无 `npm test` 脚本：
 

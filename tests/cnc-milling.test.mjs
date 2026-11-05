@@ -33,6 +33,10 @@ test('铣削页：站内入口、响应式、SEO、FAQ 与工艺询价', async (
     assert.equal(await page.locator('.milled-part').count(), 3);
     assert.equal(await page.locator('.milled-part svg[aria-hidden="true"]').count(), 3);
     assert.equal(await page.locator('.milling-review-grid article').count(), 4);
+    assert.equal(await page.locator('.milling-config-grid article').count(), 3);
+    assert.match(await page.locator('#three-plus-two').innerText(), /remain stationary during 3-axis cutting/);
+    assert.equal(await page.locator('.desktop-nav a[href="/services/cnc-milling/#three-plus-two"]').count(), 1);
+    assert.equal(await page.locator('.mobile-nav a[href="/services/cnc-milling/#three-plus-two"]').count(), 1);
     await page.getByRole('link', { name: 'Explore milled parts' }).click();
     assert.equal(new URL(page.url()).hash, '#milled-parts');
     await page.locator('summary').first().focus();
@@ -42,6 +46,8 @@ test('铣削页：站内入口、响应式、SEO、FAQ 与工艺询价', async (
     for (const width of [320, 390, 700, 701, 768, 1024, 1100, 1101, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 不应横向溢出`);
+      const configurations = await page.locator('.milling-config-grid article').evaluateAll(nodes => nodes.map(node => { const {x,y} = node.getBoundingClientRect(); return {x,y}; }));
+      assert.equal(width <= 1000 ? configurations.every(card => card.x === configurations[0].x) : configurations.every(card => card.y === configurations[0].y), true, `${width}px 加工配置排列`);
       const cards = await page.locator('.milled-part').evaluateAll(nodes => nodes.slice(0, 2).map(node => { const { x, y } = node.getBoundingClientRect(); return { x, y }; }));
       assert.equal(width <= 700 ? cards[0].x === cards[1].x : cards[0].y === cards[1].y, true, `${width}px 零件卡片列数`);
       if ([390, 1440].includes(width)) await page.screenshot({ path: join(screenshots, `milling-${width}.png`), fullPage: true });
@@ -74,7 +80,12 @@ test('铣削页：站内入口、响应式、SEO、FAQ 与工艺询价', async (
     assert.equal(await page.locator('[name="process"]').inputValue(), 'CNC Turning');
     assert.match(await page.locator('[name="details"]').inputValue(), /^Part family: Precision Shafts/);
     await page.goto(baseUrl);
-    await page.getByRole('link', { name: /^Explore milling/ }).click();
+    await page.locator('.nav-dropdown-trigger').hover();
+    await page.locator('.desktop-nav a[href="/services/cnc-milling/#three-plus-two"]').click();
+    assert.equal(new URL(page.url()).hash, '#three-plus-two');
+    assert.equal(await page.locator('#three-plus-two').isVisible(), true);
+    await page.goto(baseUrl);
+    await page.getByRole('link', { name: 'Explore CNC Milling', exact: true }).click();
     assert.equal(new URL(page.url()).pathname, '/services/cnc-milling/');
     await page.goto(`${baseUrl}/services/#milling`);
     await page.getByRole('link', { name: 'Explore CNC Milling', exact: true }).click();

@@ -30,7 +30,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.equal(await page.locator('h1').count(), 1);
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://belaroprecision.com/about/');
     assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 50);
-    assert.match(await page.locator('.company-profile').innerText(), /3-axis & simultaneous 5-axis/);
+    assert.match(await page.locator('.company-profile').innerText(), /3-axis, 3\+2 & simultaneous 5-axis/);
     assert.match(await page.locator('main').innerText(), /supplier network/);
     assert.match(await page.locator('details').nth(1).textContent(), /suppliers in Dongguan and Shenzhen/);
     assert.equal(await page.locator('.working-steps li').count(), 4);
