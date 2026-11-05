@@ -34,6 +34,17 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.match(await page.locator('main').innerText(), /supplier network/);
     assert.match(await page.locator('details').nth(1).textContent(), /suppliers in Dongguan and Shenzhen/);
     assert.equal(await page.locator('.working-steps li').count(), 4);
+    assert.equal(await page.locator('#manufacturing-scope article').count(), 2);
+    assert.match(await page.locator('#manufacturing-scope').innerText(), /OWN MACHINING CAPABILITY/);
+    assert.equal(await page.locator('#supplier-coordination .supplier-steps > li').count(), 4);
+    assert.match(await page.locator('#supplier-coordination').innerText(), /confidentiality/);
+    assert.equal(await page.locator('#workshop-team article').count(), 3);
+    assert.match(await page.locator('#workshop-team').innerText(), /photographs are not currently published/);
+    assert.equal(await page.locator('#workshop-team img').count(), 0);
+    assert.match(await page.locator('#company-contact').innerText(), /Shajing, Bao'an District, Shenzhen, China/);
+    assert.equal(await page.locator('#company-contact a[href="mailto:sales@belaroprecision.com"]').count(), 1);
+    assert.equal(await page.locator('#company-contact a[href="https://wa.me/8618682188709"]').count(), 1);
+    assert.doesNotMatch(await page.locator('main').innerText(), /深圳市极客码头科技有限公司/);
     await page.locator('summary').first().focus();
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('details').first().getAttribute('open'), '');
@@ -41,6 +52,13 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     for (const width of [320, 390, 700, 701, 900, 1024, 1100, 1101, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 横向溢出`);
+      for (const selector of ['.scope-grid', '.company-panel', '.contact-panel']) {
+        const columns = await page.locator(selector).evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
+        assert.equal(columns, width <= 700 ? 1 : 2, `${width}px ${selector} 列数`);
+      }
+      const stepColumns = await page.locator('.supplier-steps').evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
+      assert.equal(stepColumns, width <= 480 ? 1 : width <= 1000 ? 2 : 4, `${width}px 外协流程列数`);
+      assert.notEqual(await page.locator('.scope-card').first().evaluate(node => getComputedStyle(node).backgroundColor), 'rgba(0, 0, 0, 0)');
       const positions = await page.locator('.about-hero-grid > *').evaluateAll(nodes => nodes.map(node => { const { x, y } = node.getBoundingClientRect(); return { x, y }; }));
       assert.ok(width <= 700 ? positions[0].x === positions[1].x && positions[1].y > positions[0].y : positions[1].x > positions[0].x, `${width}px 首屏列数`);
       if ([390, 1440].includes(width)) await page.screenshot({ path: join(screenshots, `about-${width}.png`), fullPage: true });
@@ -49,6 +67,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     const links = await page.locator('main a').evaluateAll(nodes => [...new Set(nodes.map(node => node.href))]);
     for (const href of links) {
       const target = new URL(href);
+      if (target.protocol === 'mailto:' || target.origin === 'https://wa.me') continue;
       assert.equal(target.origin, base);
       assert.equal((await page.request.get(href)).status(), 200, href);
       await page.goto(href);

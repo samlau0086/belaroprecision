@@ -3,16 +3,71 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
+
+const topics = [
+  { id: 'requirements', label: 'Drawing & material', title: 'Which drawing, material and dimensions govern the order?', intro: 'Use a shared production reference. Resolve open requirements before releasing work for production.', cards: [
+    ['Confirm the released files', 'Identify the part number, drawing revision, date, units and matching 3D model. Clarify differences between the drawing and model, including which reference governs acceptance. Reconfirm revision status for repeat orders.'],
+    ['Specify the material', 'State the material grade, specification and required condition, including temper or heat treatment. Agree material identification and any batch evidence needed. A proposed substitute requires customer approval.'],
+    ['Mark critical features', 'Identify mating fits, datums, threads, sealing faces and functional surfaces. Include geometric tolerances, roughness and requirements that apply after coating or treatment. Record clarified requirements in the order scope.'],
+  ] },
+  { id: 'feasibility', label: 'Tolerance review', title: 'Can the requirement be machined and measured?', intro: 'There is no single achievable tolerance for every material, feature or geometry. Feasibility is reviewed against the actual part.', cards: [
+    ['Review the process route', 'Consider feature size, depth, wall thickness, tool access, workholding and datum relationships. Assess distortion and dimensional changes from heat treatment, grinding or surface finishing.'],
+    ['Define acceptance limits', 'Agree the general tolerance standard and edition, feature-specific limits and final measurement condition. Define whether critical dimensions apply before or after secondary processing. Confirm a suitable measurement method.'],
+    ['Resolve limitations early', 'If a requirement is difficult to achieve or verify, discuss the tolerance, feature design or process route before accepting the order. Any change to the customer requirement needs approval; do not silently relax a drawing limit.'],
+  ] },
+  { id: 'inspection', label: 'Equipment & checkpoints', title: 'Which methods and checks will verify the part?', intro: 'A verified equipment inventory is not currently published here. Before order acceptance, request confirmation of instrument type, range, resolution, calibration status and whether checks are in-house or external. The examples below are review topics, not equipment Belaro claims to own.', cards: [
+    ['Size, fit & thread checks', 'Agree suitable dimensional instruments and gauges for lengths, bores, diameters and threads. Check measuring access, range and resolution against the tolerance.'],
+    ['Geometry & surface checks', 'For datum relationships, position or profile, confirm whether coordinate or optical measurement is required and available. For roughness, hardness or coatings, agree the test method, location and any specialist external testing.'],
+    ['Define the checkpoints', 'Plan checks before machining, at setup / first piece, during production and before dispatch. Include material identification, selected dimensions, visual condition, quantity and labels. Specify checks after heat treatment or finishing and before features become inaccessible.'],
+  ] },
+  { id: 'documents', label: 'Quality documents', title: 'Which reports and material records can be included?', intro: 'Request these documents during quotation. Availability, content, cost and timing must be confirmed in the order scope; they are not automatic inclusions with every shipment.', cards: [
+    ['Dimensional inspection report', 'Agree checked features, number of parts and reporting format. Request drawing revision, numbered characteristics, nominal values, tolerances and recorded results. Send your template or marked drawing with the enquiry.'],
+    ['Material & process evidence', 'Specify any supplier certificate, mill certificate or grade / batch evidence needed. For treatment or finishing, request the relevant process, hardness or coating records. Confirm supplier availability and how documents link to the supplied parts.'],
+    ['First-piece & special records', 'Share any first-article template or additional acceptance documents before quotation. Formal FAI, PPAP, accredited testing and certification are not standard inclusions; availability must be explicitly confirmed. Agree report language, file format and delivery before dispatch or with shipment.'],
+  ] },
+  { id: 'inspection-plan', label: 'Inspection coverage', title: 'First-piece approval, sampling or 100% inspection?', intro: 'Define coverage by feature and quantity in the quotation or order confirmation: revision, acceptance limits, method, frequency, records and approval points.', cards: [
+    ['First-piece confirmation', 'Agree checked features, initial quantity and whether approval uses a report, photographs or physical samples. Name the approval contact. If written approval is a release condition, define the production hold point. Agree when design, material or process changes require renewed approval.'],
+    ['Sampling inspection', 'Agree the lot definition, sample size, selection method, frequency and acceptance / rejection rules, including action after a failed sample. If using a sampling standard, specify its edition and plan. Do not assume an AQL or sampling level.'],
+    ['100% inspection', 'Identify characteristics to check on every part and any individual result-recording requirement. Confirm feasibility, cost and schedule. Checking selected features on every part does not mean every drawing characteristic is checked. First-piece approval alone does not establish batch acceptance.'],
+  ] },
+  { id: 'deviations', label: 'Deviation handling', title: 'What happens when a result is outside the agreed limit?', intro: 'A deviation needs a shared disposition. An unapproved change to a drawing is not an acceptance decision.', cards: [
+    ['Identify, contain & communicate', 'Identify the part number, revision, affected quantity and batch. Hold affected parts and review related work or shipments. Share the specified requirement, measured result, checking method and relevant photographs or records; investigate the cause and discuss functional impact.'],
+    ['Agree the disposition', 'Discuss rework, replacement or a written customer concession, including timing and commercial impact. Do not ship known nonconforming parts as accepted without the required written approval.'],
+    ['Recheck & close the issue', 'Agree reinspection after rework or replacement, record the outcome and communicate action to prevent recurrence. For an issue found after delivery, send the order reference, affected quantity and supporting evidence so the scope can be reviewed.'],
+  ] },
+  { id: 'packing', label: 'Packing & identification', title: 'How will the parts be protected and identified?', intro: 'Confirm packing alongside the part specification, especially for finished surfaces, close fits and components intended for direct assembly.', cards: [
+    ['Surface & corrosion protection', 'Identify scratch-sensitive, sealing and cosmetic surfaces. Agree separation, wrapping, caps or thread protection as needed. Confirm cleanliness and whether protective oil or corrosion-prevention material is compatible with the application.'],
+    ['Pack format & handling', 'Agree individual or bulk packing, quantity per pack, cushioning and carton requirements for the shipping route. Specify handling constraints and special packaging needs before quotation.'],
+    ['Labels & document matching', 'Agree part number, revision, quantity, order reference and required lot / batch identifiers. Confirm whether labels apply per part, bag or carton, and how inspection and material records link to the delivery.'],
+  ] },
+];
 ---
 
-<BaseLayout title="Quality & Inspection" description="Learn how Belaro Precision reviews drawing requirements, tolerances and inspection for CNC machined parts and coordinated secondary processes.">
+<BaseLayout title="Quality & Inspection | Drawing Review, Checks & Documentation" description="Define drawing revisions, tolerances, inspection methods, quality documents, first-piece approval, deviation handling and packing for your Belaro CNC machining project.">
   <Header />
   <main>
-    <section class="page-hero"><div class="container"><span class="eyebrow eyebrow-light">QUALITY APPROACH</span><h1>Quality begins with<br/><em>clear requirements.</em></h1><p>Inspection expectations should be understood before production begins—not after parts are made.</p></div></section>
-    <section class="section"><div class="container"><SectionHeading eyebrow="OUR APPROACH" title="A practical, drawing-led quality process" text="Inspection methods and records are agreed according to part geometry, critical dimensions and customer requirements."/><div class="quality-steps"><article><b>01</b><h3>Drawing review</h3><p>Identify critical dimensions, geometric requirements, material specifications and revision status.</p></article><article><b>02</b><h3>Process consideration</h3><p>Review the relationship between part geometry, machining process, tolerance and inspection method.</p></article><article><b>03</b><h3>Dimensional inspection</h3><p>Check agreed dimensions using suitable measuring equipment and documented criteria.</p></article><article><b>04</b><h3>Records & communication</h3><p>Confirm the inspection records or reports required for the order before production starts.</p></article></div></div></section>
-    <section class="quality-band"><div class="container quality-band-grid"><div><span class="eyebrow eyebrow-light">TOLERANCE CAPABILITY</span><h2>Accuracy depends on<br/><em>the part and the process.</em></h2><p>Typical achievable tolerances may be in the ±0.01–0.02 mm range on suitable features. Final capability must be confirmed after reviewing dimensions, material, geometry, machining setup, temperature and measurement conditions.</p></div><div class="quality-stat"><strong>±0.01–0.02</strong><span>mm*</span><p>*Indicative capability only. Not a blanket guarantee for every dimension or component.</p></div></div></section>
-    <section class="section section-soft"><div class="container"><SectionHeading eyebrow="PROJECT DOCUMENTATION" title="Agree the evidence your project needs" text="Inspection reports, material documentation and other quality records should be confirmed during quotation. Availability depends on the agreed scope and supply chain."/><div class="note-card"><strong>Important</strong><p>Belaro does not claim certifications, accredited laboratory status or specific inspection equipment on this website. Please request confirmation of the documentation and measurement capability required for your part.</p></div></div></section>
-    <section class="section"><div class="container intro-grid"><div><span class="eyebrow">SUPPLIER-NETWORK QUALITY</span><h2>Keep secondary processes inside the <em>agreed quality scope.</em></h2></div><div><p class="lead">When grinding, heat treatment or surface finishing is coordinated through the Dongguan and Shenzhen supplier network, the required specification and evidence should be defined before production.</p><p>Tell us which dimensions apply after processing, which surfaces must be masked, and whether hardness, finish, coating or supplier records are required. Availability and inspection scope are confirmed per project.</p><a class="text-link" href="/services/secondary-processes/">Secondary process requirements <span aria-hidden="true">→</span></a></div></div></section>
+    <section class="page-hero quality-hero"><div class="container">
+      <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">Quality</span></nav>
+      <span class="eyebrow eyebrow-light">QUALITY & INSPECTION</span><h1>Define the requirement.<br/><em>Agree how to verify it.</em></h1>
+      <p>From the drawing revision to the packing label, agree what will be checked, recorded and delivered before production begins.</p>
+      <div class="hero-actions"><a class="button button-orange" href="/contact/#rfq-form">Discuss Quality Requirements <span aria-hidden="true">↗</span></a></div>
+    </div></section>
+    <nav class="quality-nav" aria-label="Quality topics"><div class="container">{topics.map((topic, index) => <a href={`#${topic.id}`}><span>0{index + 1}</span> {topic.label}</a>)}</div></nav>
+    {topics.map((topic, index) => <section class:list={['section', { 'section-soft': index % 2 === 1 }]} id={topic.id}><div class="container">
+      <SectionHeading eyebrow={`0${index + 1} / ${topic.label.toUpperCase()}`} title={topic.title} text={topic.intro}/>
+      <div class="quality-cards">{topic.cards.map(([title, text]) => <article><h3>{title}</h3><p>{text}</p></article>)}</div>
+      {topic.id === 'inspection' && <p class="related-link"><a class="text-link" href="/services/secondary-processes/">Include secondary process requirements <span aria-hidden="true">→</span></a></p>}
+      {topic.id === 'documents' && <p class="quality-footnote">This website does not claim quality certifications or accredited laboratory status. Confirm project-specific evidence before ordering.</p>}
+    </div></section>)}
+    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">START WITH THE REQUIREMENT</span><h2>Send the drawing.<br/><em>Include the acceptance criteria.</em></h2><p>Share the revision, material, quantity, critical features, inspection coverage, document templates and packing requirements. We can then clarify feasibility and the quality scope for quotation.</p></div><a class="button button-orange button-large" href="/contact/#rfq-form">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
   </main>
   <Footer />
 </BaseLayout>
+
+<style>
+  .breadcrumbs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:38px;font-size:13px;color:#c7d1dd}.breadcrumbs a:hover{color:var(--orange)}.quality-hero .hero-actions{flex-wrap:wrap}
+  .quality-nav{background:var(--soft);border-bottom:1px solid var(--line)}.quality-nav .container{display:flex;flex-wrap:wrap;gap:12px 25px;padding-block:24px}.quality-nav a{font-size:14px;font-weight:600}.quality-nav a span{color:#a74b19;margin-right:5px}.quality-nav a:hover{color:#a74b19}
+  section[id]{scroll-margin-top:24px}.quality-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.quality-cards article{min-width:0;background:white;border:1px solid var(--line);border-top:3px solid var(--orange);padding:28px}.quality-cards h3{font-size:23px;line-height:1.35;letter-spacing:-.6px;margin:0 0 14px}.quality-cards p{color:var(--muted);margin:0}.quality-footnote{color:var(--muted);margin:26px 0 0}.related-link{margin:26px 0 0}main a:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
+  @media(max-width:900px){.quality-cards{grid-template-columns:minmax(0,1fr)}.quality-cards article{padding:24px}}
+  @media(max-width:600px){.breadcrumbs{margin-bottom:28px}.quality-hero .button{width:100%;gap:12px}.quality-nav .container{gap:12px 20px}.quality-cards h3{font-size:22px}}
+</style>
