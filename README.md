@@ -212,7 +212,7 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 确认后台允许匿名 `submitGfForm`。前后端跨域时，WordPress 必须允许实际前端 Origin、JSON POST 和上传预检，以及校验/错误响应的 CORS；本地 HTTPS 证书需被浏览器信任。插件添加允许 Header 不等于完成 Origin 策略配置。应从真实前端域名测试，命令行成功不能证明浏览器 CORS 正常。不得暴露管理员凭证。新增 CAPTCHA 或后台必填字段时需补齐对应集成。没有 REST 回退或自动重试，避免在收件状态不明时重复创建条目。
 
-前端只在 HTTP 成功、没有 GraphQL/字段错误且取得已保存的 `entry.id` 时显示成功。提交期间和确认成功后阻止重复提交；字段错误显示在对应字段旁，后台 HTML 作为纯文本处理。网络故障、异常响应和未确认保存时保留输入并显示失败。字段 ID、映射类型或地址配置无效时阻止请求；配置 Site Key 后还必须取得有效 Token。启用后的 Turnstile 验证失败会阻止原表单提交，但生产通知送达、服务端文件策略和完整安全边界仍需独立验证。
+前端只在 HTTP 成功、没有 GraphQL/字段错误且取得已保存的 `entry.id` 时显示成功。提交期间和确认成功后阻止重复提交；成功后只要修改任意表单字段即可重新提交，启用 Turnstile 时会清空旧 Token 并重置验证组件，必须完成新的验证后才能提交。字段错误显示在对应字段旁，后台 HTML 作为纯文本处理。网络故障、异常响应和未确认保存时保留输入并显示失败。字段 ID、映射类型或地址配置无效时阻止请求；配置 Site Key 后还必须取得有效 Token。启用后的 Turnstile 验证失败会阻止原表单提交，但生产通知送达、服务端文件策略和完整安全边界仍需独立验证。
 
 原文保留的集成参考（本次未在线核对）：<https://github.com/axewp/wp-graphql-gravity-forms/blob/develop/docs/submitting-forms.md>。
 

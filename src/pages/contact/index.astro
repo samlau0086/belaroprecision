@@ -135,6 +135,7 @@ import { gravityForms } from '../../config';
   const submitButton = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
   const turnstileWidget = form?.querySelector<HTMLElement>('.cf-turnstile');
   let turnstileToken = '';
+  let resettingTurnstile = false;
   const turnstileEnabled = Boolean(gravityForms.turnstileSiteKey?.trim());
   if (!turnstileEnabled) {
     turnstileWidget?.parentElement?.setAttribute('hidden', '');
@@ -152,7 +153,11 @@ import { gravityForms } from '../../config';
       api.render(turnstileWidget, {
         sitekey: gravityForms.turnstileSiteKey,
         action: 'rfq',
-        callback: (token: string) => { turnstileToken = token; if (submitButton) submitButton.disabled = false; },
+        callback: (token: string) => {
+          if (resettingTurnstile) return;
+          turnstileToken = token;
+          if (submitButton && !submitted) submitButton.disabled = false;
+        },
         'expired-callback': () => { turnstileToken = ''; if (submitButton) submitButton.disabled = true; },
         'error-callback': () => { turnstileToken = ''; if (submitButton) submitButton.disabled = true; },
       });
@@ -161,6 +166,24 @@ import { gravityForms } from '../../config';
   }
   let submitting = false;
   let submitted = false;
+  const markFormChanged = () => {
+    if (!submitted || submitting) return;
+    submitted = false;
+    submitButton!.innerHTML = 'Submit RFQ <span>↗</span>';
+    status!.dataset.state = 'idle';
+    status!.textContent = 'Your enquiry has changed. Please submit it again.';
+    if (turnstileEnabled) {
+      turnstileToken = '';
+      submitButton!.disabled = true;
+      resettingTurnstile = true;
+      window.turnstile?.reset();
+      queueMicrotask(() => { resettingTurnstile = false; });
+    } else {
+      submitButton!.disabled = false;
+    }
+  };
+  form?.addEventListener('input', markFormChanged);
+  form?.addEventListener('change', markFormChanged);
   form?.addEventListener('submit', async event => {
     event.preventDefault();
     if (submitting || submitted || !submitButton || !status) return;

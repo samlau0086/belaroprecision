@@ -67,7 +67,7 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
       const operation = JSON.parse(payload.match(/name="operations"\r\n\r\n([^\r\n]+)/)[1]);
       const fields = operation.variables.input.fieldValues;
       assert.deepEqual(fields.find(field => field.id === 15).checkboxValues, [documentChoices[0], documentChoices[2]]);
-      assert.equal(fields.find(field => field.id === 10).value, 'Project note only.');
+      assert.ok(['Project note only.', 'Updated project note.'].includes(fields.find(field => field.id === 10).value));
       if (mode === 'documents') return route.fulfill({ json: { data: { submitGfForm: { entry:null, errors:[{id:15.1,message:'Please clarify the documents.'}] } } } });
       assert.doesNotMatch(payload, /name="(?:_subject|material|country)"/);
       if (mode === 'validation') return route.fulfill({ json: { data: { submitGfForm: { entry: null, errors: [{id:2,message:'<b>Please check your email.</b>'},{id:11,message:'Please agree.'}] } } } });
@@ -75,7 +75,7 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
       if (mode === 'server') return route.fulfill({ status: 500, json: { message: 'Internal error' } });
       if (mode === 'network') return route.abort();
       if (mode === 'malformed') return route.fulfill({ status: 200, body: '<html>Login</html>' });
-      await new Promise(resolve => { release = resolve; });
+      if (requests === 7) await new Promise(resolve => { release = resolve; });
       await route.fulfill({ json: { data: { submitGfForm: { entry: {id:'saved-entry'}, errors:[] } } } });
     });
     const fill = async (includeOptional = true) => {
@@ -217,6 +217,16 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
     assert.equal(await page.locator('#material-search').inputValue(), 'Custom alloy');
     assert.match(await status.textContent(), /enquiry has been received/);
     assert.equal(await page.locator('form').getAttribute('aria-busy'), null);
+    await page.locator('[name=details]').fill('Updated project note.');
+    if (turnstileEnabled) {
+      assert.equal(await submit.isDisabled(), true);
+      await page.evaluate(() => window.testWidgetOptions.callback('test-token'));
+    } else {
+      assert.equal(await submit.isDisabled(), false);
+    }
+    await submit.click();
+    await page.waitForFunction(() => document.querySelector('#form-status').dataset.state === 'success');
+    assert.equal(requests, 8);
     if (process.env.RFQ_SCREENSHOT_PATH) {
       await page.locator('#rfq-form').screenshot({ path: process.env.RFQ_SCREENSHOT_PATH });
       await page.locator('.phone-country-toggle').click();
