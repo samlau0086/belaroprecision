@@ -7,6 +7,8 @@ export const site = {
   domain: 'https://belaroprecision.com',
   email: 'sales@belaroprecision.com', // Replace with your monitored business email.
   phone: '', // Add only a published business number.
+  whatsapp: '+86 186 8218 8709',
+  whatsappUrl: 'https://wa.me/8618682188709',
   description: 'Precision CNC machining for OEM manufacturers. Drawing-based components for industrial machinery and automation applications.',
 };
 
