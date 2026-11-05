@@ -30,7 +30,7 @@ add_filter('graphql_is_valid_http_content_type', static function ($valid, $conte
         && $_SERVER['HTTP_GRAPHQL_REQUIRE_PREFLIGHT'] === '1';
 }, 10, 2);
 
-// Reject RFQ mutations before WPGraphQL executes them unless Turnstile verifies.
+// 未配置服务端密钥时停用验证；一旦配置，仍必须验证 Token，不能由客户端绕过。
 add_filter('graphql_request_data', static function ($data) {
     if (!is_array($data) || !isset($data['query']) || !is_string($data['query'])) {
         return $data;
@@ -43,6 +43,9 @@ add_filter('graphql_request_data', static function ($data) {
     $token = isset($_SERVER['HTTP_X_TURNSTILE_TOKEN']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_X_TURNSTILE_TOKEN'])) : '';
     $secret = defined('BELARO_TURNSTILE_SECRET_KEY') ? BELARO_TURNSTILE_SECRET_KEY : '';
     $hostname = defined('BELARO_TURNSTILE_HOSTNAME') ? BELARO_TURNSTILE_HOSTNAME : '';
+    if (trim($secret) === '') {
+        return $data;
+    }
     $verified = false;
 
     if ($token !== '' && $secret !== '' && $hostname !== '') {

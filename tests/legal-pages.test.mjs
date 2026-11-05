@@ -49,7 +49,7 @@ test('政策页面：SEO、互链、表单披露、全站页脚与响应式', as
       for (const policy of routes) assert.equal(await page.locator(`footer nav a[href="${policy}"]`).count(), 1, `${path} → ${policy}`);
     }
     await page.goto(`${base}/contact/`);
-    assert.equal(await page.locator('[name="consent"]').isChecked(), false);
+    assert.equal(await page.locator('[name="consent"]').isChecked(), true);
     assert.equal(await page.locator('[name="consent"]').getAttribute('required'), '');
     assert.equal(await page.locator('#enquiry-privacy a[href="/privacy-policy/"]').count(), 1);
     assert.equal(await page.locator('#enquiry-privacy a[href="/terms-of-use/"]').count(), 1);

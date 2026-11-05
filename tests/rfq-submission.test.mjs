@@ -5,7 +5,8 @@ import { readFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { rfqFields } from '../src/lib/gravity-forms.mjs';
 
-test('RFQ submission: mapping, attachment, validation, failure, duplicate prevention and success', async () => {
+for (const turnstileEnabled of [true, false]) {
+test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附件、异常和防重复`, async () => {
   let configured = false;
   let baseUrl;
   const server = createServer(async (req, res) => {
@@ -14,6 +15,7 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
       let body = await readFile(new URL(`../dist${path.endsWith('/') ? `${path}index.html` : path}`, import.meta.url));
       if (path === '/contact/') {
         const config = { graphqlUrl: `${baseUrl}/graphql`, formId: 42, uploadsEnabled: true, turnstileSiteKey: 'test-site-key', fields: Object.fromEntries(rfqFields.map((field, i) => [field, { id: i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])) };
+        if (!turnstileEnabled) config.turnstileSiteKey = '';
         if (!configured) config.fields.attachment.id = 0;
         body = Buffer.from(body.toString().replace(/data-gravity-forms="[^"]*"/, `data-gravity-forms="${JSON.stringify(config).replace(/"/g, '&quot;')}"`));
       }
@@ -31,25 +33,29 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     await page.route('**/*', route => route.request().url().startsWith(baseUrl) ? route.continue() : route.abort());
-    await page.route('https://challenges.cloudflare.com/turnstile/v0/api.js*', route => route.fulfill({ contentType: 'text/javascript', body: `let widgetOptions;window.turnstile={render:(target,options)=>{widgetOptions=options;options.callback('test-token');return 'test-widget'},reset:()=>{widgetOptions?.callback('test-token')}};` }));
+    let verificationRequests = 0;
+    await page.route('https://challenges.cloudflare.com/turnstile/v0/api.js*', route => {
+      verificationRequests++;
+      return route.fulfill({ contentType: 'text/javascript', body: `let widgetOptions;window.turnstile={render:(target,options)=>{widgetOptions=options;window.testWidgetOptions=options;options.callback('test-token');return 'test-widget'},reset:()=>{widgetOptions?.callback('test-token')}};` });
+    });
     let mode = 'validation';
     let requests = 0;
     let release;
     await page.route(`${baseUrl}/graphql`, async route => {
       requests++;
       assert.equal(route.request().url(), `${baseUrl}/graphql`);
-      assert.equal(route.request().headers()['x-turnstile-token'], 'test-token');
+      assert.equal(route.request().headers()['x-turnstile-token'], turnstileEnabled ? 'test-token' : undefined);
       const payload = route.request().postDataBuffer().toString();
       assert.match(payload, /"id":42/);
       assert.match(payload, /"nameValues":\{"first":"Test","last":"Buyer"\}/);
       assert.match(payload, /"id":6,"value":"Custom alloy"/);
-      assert.match(payload, /"id":12,"value":"1"/);
-      assert.match(payload, /"id":13,"value":"\+86 13800138000"/);
+      assert.match(payload, /"id":11,"value":"1"/);
+      assert.match(payload, /"id":12,"value":"\+86 13800138000"/);
       assert.match(payload, /name="0"; filename="part.step"/);
-      assert.match(payload, /variables.input.fieldValues.9.fileUploadValues.0/);
+      assert.match(payload, /variables.input.fieldValues.8.fileUploadValues.0/);
       assert.match(payload, /drawing bytes/);
       assert.doesNotMatch(payload, /name="(?:_subject|material|country)"/);
-      if (mode === 'validation') return route.fulfill({ json: { data: { submitGfForm: { entry: null, errors: [{id:2,message:'<b>Please check your email.</b>'},{id:12,message:'Please agree.'}] } } } });
+      if (mode === 'validation') return route.fulfill({ json: { data: { submitGfForm: { entry: null, errors: [{id:2,message:'<b>Please check your email.</b>'},{id:11,message:'Please agree.'}] } } } });
       if (mode === 'graphql') return route.fulfill({ json: { errors: [{message:'Resolver failed'}] } });
       if (mode === 'server') return route.fulfill({ status: 500, json: { message: 'Internal error' } });
       if (mode === 'network') return route.abort();
@@ -95,7 +101,6 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
       await page.locator('select[name=process]').selectOption('CNC Milling');
       await page.locator('#material-search').fill('Custom alloy');
       await page.locator('select[name=quantity]').selectOption('20–50 pcs');
-      await page.locator('[name=consent]').check();
       await page.locator('#drawing-file').setInputFiles({ name: 'part.step', mimeType: 'application/octet-stream', buffer: Buffer.from('drawing bytes') });
     };
     const status = page.locator('#form-status');
@@ -104,11 +109,13 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     assert.deepEqual(await page.locator('#country-select option').evaluateAll(options => options.slice(1, 9).map(option => option.value)), [
       'United States', 'Germany', 'France', 'United Kingdom', 'Spain', 'Italy', 'Åland Islands', 'Albania'
     ]);
-    assert.equal(await page.locator('[name=consent]').isChecked(), false);
+    assert.equal(await page.locator('[name=consent]').isChecked(), true);
     assert.equal(await page.locator('#enquiry-privacy a[href="/privacy-policy/"]').count(), 1);
     assert.equal(await page.getByText('(optional)', { exact: true }).count(), 0);
     assert.equal(await page.getByText('Country code follows your country / region. You can edit it.', { exact: true }).count(), 0);
-    assert.equal(await page.getByLabel('Phone', { exact: true }).count(), 1);
+    assert.equal(await page.getByLabel('Phone / WhatsApp', { exact: true }).count(), 1);
+    assert.equal(await page.locator('[name=delivery]').count(), 0);
+    assert.equal(await page.getByText('Target delivery date', { exact: true }).count(), 0);
     await fill();
     await submit.click();
     await page.waitForFunction(() => document.querySelector('#form-status').dataset.state === 'error');
@@ -116,7 +123,26 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     assert.equal(requests, 0);
     configured = true;
     await page.reload();
+    assert.equal(await page.locator('[name=delivery]').count(), 0);
+    assert.equal(await page.getByText('Target delivery date', { exact: true }).count(), 0);
     await fill();
+    if (turnstileEnabled) {
+      await page.evaluate(() => window.testWidgetOptions['expired-callback']());
+      assert.equal(await submit.isDisabled(), true);
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      assert.equal(requests, 0);
+      await page.evaluate(() => window.testWidgetOptions.callback('test-token'));
+    } else {
+      assert.equal(verificationRequests, 0);
+      assert.equal(await page.locator('.turnstile-wrap').isVisible(), false);
+      assert.doesNotMatch(await status.textContent(), /temporarily unavailable/);
+      assert.equal(await submit.isDisabled(), false);
+    }
+    await page.locator('[name=consent]').uncheck();
+    assert.equal(await page.locator('[name=consent]').evaluate(input => input.validity.valueMissing), true);
+    await submit.click();
+    assert.equal(requests, 0);
+    await page.locator('[name=consent]').check();
     await submit.click();
     await page.waitForFunction(() => document.querySelector('[data-gf-error]'));
     assert.equal(await page.locator('[name=email]').getAttribute('aria-invalid'), 'true');
@@ -157,3 +183,4 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     await new Promise(resolve => server.close(resolve));
   }
 });
+}

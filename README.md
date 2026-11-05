@@ -74,7 +74,7 @@
 
 首页四步 RFQ 流程使用橙色顶部边框和浅灰背景卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
 
-RFQ 必填项包括姓名、邮箱、公司、国家/地区、加工工艺、数量和联系同意；同意框默认不勾选，需主动确认。旁边提供 Privacy Policy 与 Terms of Use 链接，明确询价不订阅营销邮件。电话、材料、交期、要求、附件和项目详情为可选项。国家搜索含国旗，材料既可选也可自填；电话区号随国家选择更新，并可独立修改。
+RFQ 必填项包括姓名、邮箱、公司、国家/地区、加工工艺、数量和联系同意；同意框默认勾选，客户可取消勾选，取消后需重新勾选才能提交。旁边提供 Privacy Policy 与 Terms of Use 链接，明确询价不订阅营销邮件。电话、材料、要求、附件和项目详情为可选项。表单不收集 Target delivery date，预计交期由 Belaro 在评审需求后提供。国家搜索含国旗，材料既可选也可自填；电话区号随国家选择更新，并可独立修改。
 
 已实现页面 Title、Meta Description、Canonical、英文 `lang` 和图片 Alt。全站页脚提供隐私、Cookie 与使用条款入口。当前未实现 Open Graph、Twitter Card、结构化数据、sitemap、robots.txt、自定义 404、分析统计、广告转化、自动报价、订单管理或站内登录。
 
@@ -118,7 +118,7 @@ npm run preview
 2. **确认联系邮箱。** 核实 `src/config.ts` 中的 `sales@belaroprecision.com` 是否有人接收处理。
 3. **替换占位图片。** 原有 Unsplash 摄影图片为展示占位，应换成授权且优化过的真实加工、零件和检验图片；Machined Parts 的 SVG 为概念示意，应在获得已授权素材后补充真实零件照片和经核实的案例。未经确认不得暗示图示设备归企业所有或图示零件来自真实客户。
 4. **核实能力描述。** ±0.01–0.02 mm 仅为附条件的典型值；上线前确认实际工艺、车削、材料、批量和检验文件能力。材料下拉选项不代表已验证的可加工范围。
-5. **补齐企业信息。** 用户已确认法定名称为深圳市极客码头科技有限公司（Shenzhen GEEKMATE Technology Co., Ltd.），公司所在地为深圳，并提供 WhatsApp 联系号码 `+86 186 8218 8709`。完整街道地址、普通联系电话、营业时间、交付条款和认证仍须确认后再发布；当前 `site.phone` 仍为空。
+5. **补齐企业信息。** 用户已确认法定名称为深圳市极客码头科技有限公司（Shenzhen GEEKMATE Technology Co., Ltd.），公司地址为 `Shajing, Bao'an District, Shenzhen, China`，并提供 WhatsApp 联系号码 `+86 186 8218 8709`。完整街道地址、普通联系电话、营业时间、交付条款和认证仍须确认后再发布；当前 `site.phone` 仍为空。
 6. **核定法律页面与实际处理流程。** 隐私政策、Cookie 说明和使用条款已实现；上线前须确认完整地址、监控邮箱、实际服务商与数据位置、CAD 文件保留/删除和供应商访问规则，并按适用地区审核文字。页面没有虚构固定保留年限或自动删除机制，不替代 NDA、商业合同或法律审核，也不保证 Google Ads 审核通过。
 7. **按需配置统计与广告。** 当前没有 GA4 或 Google Ads 集成；后续应在确认适用的同意要求后实施，并仅在后台确认收件后记录成功转化。
 8. **完善 SEO。** 已有各页标题和描述；案例、材料专题和行业落地页须有足够真实内容后再添加，另需补齐 sitemap 等缺项。
@@ -129,8 +129,8 @@ npm run preview
 
 | 配置项 | 位置 | 用途及要求 |
 | --- | --- | --- |
-| `PUBLIC_TURNSTILE_SITE_KEY` | 静态站点构建环境或根目录 `.env` | Turnstile 公开 Site Key，会写入产物；为空时构建仍可完成，但表单禁用提交 |
-| `BELARO_TURNSTILE_SECRET_KEY` | WordPress `wp-config.php` 中的 PHP 常量 | 仅后台使用的 Secret Key，不得放入前端源码或静态站点构建环境 |
+| `PUBLIC_TURNSTILE_SITE_KEY` | 静态站点构建环境或根目录 `.env` | Turnstile 公开 Site Key，会写入产物；为空或仅空白时不启用人机验证，表单仍可提交 |
+| `BELARO_TURNSTILE_SECRET_KEY` | WordPress `wp-config.php` 中的 PHP 常量 | 未配置或仅空白时停用后台验证；配置后强制校验 Token，仅后台使用，不得放入前端源码或静态站点构建环境 |
 | `BELARO_TURNSTILE_HOSTNAME` | WordPress `wp-config.php` 中的 PHP 常量 | 校验访问者域名，必须与验证返回的 hostname 精确一致，不含协议或路径 |
 | `RFQ_SCREENSHOT_PATH` | 浏览器测试进程环境 | 可选的 RFQ 截图路径；测试还会生成带 `-dropdown.png` 后缀的下拉截图 |
 
@@ -156,15 +156,15 @@ PUBLIC_TURNSTILE_SITE_KEY=替换为公开的站点公钥
 
 外部服务包括 WordPress GraphQL、Cloudflare Turnstile、Unsplash 图片和 Google Fonts（DM Sans、Manrope）。只有表单后台和验证服务承担询价接收及校验；图片和字体由访问者浏览器外部加载。当前仓库没有邮件发送代码或 SMTP 配置，通知由独立 WordPress/Gravity Forms 环境负责。
 
-RFQ 提交需要 Cloudflare Turnstile。在 Cloudflare 控制台中打开 Turnstile，创建组件，添加正式前端域名（如 `belaroprecision.com`；若使用 `www`，也需加入对应域名），选择 Managed 模式并取得 Site Key 和 Secret Key。控制台入口名称可能变化，以实际界面为准。
+RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅空白）时，前端不加载 Turnstile 脚本、不展示验证组件、不发送验证 Header，允许普通和附件提交；姓名、邮箱等字段校验及防重复提交保持生效。需要启用时，在 Cloudflare 控制台中打开 Turnstile，创建组件，添加正式前端域名（如 `belaroprecision.com`；若使用 `www`，也需加入对应域名），选择 Managed 模式并取得 Site Key 和 Secret Key。控制台入口名称可能变化，以实际界面为准。
 
-将 Site Key 配置为前端构建变量，将 Secret Key 和精确前端 hostname 配置为上述 WordPress 常量。复制当前 `wordpress/mu-plugins/belaro-graphql-upload.php` 到后台的 `wp-content/mu-plugins/`。插件对查询文本匹配到的 `mutation` 和 `submitGfForm` 请求调用 Turnstile Siteverify，核对 `success`、hostname 和 `rfq` action；缺配置、无效/过期 Token 或验证失败时，将请求替换为 `query { __typename }`，避免执行原提交。该实现依赖查询文本匹配，不能据此认定后台所有调用路径都已完成安全审计。WordPress 需能向 Cloudflare 发起 HTTPS 请求；CORS 需允许 `X-Turnstile-Token`。上线前验证有效、缺失、无效和过期 Token 的真实行为。
+启用时，将 Site Key 配置为前端构建变量，将 Secret Key 和精确前端 hostname 配置为上述 WordPress 常量。停用时，清空前端 Site Key 并重新构建，同时移除或清空后台 Secret Key。服务端独立依据 Secret Key 决定是否验证，不接受客户端传参关闭验证；若后台仍配置 Secret Key，前端无 Site Key 的请求仍会被后台拒绝。复制当前 `wordpress/mu-plugins/belaro-graphql-upload.php` 到后台的 `wp-content/mu-plugins/`。插件仅在服务端 Secret Key 非空时，对查询文本匹配到的 `mutation` 和 `submitGfForm` 请求调用 Turnstile Siteverify，核对 `success`、hostname 和 `rfq` action；启用后缺 hostname、缺失/无效/过期 Token 或验证失败时，将请求替换为 `query { __typename }`，避免执行原提交。该实现依赖查询文本匹配，不能据此认定后台所有调用路径都已完成安全审计。WordPress 需能向 Cloudflare 发起 HTTPS 请求；CORS 需允许 `X-Turnstile-Token`。上线前验证有效、缺失、无效和过期 Token 的真实行为。
 
 ## 8. RFQ 架构与后台对接
 
 ### 8.1 请求流程与字段映射
 
-浏览器收集表单和 Turnstile Token → `src/lib/gravity-forms.mjs` 构造请求 → WordPress MU 插件校验 → WPGraphQL for Gravity Forms 的 `submitGfForm` 保存条目 → 前端解析结果。纯文本请求使用 JSON；附件使用 GraphQL multipart 格式，依赖 WPGraphQL Upload。前端不保存 WordPress 密码或 API 私钥。
+浏览器收集表单和按需启用的 Turnstile Token → `src/lib/gravity-forms.mjs` 构造请求 → WordPress MU 插件校验 → WPGraphQL for Gravity Forms 的 `submitGfForm` 保存条目 → 前端解析结果。纯文本请求使用 JSON；附件使用 GraphQL multipart 格式，依赖 WPGraphQL Upload。前端不保存 WordPress 密码或 API 私钥。
 
 当前代码中的表单 ID 为 `1`，字段映射如下；这是仓库配置事实，后台当前实际配置仍需复核：
 
@@ -178,27 +178,28 @@ RFQ 提交需要 Cloudflare Turnstile。在 Cloudflare 控制台中打开 Turnst
 | `process` | 7 | `text` |
 | `material` | 8 | `text` |
 | `quantity` | 9 | `text` |
-| `delivery` | 10 | `text` |
 | `tolerance` | 11 | `text` |
 | `attachment` | 12 | `file` |
 | `details` | 13 | `text` |
 | `consent` | 14 | `consent` |
 
-原文记录：2026 年 11 月 4 日本地表单 1 名为 `RFQ`，采用上述字段；WPGraphQL Upload `0.1.5`、WPGraphQL `2.23.1`、WPGraphQL for Gravity Forms `0.13.4` 已安装并启用。这些后台版本和启用状态本次没有重新连接核实；WordPress、PHP、Gravity Forms 和数据库的版本及运行配置待确认。
+原文记录：2026 年 11 月 4 日本地表单 1 名为 `RFQ`，采用当时的字段（另含交期字段 10）；WPGraphQL Upload `0.1.5`、WPGraphQL `2.23.1`、WPGraphQL for Gravity Forms `0.13.4` 已安装并启用。这些后台版本和启用状态本次没有重新连接核实；WordPress、PHP、Gravity Forms 和数据库的版本及运行配置待确认。
 
 可选电话字段位于国家/地区之后。区号下拉支持搜索、国旗和区号；国家名称来自 `Intl.DisplayNames`，区号来自构建时的 libphonenumber-js 元数据。修改电话所属国家会保留已输入号码，不会反向修改 RFQ 国家字段。提交时将区号和号码合并为字段 6 的一个值；空号码保持为空，以 `+` 开头的粘贴号码不会重复添加区号。原文记载后台字段 6 使用 `phoneFormat: 'international'`，条目 7 验证了合并号码 `+86 13800138000`，条目 8 验证了空电话；后台格式和条目本次未复查。
+
+2026 年 11 月 5 日已移除前端交期字段及提交映射；其余后台字段 ID 不变。原字段 10 不再发送，既有后台字段和历史条目保留。部署前确认后台字段 10 为非必填，避免后台校验阻止提交。
 
 ### 8.2 上传兼容与后台表单要求
 
 原文记载本地 WordPress 已安装配套 MU 插件，本次未复查安装目录。新后台必须复制仓库中的插件文件。它通过 WPGraphQL content-type filter 兼容 WPGraphQL Upload multipart 请求，要求 `GraphQL-Require-Preflight: 1`，并将此 Header 和 Turnstile Header 加入 GraphQL CORS 允许列表。插件也注册了页面声明的 CAD 扩展 MIME 类型；未关闭 WordPress 文件内容检查或 Gravity Forms 扩展检查。文本 CAD 和 DWG 使用注册的 MIME 类型；二进制 CAD 若无法通过后台 MIME 校验，可打包 ZIP 后提交，仍需实际验证。
 
-后台使用单页表单。姓名通过 `nameValues` 提交：首词进入 first，其余进入 last；若后台要求姓氏，单词姓名会得到校验错误，可按需要改用单行文本姓名字段并配置 `type: 'text'`。邮箱使用 `emailValues`，普通文本、段落、下拉使用 `value`。材料允许自填，交期支持类似 `4–6 weeks` 的文本；工艺和数量可用文本或存储值一致的下拉字段。后台必填设置须与前端一致。
+后台使用单页表单。姓名通过 `nameValues` 提交：首词进入 first，其余进入 last；若后台要求姓氏，单词姓名会得到校验错误，可按需要改用单行文本姓名字段并配置 `type: 'text'`。邮箱使用 `emailValues`，普通文本、段落、下拉使用 `value`。材料允许自填；工艺和数量可用文本或存储值一致的下拉字段。后台必填设置须与前端一致。
 
 `attachment` 映射为单文件 File Upload。前端支持选择、拖放、移除附件，限制单文件 20 MiB（界面标为 20 MB），扩展名为 `pdf, step, stp, iges, igs, x_t, dwg, dxf, zip`。原文记载后台字段 12 采用同样限制，需重新确认后台、PHP 和 Web 服务器的上传/POST 限额。后台确认类型应为 Text。multipart 请求包含 `operations`、`map` 和二进制文件，由浏览器生成 Content-Type，避免丢失 boundary。
 
 确认后台允许匿名 `submitGfForm`。前后端跨域时，WordPress 必须允许实际前端 Origin、JSON POST 和上传预检，以及校验/错误响应的 CORS；本地 HTTPS 证书需被浏览器信任。插件添加允许 Header 不等于完成 Origin 策略配置。应从真实前端域名测试，命令行成功不能证明浏览器 CORS 正常。不得暴露管理员凭证。新增 CAPTCHA 或后台必填字段时需补齐对应集成。没有 REST 回退或自动重试，避免在收件状态不明时重复创建条目。
 
-前端只在 HTTP 成功、没有 GraphQL/字段错误且取得已保存的 `entry.id` 时显示成功。提交期间和确认成功后阻止重复提交；字段错误显示在对应字段旁，后台 HTML 作为纯文本处理。网络故障、异常响应和未确认保存时保留输入并显示失败。字段 ID、映射类型、地址或 Turnstile 配置不完整时阻止请求。Turnstile 失败会阻止原表单提交，但生产通知送达、服务端文件策略和完整安全边界仍需独立验证。
+前端只在 HTTP 成功、没有 GraphQL/字段错误且取得已保存的 `entry.id` 时显示成功。提交期间和确认成功后阻止重复提交；字段错误显示在对应字段旁，后台 HTML 作为纯文本处理。网络故障、异常响应和未确认保存时保留输入并显示失败。字段 ID、映射类型或地址配置无效时阻止请求；配置 Site Key 后还必须取得有效 Token。启用后的 Turnstile 验证失败会阻止原表单提交，但生产通知送达、服务端文件策略和完整安全边界仍需独立验证。
 
 原文保留的集成参考（本次未在线核对）：<https://github.com/axewp/wp-graphql-gravity-forms/blob/develop/docs/submitting-forms.md>。
 
@@ -228,7 +229,7 @@ About 页面位于 `src/pages/about/index.astro`，以海外 OEM 按图加工需
 
 政策页共用 `src/layouts/LegalLayout.astro`，正文在 `src/pages/privacy-policy/`、`cookie-policy/`、`terms-of-use/` 维护；日期需随实际内容变化更新。Cookie 页按当前源码披露未接入 GA4、GTM、Google Ads 标签，未添加无实际控制作用的 Cookie 弹窗。未来接入统计、广告、托管注入脚本或新服务时，必须重新核查请求与存储、更新政策，并按投放地区实现真实的同意、撤回和标签控制机制；询价联系同意不等于广告个性化同意。本次没有新增依赖、配置变量或后端字段。
 
-企业信息统一在 `src/config.ts` 的 `site.legalName`、`site.legalNameZh`、`site.location` 维护。Belaro Precision 保留为网站品牌，英文运营主体名称用于 About、Contact、隐私政策和使用条款，公共页脚不再展示运营主体说明；深圳所在地继续用于相关页面和页脚；中文法定名称仅在 Terms of Use 正文显示，不在全站页脚或其他页面展示。WhatsApp 显示号码及直达链接分别由 `site.whatsapp` 和 `site.whatsappUrl` 维护，并显示于 Contact 页面及公共页脚；该渠道不等同于 `site.phone` 普通联系电话。公司所在地与东莞及深圳供应商网络分开表述；未提供的街道地址不作补写。本次未新增环境变量、依赖或后端字段。
+企业信息统一在 `src/config.ts` 的 `site.legalName`、`site.legalNameZh`、`site.location` 维护。Belaro Precision 保留为网站品牌，英文运营主体名称用于 About、Contact、隐私政策和使用条款，公共页脚不再展示运营主体说明；地址 `Shajing, Bao'an District, Shenzhen, China` 通过共享配置用于相关页面和页脚；中文法定名称仅在 Terms of Use 正文显示，不在全站页脚或其他页面展示。WhatsApp 显示号码及直达链接分别由 `site.whatsapp` 和 `site.whatsappUrl` 维护，并显示于 Contact 页面及公共页脚；该渠道不等同于 `site.phone` 普通联系电话。公司所在地与东莞及深圳供应商网络分开表述；未提供的街道地址不作补写。本次未新增环境变量、依赖或后端字段。
 
 Google 官方参考（上线前核对当前要求）：[数据收集和使用政策](https://support.google.com/adspolicy/answer/6020956?hl=en)、[欧盟用户同意政策](https://www.google.com/about/company/user-consent-policy/)。应按所用产品与投放地区核对适用要求，不能将 Terms of Use、Cookie Policy 描述为所有 Google Ads 广告统一强制的独立页面。新增政策页面不代表生产 HTTPS、广告账户、追踪和适用法律已完成审核。
 
@@ -237,7 +238,7 @@ Google 官方参考（上线前核对当前要求）：[数据收集和使用政
 现有测试直接使用 Node.js 执行，无 `npm test` 脚本：
 
 ```bash
-# 表单映射、配置校验、上传、电话和响应解析，共 7 项
+# 表单映射、交期字段移除、可选人机验证、配置校验、上传、电话和响应解析，共 9 项
 node --test tests/gravity-forms.test.mjs
 
 # 浏览器测试依赖最新 dist/，执行前先构建
@@ -266,11 +267,11 @@ node --test tests/about.test.mjs
 node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 ```
 
-轮播浏览器测试覆盖切换、自动播放/暂停、焦点、离屏、触摸、320/390/768/1440 像素宽度及无 JavaScript 等场景。RFQ 浏览器测试覆盖字段映射、附件、校验、网络/服务端异常、防重复提交、成功状态和移动端溢出检查。它们不验证真实 WordPress、Cloudflare、邮件、外部图片/字体或全站无障碍合规。
+轮播浏览器测试覆盖切换、自动播放/暂停、焦点、离屏、触摸、320/390/768/1440 像素宽度及无 JavaScript 等场景。RFQ 浏览器测试在启用与停用人机验证两种模式下覆盖字段映射、附件、校验、网络/服务端异常、防重复提交、成功状态和移动端溢出检查，并检查启用后的 Token 过期与停用后的外部脚本不加载。它们不验证真实 WordPress、Cloudflare、邮件、外部图片/字体或全站无障碍合规。
 
 **可复现性限制：** Playwright 未写入 `package.json` 或锁文件。本次浏览器测试从 `C:/Users/samla/node_modules/playwright/index.mjs` 解析依赖，现有 Chromium 可启动，因此当前机器通过不代表干净环境执行 `npm ci` 后也能运行。团队测试依赖版本、浏览器准备方式和 CI 配置待确认，本次没有新增或安装依赖。
 
-当前没有 ESLint 配置、独立类型检查脚本或 `@astrojs/check`。`astro build` 成功不等同于完整 TypeScript 检查通过。PHP 可用时可执行 `php -l wordpress/mu-plugins/belaro-graphql-upload.php`，但本次 PATH 中没有 `php`，未完成 PHP 语法检查。
+当前没有 ESLint 配置、独立类型检查脚本或 `@astrojs/check`。`astro build` 成功不等同于完整 TypeScript 检查通过。PHP 可用时可执行 `php -l wordpress/mu-plugins/belaro-graphql-upload.php`。当前 PATH 中没有 `php`；2026 年 11 月 5 日使用 Local 自带 PHP 8.2.29 完成插件语法检查和函数替身测试。插件分支测试可运行 `php tests/turnstile-plugin.test.php <场景>`，场景包括 `disabled`、`blank`、`valid`、`missing-token`、`missing-hostname`、`invalid`、`wrong-hostname`、`wrong-action`、`network-error`；每个场景应单独启动 PHP 进程。
 
 ### 本次核查结果（2026 年 11 月 4 日）
 
@@ -342,6 +343,19 @@ node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 - 320、390、700、701、900、1024、1440px 无横向溢出；三页各 1440 和 390px 共六张截图已复核，未发现明显遮挡或错位。
 - 浏览器测试阻断外部网络，RFQ 使用模拟后台；未验证真实后台、外部政策链接或生产 Cookie 行为，未创建真实询盘或部署。完整类型检查及 ESLint 因项目缺少对应工具与脚本而未执行。
 
+### RFQ 交期字段移除验证（2026 年 11 月 5 日）
+
+- 已移除 Target delivery date 输入项、准备资料提示中的交期要求及 GraphQL 提交映射；页面说明预计交期由 Belaro 评审需求后提供，隐私政策同步调整。
+- `npm run build` 通过，生成 14 个静态页面；`node --test tests/gravity-forms.test.mjs` 的 8 项测试通过；`node --test tests/rfq-submission.test.mjs tests/legal-pages.test.mjs` 的 2 项浏览器测试通过，包含 RFQ 移动端溢出检查。
+- 测试覆盖移除字段后其他后台 ID 保持不变、忽略旧交期值、附件映射、同意校验、提交异常及成功流程。构建和测试首次因沙箱 `spawn EPERM` 受阻，获准在沙箱外重试后通过。
+- 浏览器测试使用模拟后台并阻断外部网络；未修改真实后台字段或历史条目，未部署。上线前须确认后台字段 10 为非必填；完整类型检查和 ESLint 因项目未配置对应工具与脚本而未执行。
+
+### 可选 Turnstile 验证（2026 年 11 月 5 日）
+
+- `npm run build` 通过，生成 14 个静态页面；`node --test tests/gravity-forms.test.mjs` 的 9 项测试通过；`node --test tests/rfq-submission.test.mjs tests/legal-pages.test.mjs` 的 3 项浏览器测试通过。构建和 Node 测试首次因沙箱 `spawn EPERM` 受阻，获准在沙箱外执行后通过。
+- PHP 插件语法检查及上述 9 个场景测试均通过，验证未配置密钥时放行，以及启用后的 Token、hostname、action 与外部服务异常处理。函数替身测试不代表真实 WordPress/Cloudflare 联调。
+- 已更新仓库内 MU 插件，未部署至真实 WordPress，也未发布静态站点。现有后台需同步更新插件；未配置 Site Key 仅表示前端不要求人机验证，不代表 GraphQL 地址、CORS、后台字段及通知投递已验证。
+
 ## 11. 构建与部署
 
 供应商网络文案更新验证（2026 年 11 月 5 日）：网站正文、FAQ、配套工艺页 SEO 和公共配套工艺区块已统一涵盖东莞及深圳供应商网络，公司所在地继续为深圳。`npm run build` 通过，生成 14 页；`node --test tests/about.test.mjs tests/secondary-processes.test.mjs tests/industries.test.mjs` 的 3 项测试通过，包含桌面和手机宽度的横向溢出检查。构建与测试首次因沙箱 `spawn EPERM` 受阻，获准重试后通过。测试阻断外部网络，本次未部署。
@@ -354,7 +368,7 @@ node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 
 ## 12. 常见问题与待确认事项
 
-- **页面可打开但不能提交：** 检查构建时是否提供公开 Site Key、浏览器是否加载 Turnstile、后台 Secret/hostname 是否正确、GraphQL 地址是否仍为 `.local`、字段 ID 和必填规则是否匹配。缺公钥不会导致构建失败。
+- **页面可打开但不能提交：** 检查 GraphQL 地址、字段 ID 和后台必填规则。未配置 Site Key 时应可提交；若后台仍配置 Secret Key，需将前后端验证配置保持一致。启用时还需检查浏览器是否加载 Turnstile、后台 Secret/hostname 是否正确。
 - **附件或跨域请求失败：** 核对 WPGraphQL Upload、MU 插件、允许 Origin、预检 Header、证书信任、扩展/MIME 及服务器大小限制。上传兼容插件不替代完整 CORS 配置。
 - **没有成功提示：** 只有保存条目 ID 才能确认接收，网络异常可能发生在后台已保存之后，应先核实再人工重试。
 - **新机器浏览器测试无法启动：** 当前锁文件没有 Playwright，需先明确项目测试依赖管理方案；不能把本机上级目录的依赖视为可复现安装的一部分。

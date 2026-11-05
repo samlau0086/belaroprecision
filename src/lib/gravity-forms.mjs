@@ -1,7 +1,8 @@
-export const rfqFields = ['name', 'email', 'company', 'country', 'process', 'material', 'quantity', 'delivery', 'tolerance', 'attachment', 'details', 'consent', 'phone'];
+export const rfqFields = ['name', 'email', 'company', 'country', 'process', 'material', 'quantity', 'tolerance', 'attachment', 'details', 'consent', 'phone'];
 
 export function submissionRequest(values, config, turnstileToken) {
-  if (!config.turnstileSiteKey || typeof turnstileToken !== 'string' || !turnstileToken.trim()) {
+  const turnstileEnabled = Boolean(config.turnstileSiteKey?.trim());
+  if (turnstileEnabled && (typeof turnstileToken !== 'string' || !turnstileToken.trim())) {
     throw new Error('Complete the human verification before submitting.');
   }
   const url = new URL(config.graphqlUrl);
@@ -56,7 +57,8 @@ export function submissionRequest(values, config, turnstileToken) {
     variables: { input: { id: config.formId, fieldValues, saveAsDraft: false, sourcePage: 1, targetPage: 0 } },
   };
   /** @type {RequestInit} */
-  const init = { method: 'POST', credentials: 'omit', redirect: 'error', headers: { 'X-Turnstile-Token': turnstileToken.trim() } };
+  const init = { method: 'POST', credentials: 'omit', redirect: 'error', headers: {} };
+  if (turnstileEnabled) init.headers['X-Turnstile-Token'] = turnstileToken.trim();
   if (upload) {
     // A custom header makes cross-origin uploads preflight before WordPress accepts them.
     init.headers['GraphQL-Require-Preflight'] = '1';
