@@ -1,0 +1,35 @@
+---
+import LegalLayout from '../../layouts/LegalLayout.astro';
+import { site } from '../../config';
+---
+<LegalLayout title="Privacy Policy" description="How Belaro Precision handles website enquiries, business contact details and technical files, and how to contact us about your information.">
+  <h2>1. About this notice</h2>
+  <p>This notice covers information handled through the Belaro Precision website and related business enquiries. The website is operated by {site.legalName} (<span lang="zh-CN">{site.legalNameZh}</span>), based in {site.location}, under the Belaro Precision brand. For questions about the handling of your information, email <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+  <h2>2. Information you provide</h2>
+  <p>When you request a quotation or contact us, you may provide your name, business email, company, country or region, and optional telephone number. Your enquiry may also include a machining process, material, quantity, target delivery, tolerances, project details and a drawing or CAD attachment. We also receive your enquiry contact agreement and subsequent correspondence.</p>
+  <p>Please provide only information relevant to the project. Do not send personal identification documents, payment card details, sensitive personal information or export-controlled technical data through the form. Agree appropriate confidentiality and handling arrangements before sharing sensitive drawings.</p>
+  <h2>3. Technical information and external services</h2>
+  <p>When your browser connects to this website or its service providers, technical information such as IP address, browser and device information, requested pages, timestamps and security signals may be processed to deliver and protect the service.</p>
+  <ul>
+    <li>Our enquiry form sends submitted details and any attachment to a WordPress-based form service for enquiry handling.</li>
+    <li>When enabled, Cloudflare Turnstile processes browser and device signals to help prevent automated form abuse. See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare’s Privacy Policy</a>.</li>
+    <li>Fonts are loaded from Google Fonts, and some page images are loaded from Unsplash. These services receive requests from your browser. See <a href="https://policies.google.com/privacy">Google’s Privacy Policy</a> and <a href="https://unsplash.com/privacy">Unsplash’s Privacy Policy</a>.</li>
+  </ul>
+  <p>See our <a href="/cookie-policy/">Cookie Policy</a> for information about browser storage and the current use of advertising and analytics technologies.</p>
+  <h2>4. Why information is used</h2>
+  <p>We use enquiry information to assess manufacturing suitability, clarify technical requirements, prepare and discuss quotations, communicate about the project and, where an order is agreed, support its administration. Technical information is used to operate the site, troubleshoot problems and help prevent abuse.</p>
+  <p>Submitting an enquiry does not subscribe you to a marketing mailing list. The form’s contact agreement relates to that enquiry.</p>
+  <h2>5. Who may receive information</h2>
+  <p>Information may be handled by personnel responsible for your enquiry and service providers supporting hosting, forms, email and website security. Where a project requires supplier input, relevant technical requirements may need to be shared with manufacturing or secondary-process suppliers. Agree any confidentiality restrictions before submitting files so the permitted scope can be established.</p>
+  <p>Information may also be disclosed where required by applicable law or where necessary to address fraud, security incidents or legal claims.</p>
+  <h2>6. International handling</h2>
+  <p>Belaro Precision operates in China. If you contact us from another country, your information may be handled in China and in countries where relevant service providers operate. Data protection rules may differ from those in your location. Contact us before sending information if your organisation requires particular data locations, safeguards or contractual terms.</p>
+  <h2>7. Retention and security</h2>
+  <p>The period for keeping enquiry details, correspondence and files depends on the enquiry, any resulting order, recordkeeping obligations and the need to resolve disputes. This website does not offer an automatic file-deletion schedule or a self-service deletion tool. You can request deletion or ask about retention using the email below; some records may need to be retained under applicable requirements.</p>
+  <p>No internet transmission or storage method is completely secure. Please contact us to agree suitable handling before submitting confidential technical information.</p>
+  <h2>8. Your choices and requests</h2>
+  <p>Depending on applicable law, you may have rights to request access, correction, deletion, restriction or portability of personal information, or to object to processing or withdraw consent where processing relies on it. Withdrawal does not affect earlier lawful processing. You may also have a right to complain to a relevant data protection authority.</p>
+  <p>Email <a href={`mailto:${site.email}`}>{site.email}</a> with the subject “Privacy request” and enough context to identify your enquiry. We may need to verify your identity and assess the request against applicable requirements. You can also ask us to stop further enquiry follow-up.</p>
+  <h2>9. Changes and contact</h2>
+  <p>Updates will be published on this page with a revised date. For questions about this notice, your files or an enquiry, <a href="/contact/">contact Belaro Precision</a>.</p>
+</LegalLayout>

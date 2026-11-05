@@ -32,7 +32,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 50);
     assert.match(await page.locator('.company-profile').innerText(), /3-axis & simultaneous 5-axis/);
     assert.match(await page.locator('main').innerText(), /supplier network/);
-    assert.match(await page.locator('details').nth(1).textContent(), /suppliers in Dongguan/);
+    assert.match(await page.locator('details').nth(1).textContent(), /suppliers in Dongguan and Shenzhen/);
     assert.equal(await page.locator('.working-steps li').count(), 4);
     await page.locator('summary').first().focus();
     await page.keyboard.press('Enter');

@@ -5,7 +5,12 @@ import { site } from '../config';
   <div class="container footer-grid">
     <div class="footer-brand"><a class="brand brand-light" href="/"><span class="brand-mark">B</span><span class="brand-copy"><strong>BELARO</strong><small>PRECISION</small></span></a><p>Precision Parts. Reliable Production.</p><p class="muted">CNC-machined components for industrial OEM manufacturers.</p></div>
     <div><h4>Explore</h4><a href="/services/">CNC Capabilities</a><a href="/services/cnc-milling/">CNC Milling</a><a href="/services/cnc-turning/">CNC Turning</a><a href="/services/secondary-processes/">Secondary Processes</a><a href="/services/production/">OEM Production</a><a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About Belaro</a></div>
-    <div><h4>Start a Project</h4><a href="/contact/">Request a Quote</a><a href={`mailto:${site.email}`}>{site.email}</a><span class="muted">Drawing-based enquiries welcome</span></div>
+    <div><h4>Start a Project</h4><a href="/contact/">Request a Quote</a><a href={`mailto:${site.email}`}>{site.email}</a><span class="muted">{site.location}</span><span class="muted">Drawing-based enquiries welcome</span></div>
   </div>
-  <div class="container footer-bottom"><span>© <span data-year></span> Belaro Precision. All rights reserved.</span><span>Precision Parts. Reliable Production.</span></div>
+  <div class="container footer-operator"><span>Website operated by {site.legalName}</span><span lang="zh-CN">{site.legalNameZh}</span></div>
+  <div class="container footer-bottom"><span>© <span data-year></span> Belaro Precision. All rights reserved.</span><nav class="footer-policies" aria-label="Website policies"><a href="/privacy-policy/">Privacy Policy</a><a href="/cookie-policy/">Cookie Policy</a><a href="/terms-of-use/">Terms of Use</a></nav></div>
 </footer>
+<style>
+  .footer-operator{display:flex;flex-wrap:wrap;gap:8px 20px;padding-bottom:24px;color:#aeb9c7;font-size:13px;overflow-wrap:anywhere}
+  .footer-bottom{flex-wrap:wrap;gap:18px}.footer-policies{display:flex;flex-wrap:wrap;gap:12px 22px}.footer-policies a{color:#aeb9c7;font-size:14px}.footer-policies a:hover{color:var(--orange)}.footer-policies a:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+</style>

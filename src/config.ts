@@ -1,6 +1,9 @@
 export const site = {
   name: 'Belaro Precision',
   shortName: 'BELARO',
+  legalName: 'Shenzhen GEEKMATE Technology Co., Ltd.',
+  legalNameZh: '深圳市极客码头科技有限公司',
+  location: 'Shenzhen, China',
   domain: 'https://belaroprecision.com',
   email: 'sales@belaroprecision.com', // Replace with your monitored business email.
   phone: '', // Add only a published business number.

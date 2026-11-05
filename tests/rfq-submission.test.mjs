@@ -104,7 +104,8 @@ test('RFQ submission: mapping, attachment, validation, failure, duplicate preven
     assert.deepEqual(await page.locator('#country-select option').evaluateAll(options => options.slice(1, 9).map(option => option.value)), [
       'United States', 'Germany', 'France', 'United Kingdom', 'Spain', 'Italy', 'Åland Islands', 'Albania'
     ]);
-    assert.equal(await page.locator('[name=consent]').isChecked(), true);
+    assert.equal(await page.locator('[name=consent]').isChecked(), false);
+    assert.equal(await page.locator('#enquiry-privacy a[href="/privacy-policy/"]').count(), 1);
     assert.equal(await page.getByText('(optional)', { exact: true }).count(), 0);
     assert.equal(await page.getByText('Country code follows your country / region. You can edit it.', { exact: true }).count(), 0);
     assert.equal(await page.getByLabel('Phone', { exact: true }).count(), 1);

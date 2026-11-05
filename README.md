@@ -61,19 +61,22 @@
 | `/services/production/` | OEM 与小批量生产专页，包含需求对齐、生产流程、重复订单、检验要求和项目讨论入口 |
 | `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
 | `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口 |
-| `/services/secondary-processes/` | 配套工艺专页，说明通过东莞供应商网络协调磨削、热处理、表面处理及其他二次工艺的方式、询价资料和能力边界 |
+| `/services/secondary-processes/` | 配套工艺专页，说明通过东莞及深圳供应商网络协调磨削、热处理、表面处理及其他二次工艺的方式、询价资料和能力边界 |
 | `/industries/` | 自动化、工业机械、液压/气动、实验室与测试设备四个目标领域的应用说明、概念零件图、零件分类链接、图纸评审重点、加工与配套工艺入口、RFQ 清单及 FAQ；不代表已有客户关系或行业认证 |
 | `/quality/` | 图纸评审、检验流程和公差适用条件说明；没有在线检验管理功能 |
-| `/about/` | 企业定位、能力概览、东莞供应链支持、合作流程、质量评审与 FAQ |
+| `/about/` | 企业定位、能力概览、东莞及深圳供应链支持、合作流程、质量评审与 FAQ |
 | `/contact/` | 询价字段、国家搜索、电话区号、材料自定义输入、单附件上传、Turnstile 与 GraphQL 提交 |
+| `/privacy-policy/` | 询价数据、技术文件、第三方服务、跨境处理、保留与权利请求说明 |
+| `/cookie-policy/` | 浏览器存储、字体/图片请求、安全服务及当前未启用广告与统计标签的说明 |
+| `/terms-of-use/` | 网站使用、按图评审、询价与订单边界、图纸权属及定制件商业条款说明 |
 
 公共组件包含桌面/移动导航、页脚、年份更新和章节标题。页头的 Capabilities 支持桌面端悬停/键盘聚焦下拉，并在移动菜单中展示 CNC Milling、3-Axis CNC Machining、5-Axis CNC Machining、CNC Turning、Secondary Processes 和 OEM & Low-Volume Production 子链接；页头、移动菜单、页脚和首页均提供 Machined Parts 入口。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
 
 首页四步 RFQ 流程使用橙色顶部边框和浅灰背景卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
 
-RFQ 必填项包括姓名、邮箱、公司、国家/地区、加工工艺、数量和联系同意；同意框当前默认勾选。电话、材料、交期、要求、附件和项目详情为可选项。国家搜索含国旗，材料既可选也可自填；电话区号随国家选择更新，并可独立修改。
+RFQ 必填项包括姓名、邮箱、公司、国家/地区、加工工艺、数量和联系同意；同意框默认不勾选，需主动确认。旁边提供 Privacy Policy 与 Terms of Use 链接，明确询价不订阅营销邮件。电话、材料、交期、要求、附件和项目详情为可选项。国家搜索含国旗，材料既可选也可自填；电话区号随国家选择更新，并可独立修改。
 
-已实现页面 Title、Meta Description、Canonical、英文 `lang` 和图片 Alt。当前未实现 Open Graph、Twitter Card、结构化数据、sitemap、robots.txt、自定义 404、隐私/条款页面、分析统计、广告转化、自动报价、订单管理或站内登录。
+已实现页面 Title、Meta Description、Canonical、英文 `lang` 和图片 Alt。全站页脚提供隐私、Cookie 与使用条款入口。当前未实现 Open Graph、Twitter Card、结构化数据、sitemap、robots.txt、自定义 404、分析统计、广告转化、自动报价、订单管理或站内登录。
 
 ## 5. 环境要求、安装与启动
 
@@ -115,8 +118,8 @@ npm run preview
 2. **确认联系邮箱。** 核实 `src/config.ts` 中的 `sales@belaroprecision.com` 是否有人接收处理。
 3. **替换占位图片。** 原有 Unsplash 摄影图片为展示占位，应换成授权且优化过的真实加工、零件和检验图片；Machined Parts 的 SVG 为概念示意，应在获得已授权素材后补充真实零件照片和经核实的案例。未经确认不得暗示图示设备归企业所有或图示零件来自真实客户。
 4. **核实能力描述。** ±0.01–0.02 mm 仅为附条件的典型值；上线前确认实际工艺、车削、材料、批量和检验文件能力。材料下拉选项不代表已验证的可加工范围。
-5. **补齐企业信息。** 法定名称、地址、电话、营业时间、交付条款和认证均须确认后再发布；当前 `site.phone` 为空。
-6. **补充法律页面。** 隐私政策、必要的 Cookie 说明、条款和图纸保密/文件处理政策尚需落实，明确 CAD 文件保存、访问和删除规则。
+5. **补齐企业信息。** 用户已确认法定名称为深圳市极客码头科技有限公司（Shenzhen GEEKMATE Technology Co., Ltd.），公司所在地为深圳。完整街道地址、电话、营业时间、交付条款和认证仍须确认后再发布；当前 `site.phone` 为空。
+6. **核定法律页面与实际处理流程。** 隐私政策、Cookie 说明和使用条款已实现；上线前须确认完整地址、监控邮箱、实际服务商与数据位置、CAD 文件保留/删除和供应商访问规则，并按适用地区审核文字。页面没有虚构固定保留年限或自动删除机制，不替代 NDA、商业合同或法律审核，也不保证 Google Ads 审核通过。
 7. **按需配置统计与广告。** 当前没有 GA4 或 Google Ads 集成；后续应在确认适用的同意要求后实施，并仅在后台确认收件后记录成功转化。
 8. **完善 SEO。** 已有各页标题和描述；案例、材料专题和行业落地页须有足够真实内容后再添加，另需补齐 sitemap 等缺项。
 
@@ -217,11 +220,17 @@ CNC Milling 页面位于 `src/pages/services/cnc-milling/index.astro`，沿用�
 
 铣削询价入口为 `/contact/?process=milling#rfq-form`，只将空的加工工艺字段预选为 `CNC Milling`，项目详情保持空白并可自由编辑。`process` 参数仅接受固定值 `milling`；与有效 `part` 参数同时存在时，零件工艺优先。3-axis 和 simultaneous 5-axis 是已确认的 Belaro 铣削能力，具体尺寸、材料、几何、精度和交期仍需按图纸逐项目确认。未新增后端字段、依赖或环境变量，示意图不代表客户案例。
 
-配套工艺页面位于 `src/pages/services/secondary-processes/index.astro`。网站将磨削、热处理、表面处理和其他二次工艺描述为依托东莞制造生态及供应商网络协调的项目支持，不将其表述为全部自营能力。具体供应商、工艺标准、证书、检验方式和交期必须在报价阶段按图纸确认。公共 `SecondaryProcessSupport.astro` 区块已用于首页、Machined Parts、CNC Milling、CNC Turning 和 OEM Production 页面；Capabilities、About、Quality、页头和页脚也提供相应说明或入口。该变更未新增依赖、环境变量或 RFQ 后端字段。
+配套工艺页面位于 `src/pages/services/secondary-processes/index.astro`。网站将磨削、热处理、表面处理和其他二次工艺描述为依托东莞及深圳制造生态与供应商网络协调的项目支持，不将其表述为全部自营能力。具体供应商、工艺标准、证书、检验方式和交期必须在报价阶段按图纸确认。公共 `SecondaryProcessSupport.astro` 区块已用于首页、Machined Parts、CNC Milling、CNC Turning 和 OEM Production 页面；Capabilities、About、Quality、页头和页脚也提供相应说明或入口。该变更未新增依赖、环境变量或 RFQ 后端字段。
 
 Industries 页面位于 `src/pages/industries/index.astro`，保留首页引用的 `automation`、`machinery`、`fluid`、`laboratory` 四个锚点。行业与零件分类映射在页面中维护，零件名称和示意图复用共享数据与 `PartIllustration.astro`；配套工艺说明复用 `SecondaryProcessSupport.astro`。页面连接已有 RFQ 表单，不新增行业参数预填、后端字段、依赖或环境变量。液压/气动部分的压力、泄漏、清洁度与行业合规要求均需逐项目确认，未作现成测试服务承诺。
 
-About 页面位于 `src/pages/about/index.astro`，以海外 OEM 按图加工需求为主线，展示 3 轴与联动五轴铣削、车削、小批量及重复订单定位，复用 `SecondaryProcessSupport.astro` 说明东莞供应商网络支持。合作流程和质量内容用于介绍评审方式；未添加未经确认的成立年份、设备数量、认证或客户案例。页面提供能力、行业、质量和 RFQ 入口，未新增依赖、后端字段或环境变量。
+About 页面位于 `src/pages/about/index.astro`，以海外 OEM 按图加工需求为主线，展示 3 轴与联动五轴铣削、车削、小批量及重复订单定位，复用 `SecondaryProcessSupport.astro` 说明东莞及深圳供应商网络支持。合作流程和质量内容用于介绍评审方式；未添加未经确认的成立年份、设备数量、认证或客户案例。页面提供能力、行业、质量和 RFQ 入口，未新增依赖、后端字段或环境变量。
+
+政策页共用 `src/layouts/LegalLayout.astro`，正文在 `src/pages/privacy-policy/`、`cookie-policy/`、`terms-of-use/` 维护；日期需随实际内容变化更新。Cookie 页按当前源码披露未接入 GA4、GTM、Google Ads 标签，未添加无实际控制作用的 Cookie 弹窗。未来接入统计、广告、托管注入脚本或新服务时，必须重新核查请求与存储、更新政策，并按投放地区实现真实的同意、撤回和标签控制机制；询价联系同意不等于广告个性化同意。本次没有新增依赖、配置变量或后端字段。
+
+企业信息统一在 `src/config.ts` 的 `site.legalName`、`site.legalNameZh`、`site.location` 维护。Belaro Precision 保留为网站品牌，中英文运营主体名称与深圳所在地用于 About、Contact、隐私政策、使用条款和公共页脚。公司所在地与东莞及深圳供应商网络分开表述；未提供的街道地址不作补写。本次未新增环境变量、依赖或后端字段。
+
+Google 官方参考（上线前核对当前要求）：[数据收集和使用政策](https://support.google.com/adspolicy/answer/6020956?hl=en)、[欧盟用户同意政策](https://www.google.com/about/company/user-consent-policy/)。应按所用产品与投放地区核对适用要求，不能将 Terms of Use、Cookie Policy 描述为所有 Google Ads 广告统一强制的独立页面。新增政策页面不代表生产 HTTPS、广告账户、追踪和适用法律已完成审核。
 
 ## 10. 测试与质量检查
 
@@ -252,6 +261,9 @@ node --test tests/industries.test.mjs
 
 # About：能力边界、正文链接、SEO、FAQ 与响应式布局
 node --test tests/about.test.mjs
+
+# 政策页面、全站页脚、表单披露和同意默认值
+node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 ```
 
 轮播浏览器测试覆盖切换、自动播放/暂停、焦点、离屏、触摸、320/390/768/1440 像素宽度及无 JavaScript 等场景。RFQ 浏览器测试覆盖字段映射、附件、校验、网络/服务端异常、防重复提交、成功状态和移动端溢出检查。它们不验证真实 WordPress、Cloudflare、邮件、外部图片/字体或全站无障碍合规。
@@ -323,7 +335,18 @@ node --test tests/about.test.mjs
 - 320、390、700、701、900、1024、1100、1101、1440px 无横向溢出，首屏列数正确；1440 和 390px 截图已复核，未发现明显遮挡或错位。
 - 测试阻断外部网络，不验证外部字体、真实后台或询盘提交；未部署，未执行项目尚未配置的完整类型检查与 ESLint。
 
+### 政策页面验证（2026 年 11 月 5 日）
+
+- `npm run build` 通过，输出 14 个静态页面；沙箱内因 `spawn EPERM` 受阻，获准在沙箱外重试后通过。
+- `node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs` 通过，2 项通过、0 项失败。覆盖三页 SEO、政策互链、全站页脚入口、无 JavaScript 隐私正文、询价同意默认未勾选及 RFQ 提交回归。
+- 320、390、700、701、900、1024、1440px 无横向溢出；三页各 1440 和 390px 共六张截图已复核，未发现明显遮挡或错位。
+- 浏览器测试阻断外部网络，RFQ 使用模拟后台；未验证真实后台、外部政策链接或生产 Cookie 行为，未创建真实询盘或部署。完整类型检查及 ESLint 因项目缺少对应工具与脚本而未执行。
+
 ## 11. 构建与部署
+
+供应商网络文案更新验证（2026 年 11 月 5 日）：网站正文、FAQ、配套工艺页 SEO 和公共配套工艺区块已统一涵盖东莞及深圳供应商网络，公司所在地继续为深圳。`npm run build` 通过，生成 14 页；`node --test tests/about.test.mjs tests/secondary-processes.test.mjs tests/industries.test.mjs` 的 3 项测试通过，包含桌面和手机宽度的横向溢出检查。构建与测试首次因沙箱 `spawn EPERM` 受阻，获准重试后通过。测试阻断外部网络，本次未部署。
+
+企业信息更新验证（2026 年 11 月 5 日）：`npm run build` 通过，生成 14 个静态页面；`node --test tests/about.test.mjs tests/legal-pages.test.mjs tests/secondary-processes.test.mjs tests/industries.test.mjs` 的 4 项测试通过。构建与浏览器测试首次受沙箱 `spawn EPERM` 阻断，获准在沙箱外重试后通过。构建产物中 About、Contact、隐私政策和使用条款的中英文公司名称及深圳所在地已核对，未发现将公司所在地写为东莞的旧表述；东莞供应商网络说明保留。浏览器测试使用本地静态产物并阻断外部网络，未部署、未进行真实后台联调；未执行项目尚未配置的完整类型检查和 ESLint。
 
 `astro.config.mjs` 配置 `output: 'static'`。执行 `npm run build` 后，将 `dist/` 发布到静态托管服务或 Web 服务器，不需要运行 Node.js 生产后端。`npm run preview` 用于本地核查构建产物。
 
