@@ -7,7 +7,10 @@
         <div class="nav-dropdown-menu" aria-label="Capabilities submenu">
           <a href="/services/">All Capabilities</a>
           <a href="/services/cnc-milling/">CNC Milling</a>
+          <a href="/services/cnc-milling/#three-axis">3-Axis CNC Machining</a>
+          <a href="/services/cnc-milling/#five-axis">5-Axis CNC Machining</a>
           <a href="/services/cnc-turning/">CNC Turning</a>
+          <a href="/services/secondary-processes/">Secondary Processes</a>
           <a href="/services/production/">OEM &amp; Low-Volume Production</a>
         </div>
       </div>
@@ -20,7 +23,10 @@
     <a href="/services/">Capabilities</a>
     <div class="mobile-capability-links" aria-label="Capabilities submenu">
       <a href="/services/cnc-milling/">CNC Milling</a>
+      <a href="/services/cnc-milling/#three-axis">3-Axis CNC Machining</a>
+      <a href="/services/cnc-milling/#five-axis">5-Axis CNC Machining</a>
       <a href="/services/cnc-turning/">CNC Turning</a>
+      <a href="/services/secondary-processes/">Secondary Processes</a>
       <a href="/services/production/">OEM &amp; Low-Volume Production</a>
     </div>
     <a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a><a href="/contact/">Request a Quote →</a>
@@ -34,6 +40,8 @@
   .nav-dropdown-trigger{display:inline-flex;align-items:center;gap:6px}
   .nav-chevron{display:block;width:10px;height:6px;flex:0 0 auto;color:var(--orange);overflow:visible;transform:none;transition:transform .2s}
   .nav-dropdown-menu{position:absolute;top:calc(100% + 16px);left:-18px;z-index:30;display:none;min-width:245px;flex-direction:column;padding:8px 0;background:#fff;border:1px solid var(--line);box-shadow:0 14px 30px rgba(16,31,53,.12);opacity:0;visibility:hidden;transform:translateY(-5px);transition:opacity .2s,transform .2s,visibility .2s}
+  /* 填充触发项与菜单之间的视觉间距，避免鼠标移动到选项时 hover 中断。 */
+  .nav-dropdown-menu::before{content:"";position:absolute;top:-16px;left:0;right:0;height:16px}
   .nav-dropdown-menu a{padding:10px 18px;white-space:nowrap}
   .nav-dropdown-menu a:hover,.nav-dropdown-menu a:focus-visible{background:var(--soft);color:var(--orange)}
   .nav-dropdown:hover .nav-dropdown-menu,.nav-dropdown:focus-within .nav-dropdown-menu{display:flex;opacity:1;visibility:visible;transform:translateY(0)}

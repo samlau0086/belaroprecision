@@ -37,7 +37,7 @@
 ├── src/
 │   ├── config.ts             # 站点公开信息、GraphQL 地址、表单字段映射
 │   ├── layouts/BaseLayout.astro # 页面外壳、SEO、字体、移动导航脚本
-│   ├── pages/                # 首页及七个子页面，包含独立铣削服务页
+│   ├── pages/                # 首页及服务、零件、行业、质量、企业和询价页面
 │   ├── components/           # 页头、页脚、轮播、零件示意图及表单字段等
 │   ├── data/                 # Machined Parts 分类与评审内容
 │   ├── lib/                  # 国家数据、GraphQL 请求构造与结果解析
@@ -59,14 +59,15 @@
 | `/machined-parts/` | 六类按图加工零件展示、应用方向、工艺归类、图纸评审要点、询价准备资料和 FAQ；零件图为概念示意，不代表客户案例或库存产品 |
 | `/services/` | CNC 铣削、车削及小批量生产介绍；锚点为 `milling`、`turning`、`production` |
 | `/services/production/` | OEM 与小批量生产专页，包含需求对齐、生产流程、重复订单、检验要求和项目讨论入口 |
-| `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
+| `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
 | `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口 |
-| `/industries/` | 自动化、工业机械、液压/气动、实验室设备四个目标领域介绍；页面明确不代表已有客户关系 |
+| `/services/secondary-processes/` | 配套工艺专页，说明通过东莞供应商网络协调磨削、热处理、表面处理及其他二次工艺的方式、询价资料和能力边界 |
+| `/industries/` | 自动化、工业机械、液压/气动、实验室与测试设备四个目标领域的应用说明、概念零件图、零件分类链接、图纸评审重点、加工与配套工艺入口、RFQ 清单及 FAQ；不代表已有客户关系或行业认证 |
 | `/quality/` | 图纸评审、检验流程和公差适用条件说明；没有在线检验管理功能 |
-| `/about/` | 企业定位和合作原则介绍 |
+| `/about/` | 企业定位、能力概览、东莞供应链支持、合作流程、质量评审与 FAQ |
 | `/contact/` | 询价字段、国家搜索、电话区号、材料自定义输入、单附件上传、Turnstile 与 GraphQL 提交 |
 
-公共组件包含桌面/移动导航、页脚、年份更新和章节标题。页头的 Capabilities 支持桌面端悬停/键盘聚焦下拉，并在移动菜单中展示 CNC Milling、CNC Turning 和 OEM & Low-Volume Production 子链接；页头、移动菜单、页脚和首页均提供 Machined Parts 入口。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
+公共组件包含桌面/移动导航、页脚、年份更新和章节标题。页头的 Capabilities 支持桌面端悬停/键盘聚焦下拉，并在移动菜单中展示 CNC Milling、3-Axis CNC Machining、5-Axis CNC Machining、CNC Turning、Secondary Processes 和 OEM & Low-Volume Production 子链接；页头、移动菜单、页脚和首页均提供 Machined Parts 入口。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
 
 首页四步 RFQ 流程使用橙色顶部边框和浅灰背景卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
 
@@ -212,9 +213,15 @@ RFQ 提交需要 Cloudflare Turnstile。在 Cloudflare 控制台中打开 Turnst
 
 Machined Parts 卡片通过 `/contact/?part=<id>#rfq-form` 进入询价页。联系页只接受 `src/data/machined-parts.ts` 中的分类 ID，并仅在对应字段为空时预填加工工艺和项目详情；该流程没有新增后端字段，也不会把任意 URL 文本写入表单。字体通过 Google Fonts 外部加载，可根据实际需求考虑自托管。当前没有站内数据库初始化、迁移或页面内容 CMS 发布命令。
 
-CNC Milling 页面位于 `src/pages/services/cnc-milling/index.astro`，沿用公共布局、设计变量和零件 SVG 组件；三类铣削零件由共享数据按 `CNC Milling` 工艺筛选。首页、Capabilities 铣削区、Machined Parts 的铣削工艺标签和页脚均已连接到独立页面，原 `/services/#milling` 锚点保留。
+CNC Milling 页面位于 `src/pages/services/cnc-milling/index.astro`，沿用公共布局、设计变量和零件 SVG 组件；页面明确区分 3-axis 与 simultaneous 5-axis 铣削配置，三类铣削零件由共享数据按 `CNC Milling` 工艺筛选。首页、Capabilities 铣削区、Machined Parts 的铣削工艺标签和页脚均已连接到独立页面，原 `/services/#milling` 锚点保留。
 
-铣削询价入口为 `/contact/?process=milling#rfq-form`，只将空的加工工艺字段预选为 `CNC Milling`，项目详情保持空白并可自由编辑。`process` 参数仅接受固定值 `milling`；与有效 `part` 参数同时存在时，零件工艺优先。未新增后端字段、依赖或环境变量。页面不承诺未经核实的设备轴数、尺寸上限、通用公差或交期，示意图不代表客户案例。
+铣削询价入口为 `/contact/?process=milling#rfq-form`，只将空的加工工艺字段预选为 `CNC Milling`，项目详情保持空白并可自由编辑。`process` 参数仅接受固定值 `milling`；与有效 `part` 参数同时存在时，零件工艺优先。3-axis 和 simultaneous 5-axis 是已确认的 Belaro 铣削能力，具体尺寸、材料、几何、精度和交期仍需按图纸逐项目确认。未新增后端字段、依赖或环境变量，示意图不代表客户案例。
+
+配套工艺页面位于 `src/pages/services/secondary-processes/index.astro`。网站将磨削、热处理、表面处理和其他二次工艺描述为依托东莞制造生态及供应商网络协调的项目支持，不将其表述为全部自营能力。具体供应商、工艺标准、证书、检验方式和交期必须在报价阶段按图纸确认。公共 `SecondaryProcessSupport.astro` 区块已用于首页、Machined Parts、CNC Milling、CNC Turning 和 OEM Production 页面；Capabilities、About、Quality、页头和页脚也提供相应说明或入口。该变更未新增依赖、环境变量或 RFQ 后端字段。
+
+Industries 页面位于 `src/pages/industries/index.astro`，保留首页引用的 `automation`、`machinery`、`fluid`、`laboratory` 四个锚点。行业与零件分类映射在页面中维护，零件名称和示意图复用共享数据与 `PartIllustration.astro`；配套工艺说明复用 `SecondaryProcessSupport.astro`。页面连接已有 RFQ 表单，不新增行业参数预填、后端字段、依赖或环境变量。液压/气动部分的压力、泄漏、清洁度与行业合规要求均需逐项目确认，未作现成测试服务承诺。
+
+About 页面位于 `src/pages/about/index.astro`，以海外 OEM 按图加工需求为主线，展示 3 轴与联动五轴铣削、车削、小批量及重复订单定位，复用 `SecondaryProcessSupport.astro` 说明东莞供应商网络支持。合作流程和质量内容用于介绍评审方式；未添加未经确认的成立年份、设备数量、认证或客户案例。页面提供能力、行业、质量和 RFQ 入口，未新增依赖、后端字段或环境变量。
 
 ## 10. 测试与质量检查
 
@@ -236,6 +243,15 @@ node --test tests/machined-parts.test.mjs
 
 # CNC Milling：页面入口、正文链接、响应式、FAQ、SEO 与工艺预选
 node --test tests/cnc-milling.test.mjs
+
+# Secondary Processes：内容边界、站内入口、导航、SEO、FAQ 与响应式
+node --test tests/secondary-processes.test.mjs
+
+# Industries：行业锚点、正文目标与零件链接、SEO、FAQ 和响应式
+node --test tests/industries.test.mjs
+
+# About：能力边界、正文链接、SEO、FAQ 与响应式布局
+node --test tests/about.test.mjs
 ```
 
 轮播浏览器测试覆盖切换、自动播放/暂停、焦点、离屏、触摸、320/390/768/1440 像素宽度及无 JavaScript 等场景。RFQ 浏览器测试覆盖字段映射、附件、校验、网络/服务端异常、防重复提交、成功状态和移动端溢出检查。它们不验证真实 WordPress、Cloudflare、邮件、外部图片/字体或全站无障碍合规。
@@ -281,6 +297,31 @@ node --test tests/cnc-milling.test.mjs
 | 响应式与截图 | 320、390、700、701、768、1024、1100、1101、1440 像素宽度无横向溢出，卡片列数正确；1440 与 390 像素截图已复核 |
 | 工艺预选 | 铣削预选、用户可修改、未知参数忽略、与零件入口共存时零件工艺优先，均通过 |
 | 验证边界 | 浏览器测试模拟外部服务，未创建真实询盘；未执行生产部署、完整类型检查或 ESLint，项目没有相应检查工具 |
+
+### Secondary Processes 验证（2026 年 11 月 5 日）
+
+| 检查 | 结果 |
+| --- | --- |
+| `npm run build` | 通过，输出 11 个静态页面；沙箱内因 `spawn EPERM` 受阻，获准重试后通过 |
+| 完整测试套件（7 个测试文件） | 13 项通过，覆盖表单、轮播、首页流程、Machined Parts、CNC Milling 和 Secondary Processes |
+| 新页面验证 | Title、Description、Canonical、三个核心工艺、供应商网络边界、FAQ 键盘操作和无 JavaScript 内容通过 |
+| 站内入口 | 首页、Capabilities、Machined Parts、CNC Milling、CNC Turning、OEM Production、About、Quality、页头和页脚入口通过 |
+| 响应式与截图 | 320、390、700、701、1024、1100、1101、1440 像素宽度无横向溢出；1440 与 390 像素长截图已复核，未发现明显遮挡或错位 |
+| 验证边界 | 未连接真实配套工艺供应商、未创建真实询盘、未执行生产部署、完整类型检查或 ESLint |
+
+### Industries 验证（2026 年 11 月 5 日）
+
+- `npm run build` 通过，输出 11 个静态页面；沙箱内的 `spawn EPERM` 经批准在沙箱外重试后通过。
+- 构建产物的 23 项行业锚点与正文链接检查通过；单一 H1、Canonical 和 Description 检查通过，`git diff --check` 通过。
+- 已新增 `tests/industries.test.mjs`，覆盖行业入口、正文链接、FAQ、SEO、无 JavaScript 内容及 320–1440px 响应式布局；本次两次运行申请均因自动审批超时而未启动，不能视为测试通过。桌面和手机端截图复核待完成。
+- 未创建真实询盘，未部署生产环境；完整类型检查和 ESLint 因项目缺少对应工具而未执行。
+
+### About 验证（2026 年 11 月 5 日）
+
+- `npm run build` 通过，输出 11 个静态页面；沙箱内的 `spawn EPERM` 经批准在沙箱外重试后通过。
+- `node --test tests/about.test.mjs` 通过，覆盖能力与供应商边界、正文链接及锚点、单一 H1、Title、Description、Canonical、FAQ 键盘操作与无 JavaScript 内容。初次浏览器运行发现测试未展开 FAQ 就读取可见文本，修正为读取节点文本后通过。
+- 320、390、700、701、900、1024、1100、1101、1440px 无横向溢出，首屏列数正确；1440 和 390px 截图已复核，未发现明显遮挡或错位。
+- 测试阻断外部网络，不验证外部字体、真实后台或询盘提交；未部署，未执行项目尚未配置的完整类型检查与 ESLint。
 
 ## 11. 构建与部署
 
