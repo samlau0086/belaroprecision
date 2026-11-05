@@ -55,7 +55,7 @@
 
 | 路由 | 当前实现 |
 | --- | --- |
-| `/` | 首页、四张首屏轮播、服务/行业/质量概览和询价入口 |
+| `/` | 首页，按首屏定位、采购需求匹配、核心服务、代表性零件、能力概览、质量检验、目标应用、合作流程、FAQ 与询价入口组织 |
 | `/machined-parts/` | 六类按图加工零件展示、应用方向、工艺归类、图纸评审要点、询价准备资料和 FAQ；零件图为概念示意，不代表客户案例或库存产品 |
 | `/services/` | CNC 铣削、车削及小批量生产介绍；锚点为 `milling`、`turning`、`production` |
 | `/services/production/` | OEM 与小批量生产专页，包含需求对齐、生产流程、重复订单、检验要求和项目讨论入口 |
@@ -72,7 +72,9 @@
 
 公共组件包含桌面/移动导航、页脚、年份更新和章节标题。页头的 Capabilities 支持桌面端悬停/键盘聚焦下拉，并在移动菜单中展示 CNC Milling、3-Axis CNC Machining、5-Axis CNC Machining、CNC Turning、Secondary Processes 和 OEM & Low-Volume Production 子链接；页头、移动菜单、页脚和首页均提供 Machined Parts 入口。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
 
-首页四步 RFQ 流程使用橙色顶部边框和浅灰背景卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
+首页按九个业务模块组织：首屏定位、采购需求匹配、核心加工服务、代表性零件、加工能力概览、质量与检验、目标应用、合作流程、FAQ 与询价入口。能力概览只将 3 轴 CNC 铣削、联动五轴 CNC 铣削和 CNC 车削作为已确认工艺；材料、尺寸、公差与批量须按图纸和项目要求评审，不在首页展示未经确认的固定范围。代表性零件当前使用明确标注的概念示意，待取得授权的 Belaro 真实样件照片和说明后替换。
+
+首页四步 RFQ 流程为“提交图纸、技术评审与报价、确认生产、检验交付”，使用橙色顶部边框和白色卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
 
 RFQ 必填项包括姓名、邮箱、公司、国家/地区、加工工艺、数量和联系同意；同意框默认勾选，客户可取消勾选，取消后需重新勾选才能提交。旁边提供 Privacy Policy 与 Terms of Use 链接，明确询价不订阅营销邮件。电话、材料、要求、附件和项目详情为可选项。表单不收集 Target delivery date，预计交期由 Belaro 在评审需求后提供。国家搜索含国旗，材料既可选也可自填；电话区号随国家选择更新，并可独立修改。
 
@@ -248,6 +250,9 @@ node --test tests/hero-slider.test.mjs tests/rfq-submission.test.mjs
 # 首页流程卡片：顺序、样式及 320–1440px 响应式布局
 node --test tests/process-flow.test.mjs
 
+# 首页九模块：顺序、能力边界、链接、FAQ、无 JavaScript 内容及响应式
+node --test tests/homepage.test.mjs
+
 # Machined Parts：内容、SEO、响应式、导航、FAQ 与六类询价预填
 node --test tests/machined-parts.test.mjs
 
@@ -349,6 +354,13 @@ node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 - `npm run build` 通过，生成 14 个静态页面；`node --test tests/gravity-forms.test.mjs` 的 8 项测试通过；`node --test tests/rfq-submission.test.mjs tests/legal-pages.test.mjs` 的 2 项浏览器测试通过，包含 RFQ 移动端溢出检查。
 - 测试覆盖移除字段后其他后台 ID 保持不变、忽略旧交期值、附件映射、同意校验、提交异常及成功流程。构建和测试首次因沙箱 `spawn EPERM` 受阻，获准在沙箱外重试后通过。
 - 浏览器测试使用模拟后台并阻断外部网络；未修改真实后台字段或历史条目，未部署。上线前须确认后台字段 10 为非必填；完整类型检查和 ESLint 因项目未配置对应工具与脚本而未执行。
+
+### 首页九模块重组验证（2026 年 11 月 5 日）
+
+- 首页已按首屏定位、采购需求匹配、核心服务、代表性零件、能力概览、质量检验、目标应用、合作流程、FAQ 与询价入口的顺序重组。
+- `npm run build` 通过，生成 14 个静态页面；`node --test tests/homepage.test.mjs tests/process-flow.test.mjs tests/hero-slider.test.mjs` 的 3 项测试通过。
+- 自动化测试覆盖九模块顺序、单一 H1、核心站内链接、FAQ 无 JavaScript 内容、轮播回归、流程卡片及 320–1440px 横向溢出；1440px 和 390px 长截图已复核。
+- 测试阻断外部网络，因此截图不验证 Unsplash 摄影加载；真实样件照片、材料、尺寸、公差和批量固定范围仍须取得企业确认后补充。本次未部署，也未执行项目尚未配置的完整类型检查和 ESLint。
 
 ### 可选 Turnstile 验证（2026 年 11 月 5 日）
 

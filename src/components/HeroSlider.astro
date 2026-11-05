@@ -24,7 +24,7 @@ const slides = [
   },
 ];
 ---
-<section class="hero hero-slider" aria-label="Belaro machining highlights" aria-roledescription="carousel" data-hero-slider>
+<section id="home-hero" class="hero hero-slider" aria-label="Belaro machining highlights" aria-roledescription="carousel" data-hero-slider data-home-module="hero">
   <div class="hero-backdrops" aria-hidden="true">
     {slides.map((slide, index) => <img class:list={['hero-backdrop', { 'is-active': index === 0 }]} src={slide.image} alt="" style={{ objectPosition: slide.position }} loading={index === 0 ? 'eager' : 'lazy'} fetchpriority={index === 0 ? 'high' : 'low'} />)}
   </div>
@@ -46,8 +46,8 @@ const slides = [
   </div>
   <div class="container hero-footer">
     <div class="hero-proof">
-      <div><strong>±0.01–0.02 mm</strong><small>Typical capability, subject to part review</small></div>
-      <div><strong>20–500 pcs</strong><small>Indicative batch range</small></div>
+      <div><strong>3-axis & 5-axis</strong><small>CNC milling configurations</small></div>
+      <div><strong>CNC Turning</strong><small>Rotational components</small></div>
       <div><strong>OEM Focus</strong><small>Drawing-based production</small></div>
     </div>
     <div class="hero-controls" hidden>

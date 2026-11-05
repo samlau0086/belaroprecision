@@ -5,104 +5,135 @@ import Footer from '../components/Footer.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import HeroSlider from '../components/HeroSlider.astro';
 import PartIllustration from '../components/PartIllustration.astro';
-import SecondaryProcessSupport from '../components/SecondaryProcessSupport.astro';
 import { machinedParts } from '../data/machined-parts';
+
+const representativeParts = [machinedParts[0], machinedParts[1], machinedParts[2], machinedParts[3]];
 ---
-<BaseLayout title="Precision CNC Machining for OEM Manufacturers" description="Belaro Precision manufactures drawing-based CNC machined components for industrial machinery, automation systems and OEM applications.">
+<BaseLayout title="Precision CNC Machining for OEM Manufacturers" description="Drawing-based CNC milling and turning for industrial OEM parts, low-volume production and repeat orders, with project-specific technical review and inspection.">
   <Header />
   <main>
     <HeroSlider />
-    <section class="trust-strip"><div class="container trust-inner"><span>BUILT AROUND YOUR ENGINEERING DRAWINGS</span><span>PRECISION COMPONENTS</span><span>PRODUCTION-FOCUSED</span><span>DIRECT RFQ PROCESS</span></div></section>
-    <section class="section section-intro"><div class="container intro-grid"><div><span class="eyebrow">WHO WE ARE</span><h2>Reliable machining starts with <em>engineering clarity.</em></h2></div><div><p class="lead">Belaro Precision supports OEM manufacturers with CNC-machined metal components made to customer drawings and project requirements.</p><p>From initial drawing review to production and inspection, our focus is on clear communication, practical manufacturability and consistent execution. Every project is reviewed against its geometry, material, tolerance and quantity before a production commitment is made.</p><a class="text-link" href="/about/">More about Belaro <span>→</span></a></div></div></section>
-    <section class="section section-soft"><div class="container"><SectionHeading eyebrow="WHAT WE DO" title="CNC capabilities for production components" text="Focused machining services for industrial parts, built around the requirements in your drawings."/><div class="capability-grid"><article class="cap-card"><img src="https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=900&q=85" alt="CNC milling machine cutting a metal component"/><div class="cap-body"><span class="card-number">01 / MILLING</span><h3>CNC Milling</h3><p>Machined profiles, housings, brackets, plates and precision features for industrial assemblies.</p><a href="/services/cnc-milling/" class="text-link">Explore milling <span>→</span></a></div></article><article class="cap-card"><img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=900&q=85" alt="Precision manufacturing workshop"/><div class="cap-body"><span class="card-number">02 / TURNING</span><h3>CNC Turning</h3><p>Rotational components such as shafts, bushings, sleeves and turned features, subject to capability review.</p><a href="/services/cnc-turning/" class="text-link">Explore turning <span>→</span></a></div></article><article class="cap-card cap-card-dark"><div class="abstract-lines"></div><div class="cap-body"><span class="card-number">03 / OEM PRODUCTION</span><h3>Low-Volume<br/>Production</h3><p>Production-minded support for repeat orders and batch quantities aligned with your project needs.</p><a href="/services/production/" class="text-link text-link-light">How we work <span>→</span></a></div></article></div></div></section>
-    <SecondaryProcessSupport title="Machining plus the secondary processes your part requires" text="Belaro combines its CNC machining focus with flexible support from the supplier networks in Dongguan and Shenzhen, including grinding, heat treatment and surface finishing where the drawing requires them." />
-    <section class="section industries-preview"><div class="container"><div class="split-heading"><SectionHeading eyebrow="INDUSTRIES" title="Parts that keep industry moving" text="We focus on component requirements across selected industrial sectors."/><a class="button button-outline" href="/industries/">View industries <span>↗</span></a></div><div class="industry-grid"><a class="industry-card" href="/industries/#automation"><span>01</span><h3>Industrial<br/>Automation</h3><b>↗</b></a><a class="industry-card" href="/industries/#machinery"><span>02</span><h3>Industrial<br/>Machinery</h3><b>↗</b></a><a class="industry-card" href="/industries/#fluid"><span>03</span><h3>Hydraulic &<br/>Pneumatic</h3><b>↗</b></a><a class="industry-card" href="/industries/#laboratory"><span>04</span><h3>Laboratory &<br/>Testing Equipment</h3><b>↗</b></a></div></div></section>
-    <section class="quality-band"><div class="container quality-band-grid"><div><span class="eyebrow eyebrow-light">QUALITY & CONTROL</span><h2>Precision is not a promise.<br/><em>It is a process to verify.</em></h2><p>Part requirements are reviewed against measurable inspection criteria. Tolerances and inspection documentation are confirmed for each project.</p><a class="button button-white" href="/quality/">Explore our quality approach <span>→</span></a></div><div class="quality-stat"><strong>±0.01–0.02</strong><span>mm</span><p>Typical achievable tolerance range on suitable features, subject to drawing, material, geometry and inspection conditions.</p></div></div></section>
-    <section class="section parts-preview"><div class="container"><div class="split-heading"><SectionHeading eyebrow="MACHINED PARTS" title="From part geometry to practical application" text="Explore drawing-based component families for industrial OEM requirements. Concept illustrations shown."/><a class="button button-outline" href="/machined-parts/">Explore machined parts <span>↗</span></a></div><div class="parts-preview-grid">{[machinedParts[0], machinedParts[2], machinedParts[3]].map(part => <a class="parts-preview-card" href={`/machined-parts/#${part.id}`}><div><PartIllustration kind={part.id}/><span>CONCEPT ILLUSTRATION</span></div><p>{part.process}</p><h3>{part.title} <span aria-hidden="true">↗</span></h3></a>)}</div></div></section>
-    <section class="section process-section">
+
+    <section id="procurement-fit" class="section procurement-section" data-home-module="procurement-fit">
       <div class="container">
-        <SectionHeading eyebrow="HOW IT WORKS" title="A clear path from drawing to delivery" text="A straightforward RFQ process helps both teams align on technical and commercial requirements."/>
+        <SectionHeading eyebrow="BUILT FOR INDUSTRIAL BUYERS" title="A practical fit for drawing-based procurement" text="Belaro supports engineering and purchasing teams that need clear technical review, responsive quoting and a repeatable path to production." />
+        <div class="requirement-grid">
+          <article><b>01</b><h3>Build to print</h3><p>Parts are reviewed against your drawings, CAD files, material callouts and critical requirements.</p></article>
+          <article><b>02</b><h3>Milling & turning</h3><p>One RFQ can include prismatic milled components and rotational turned components for the same assembly.</p></article>
+          <article><b>03</b><h3>Low-volume batches</h3><p>Quantity, process route and delivery expectations are assessed for each project before commitment.</p></article>
+          <article><b>04</b><h3>Repeat procurement</h3><p>Agreed drawings and inspection requirements provide a clear reference for subsequent production orders.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="core-services" class="section section-soft" data-home-module="core-services">
+      <div class="container">
+        <div class="split-heading">
+          <SectionHeading eyebrow="CORE MACHINING SERVICES" title="Milling and turning around your part requirements" text="The correct machine configuration, workholding approach and inspection plan are determined after technical review." />
+          <a class="button button-outline" href="/services/">View capabilities <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="capability-grid core-service-grid">
+          <article class="cap-card">
+            <img src="https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=1200&q=85" alt="CNC milling equipment machining metal" />
+            <div class="cap-body"><span class="card-number">01 / CNC MILLING</span><h3>3-axis and simultaneous 5-axis machining</h3><p>For brackets, mounting bases, plates, housings and machined blocks with multiple faces and detailed features.</p><a href="/services/cnc-milling/" class="button button-orange">Explore CNC Milling <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="cap-card">
+            <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1200&q=85" alt="Precision manufacturing workshop" />
+            <div class="cap-body"><span class="card-number">02 / CNC TURNING</span><h3>Rotational parts and turned features</h3><p>For shafts, bushings, sleeves, connectors and other cylindrical components, subject to drawing review.</p><a href="/services/cnc-turning/" class="button button-orange">Explore CNC Turning <span aria-hidden="true">→</span></a></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="representative-parts" class="section parts-preview" data-home-module="representative-parts">
+      <div class="container">
+        <div class="split-heading">
+          <SectionHeading eyebrow="REPRESENTATIVE PART TYPES" title="Common components for industrial assemblies" text="The illustrations identify the types of components we review. They are not customer parts or evidence of a fixed manufacturing range." />
+          <a class="button button-outline" href="/machined-parts/">Explore machined parts <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="parts-preview-grid">
+          {representativeParts.map(part => <a class="parts-preview-card" href={`/machined-parts/#${part.id}`}><div><PartIllustration kind={part.id}/><span>CONCEPT ILLUSTRATION</span></div><p>{part.process} · {part.application}</p><h3>{part.title} <span aria-hidden="true">↗</span></h3></a>)}
+        </div>
+      </div>
+    </section>
+
+    <section id="capability-overview" class="section section-soft capability-overview" data-home-module="capability-overview">
+      <div class="container capability-overview-grid">
+        <div>
+          <SectionHeading eyebrow="CAPABILITY OVERVIEW" title="Confirmed processes, project-specific limits" text="Belaro confirms manufacturability against the complete part requirement rather than presenting unverified limits as blanket capability." />
+          <a class="text-link" href="/services/secondary-processes/">Explore secondary process support <span aria-hidden="true">→</span></a>
+        </div>
+        <dl class="capability-list">
+          <div><dt>Machining</dt><dd>3-axis CNC milling, simultaneous 5-axis CNC milling and CNC turning.</dd></div>
+          <div><dt>Materials</dt><dd>Confirmed from the drawing and material specification during technical review.</dd></div>
+          <div><dt>Part size</dt><dd>Checked against geometry, machine configuration, workholding and inspection access.</dd></div>
+          <div><dt>Tolerances</dt><dd>Reviewed feature by feature with the datum scheme and measurement method considered.</dd></div>
+          <div><dt>Quantity</dt><dd>Low-volume and repeat-order requirements assessed according to the part and production plan.</dd></div>
+          <div><dt>Secondary processes</dt><dd>Grinding, heat treatment and surface finishing can be coordinated through supplier networks in Dongguan and Shenzhen.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section id="quality-inspection" class="quality-band" data-home-module="quality-inspection">
+      <div class="container quality-band-grid">
+        <div><span class="eyebrow eyebrow-light">QUALITY & INSPECTION</span><h2>Agree the requirements.<br/><em>Inspect what matters.</em></h2><p>Drawings, revisions, material requirements, critical dimensions and acceptance criteria are aligned before production. Inspection follows the agreed requirements rather than a generic tolerance claim.</p><a class="button button-white" href="/quality/">Explore our quality approach <span aria-hidden="true">→</span></a></div>
+        <div class="quality-checklist" aria-label="Inspection approach"><div><b>01</b><span>Review drawings and revisions</span></div><div><b>02</b><span>Identify critical dimensions</span></div><div><b>03</b><span>Confirm inspection criteria</span></div><div><b>04</b><span>Provide agreed documentation</span></div></div>
+      </div>
+    </section>
+
+    <section id="target-applications" class="section applications-section" data-home-module="target-applications">
+      <div class="container">
+        <div class="split-heading">
+          <SectionHeading eyebrow="TARGET APPLICATIONS" title="Parts for automation and industrial machinery" text="Our focus is the component-level requirement inside equipment and production assemblies, not a broad industry label alone." />
+          <a class="button button-outline" href="/industries/">View industries <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="application-grid">
+          <article><span>01 / AUTOMATION EQUIPMENT</span><h3>Positioning, motion and assembly hardware</h3><p>Mounting brackets, locating blocks, fixture plates, shafts, sleeves and equipment interfaces used in automated systems.</p><a class="text-link" href="/industries/#automation">Automation applications <span aria-hidden="true">→</span></a></article>
+          <article><span>02 / INDUSTRIAL MACHINERY</span><h3>Structural, rotating and fitted components</h3><p>Machined bases, housings, plates, shafts, bushings and custom connectors used in machinery and supporting equipment.</p><a class="text-link" href="/industries/#machinery">Machinery applications <span aria-hidden="true">→</span></a></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="production-flow" class="section section-soft process-section" data-home-module="production-flow">
+      <div class="container">
+        <SectionHeading eyebrow="HOW WE WORK" title="A clear path from drawing to delivery" text="Each stage creates a shared technical and commercial reference before the next step begins." />
         <ol class="process-flow" role="list">
-          <li class="process-card"><b>01</b><h3>Send your drawing</h3><p>Share CAD files, PDF drawings and project details.</p><span class="process-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></li>
-          <li class="process-card"><b>02</b><h3>Technical review</h3><p>We review geometry, material, tolerances and quantity.</p><span class="process-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></li>
-          <li class="process-card"><b>03</b><h3>Quotation</h3><p>Receive pricing and a proposed production timeline.</p><span class="process-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></li>
-          <li class="process-card"><b>04</b><h3>Manufacture & inspect</h3><p>Production and inspection follow agreed requirements.</p></li>
+          <li class="process-card"><b>01</b><h3>Send your drawing</h3><p>Share CAD files, PDF drawings, quantity and relevant project details.</p><span class="process-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></li>
+          <li class="process-card"><b>02</b><h3>Technical review & quote</h3><p>We review the requirements, clarify open points and prepare the quotation.</p><span class="process-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></li>
+          <li class="process-card"><b>03</b><h3>Confirm production</h3><p>Drawing revision, scope, price and production expectations are aligned before release.</p><span class="process-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></li>
+          <li class="process-card"><b>04</b><h3>Inspect & deliver</h3><p>Parts are manufactured, inspected to the agreement and prepared for delivery.</p></li>
         </ol>
       </div>
     </section>
-    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">HAVE A PART TO MAKE?</span><h2>Let’s review your next<br/><em>machining requirement.</em></h2><p>Send your drawing and key project details. We’ll review the requirements and respond with the next steps.</p></div><a class="button button-orange button-large" href="/contact/">Submit an RFQ <span>↗</span></a></div></section>
-  </main><Footer />
+
+    <section id="faq-rfq" class="section faq-rfq-section" data-home-module="faq-rfq">
+      <div class="container faq-layout">
+        <SectionHeading eyebrow="PROCUREMENT FAQ" title="What to include in your first RFQ" text="A complete requirement helps us review the project and respond with relevant technical questions." />
+        <div class="faq-list">
+          <details><summary>What files should I send?</summary><p>Send a 3D CAD file when available, a controlled PDF drawing, the required quantity and any material, finish or inspection requirements.</p></details>
+          <details><summary>Can one RFQ include milled and turned parts?</summary><p>Yes. Identify the individual part numbers, revisions and quantities so each component can be reviewed with the appropriate process route.</p></details>
+          <details><summary>How are materials, tolerances and batch size confirmed?</summary><p>They are reviewed together with part geometry, workholding, inspection access and production requirements. The quotation records the accepted scope.</p></details>
+          <details><summary>Can Belaro coordinate secondary processes?</summary><p>Grinding, heat treatment, surface finishing and other required processes may be coordinated through qualified supplier networks in Dongguan and Shenzhen, subject to project review.</p></details>
+        </div>
+      </div>
+      <div class="cta-section">
+        <div class="container cta-inner"><div><span class="eyebrow eyebrow-light">HAVE A PART TO MAKE?</span><h2>Send the drawing.<br/><em>Start the technical review.</em></h2><p>Include the revision, quantity, material and critical requirements you already know. We will respond with questions and the next steps.</p></div><a class="button button-orange button-large" href="/contact/">Submit an RFQ <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </section>
+  </main>
+  <Footer />
 </BaseLayout>
 
 <style>
-  .parts-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.parts-preview-card{border:1px solid var(--line);min-width:0}.parts-preview-card>div{background:var(--soft);color:#415d7b;padding:20px;position:relative}.parts-preview-card :global(svg){width:100%;height:180px;display:block}.parts-preview-card>div>span{font-size:10px;letter-spacing:1px;color:var(--muted)}.parts-preview-card>p{font-size:12px;color:var(--muted);margin:22px 24px 8px}.parts-preview-card h3{font-size:20px;letter-spacing:-.5px;margin:0 24px 24px;display:flex;justify-content:space-between;gap:10px}.parts-preview-card h3 span{color:var(--orange)}.parts-preview-card:hover{border-color:var(--orange)}.parts-preview-card:focus-visible{outline:3px solid var(--orange);outline-offset:4px}@media(max-width:700px){.parts-preview-grid{grid-template-columns:minmax(0,1fr)}}
-  .process-flow {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 40px;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .process-card {
-    position: relative;
-    min-width: 0;
-    padding: 26px 24px 30px;
-    border-top: 3px solid var(--orange);
-    background: var(--soft);
-  }
-
-  .process-card b {
-    color: var(--orange);
-    font: 700 16px var(--display);
-    letter-spacing: 1px;
-  }
-
-  .process-card h3 {
-    margin: 24px 0 12px;
-    font-size: 19px;
-    line-height: 1.4;
-    letter-spacing: -.5px;
-  }
-
-  .process-card p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 16px;
-  }
-
-  .process-arrow {
-    position: absolute;
-    top: 50%;
-    right: -32px;
-    width: 24px;
-    height: 24px;
-    color: var(--orange);
-    transform: translateY(-50%);
-  }
-
-  .process-arrow svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  @media (max-width: 900px) {
-    .process-flow {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .process-card h3 {
-      margin-top: 16px;
-    }
-
-    .process-arrow {
-      top: auto;
-      right: auto;
-      bottom: -32px;
-      left: 50%;
-      transform: translateX(-50%) rotate(90deg);
-    }
-  }
+  .requirement-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+  .requirement-grid article{background:#fff;padding:30px 25px;min-width:0}.requirement-grid b,.application-grid>article>span{color:var(--orange);font:700 13px var(--display);letter-spacing:1.4px}.requirement-grid h3{font-size:20px;line-height:1.35;margin:30px 0 10px}.requirement-grid p{color:var(--muted);margin:0;font-size:15px}
+  .core-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.core-service-grid .cap-card{border:1px solid var(--line)}.core-service-grid .cap-card>img{height:310px}.core-service-grid .cap-body h3{font-size:27px;min-height:73px}.core-service-grid .cap-body p{min-height:82px}.core-service-grid .button{margin-top:5px}
+  .parts-preview-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}.parts-preview-card{border:1px solid var(--line);min-width:0;transition:border-color .2s,transform .2s}.parts-preview-card>div{background:var(--soft);color:#415d7b;padding:18px;position:relative}.parts-preview-card :global(svg){width:100%;height:150px;display:block}.parts-preview-card>div>span{font-size:10px;letter-spacing:1px;color:var(--muted)}.parts-preview-card>p{font-size:12px;color:var(--muted);margin:20px 20px 7px}.parts-preview-card h3{font-size:18px;letter-spacing:-.3px;margin:0 20px 22px;display:flex;justify-content:space-between;gap:10px}.parts-preview-card h3 span{color:var(--orange)}.parts-preview-card:hover{border-color:var(--orange);transform:translateY(-3px)}.parts-preview-card:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
+  .capability-overview-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:90px;align-items:start}.capability-overview .section-heading{margin-bottom:25px}.capability-list{margin:0;border-top:1px solid #ccd4de}.capability-list>div{display:grid;grid-template-columns:165px 1fr;gap:25px;padding:20px 0;border-bottom:1px solid #ccd4de}.capability-list dt{font:700 16px var(--display);color:var(--navy)}.capability-list dd{margin:0;color:var(--muted)}
+  .quality-checklist{border-left:1px solid rgba(255,255,255,.2);padding-left:42px}.quality-checklist>div{display:grid;grid-template-columns:36px 1fr;gap:14px;padding:17px 0;border-bottom:1px solid rgba(255,255,255,.16)}.quality-checklist>div:last-child{border-bottom:0}.quality-checklist b{color:var(--orange);font:700 13px var(--display)}.quality-checklist span{font-weight:600;line-height:1.45}
+  .application-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.application-grid article{border-top:3px solid var(--orange);background:var(--soft);padding:35px}.application-grid h3{font-size:27px;line-height:1.3;margin:20px 0 13px}.application-grid p{color:var(--muted);margin-bottom:24px}
+  .process-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px;padding:0;margin:0;list-style:none}.process-card{position:relative;min-width:0;padding:26px 24px 30px;border-top:3px solid var(--orange);background:#fff}.process-card>b{color:var(--orange);font:700 16px var(--display);letter-spacing:1px}.process-card h3{margin:24px 0 12px;font-size:19px;line-height:1.4;letter-spacing:-.5px}.process-card p{margin:0;color:var(--muted);font-size:16px}.process-arrow{position:absolute;top:50%;right:-32px;width:24px;height:24px;color:var(--orange);transform:translateY(-50%)}.process-arrow :global(svg){display:block;width:100%;height:100%}
+  .faq-rfq-section{padding-bottom:0}.faq-layout{display:grid;grid-template-columns:.8fr 1.2fr;gap:90px;align-items:start;margin-bottom:80px}.faq-list{border-top:1px solid var(--line)}.faq-list details{border-bottom:1px solid var(--line)}.faq-list summary{cursor:pointer;list-style:none;padding:22px 42px 22px 0;font:700 18px var(--display);position:relative}.faq-list summary::-webkit-details-marker{display:none}.faq-list summary:after{content:'+';position:absolute;right:5px;top:17px;color:var(--orange);font:400 25px var(--display)}.faq-list details[open] summary:after{content:'−'}.faq-list summary:focus-visible{outline:2px solid var(--orange);outline-offset:4px}.faq-list p{color:var(--muted);padding:0 35px 22px 0;margin:0}.faq-rfq-section .cta-section{margin-top:0}.cta-inner h2 em{color:var(--orange)}
+  @media(max-width:900px){.requirement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.parts-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.capability-overview-grid,.faq-layout{gap:45px}.process-flow{grid-template-columns:minmax(0,1fr)}.process-card h3{margin-top:16px}.process-arrow{top:auto;right:auto;bottom:-32px;left:50%;transform:translateX(-50%) rotate(90deg)}}
+  @media(max-width:700px){.requirement-grid,.core-service-grid,.parts-preview-grid,.capability-overview-grid,.application-grid,.faq-layout{grid-template-columns:minmax(0,1fr)}.requirement-grid h3{margin-top:18px}.core-service-grid .cap-card>img{height:220px}.core-service-grid .cap-body h3,.core-service-grid .cap-body p{min-height:0}.parts-preview-card :global(svg){height:180px}.capability-overview-grid,.faq-layout{gap:28px}.capability-list>div{grid-template-columns:1fr;gap:5px}.quality-checklist{border-left:0;border-top:1px solid rgba(255,255,255,.2);padding:22px 0 0}.application-grid article{padding:27px 23px}.faq-layout{margin-bottom:55px}}
 </style>

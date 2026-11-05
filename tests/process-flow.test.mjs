@@ -24,7 +24,7 @@ test('首页流程卡片：顺序、背景、边框和响应式箭头', async ()
     const flow = page.locator('.process-flow');
     assert.equal(await flow.getAttribute('role'), 'list');
     assert.deepEqual(await flow.locator('h3').allTextContents(), [
-      'Send your drawing', 'Technical review', 'Quotation', 'Manufacture & inspect',
+      'Send your drawing', 'Technical review & quote', 'Confirm production', 'Inspect & deliver',
     ]);
     assert.deepEqual(await flow.locator('b').allTextContents(), ['01', '02', '03', '04']);
     assert.equal(await flow.locator('.process-arrow[aria-hidden="true"]').count(), 3);
@@ -48,7 +48,7 @@ test('首页流程卡片：顺序、背景、边框和响应式箭头', async ()
         };
       });
       assert.equal(layout.overflow, false, `${width}px 不应横向溢出`);
-      assert.equal(layout.background, 'rgb(244, 246, 248)');
+      assert.equal(layout.background, 'rgb(255, 255, 255)');
       assert.equal(layout.border, '3px');
       assert.equal(layout.borderColor, 'rgb(244, 123, 53)');
       for (let i = 0; i < 3; i++) {
