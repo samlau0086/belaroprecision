@@ -4,7 +4,7 @@ import { rfqFields, submissionRequest, submissionResult } from '../src/lib/gravi
 
 const config = () => ({ graphqlUrl: 'https://example.com/graphql', formId: 42, uploadsEnabled: true,
   turnstileSiteKey: 'test-site-key',
-  fields: Object.fromEntries(rfqFields.map((field, i) => [field, { id: i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])) });
+  fields: { ...Object.fromEntries(rfqFields.map((field, i) => [field, { id: i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])), documents: { id:15, type:'checkboxes', choices:[{inputId:15.1,value:'FAI report'},{inputId:15.2,value:'CMM / dimensional report'},{inputId:15.3,value:'EN 10204 3.1 material cert'}] } } });
 const values = () => {
   const data = new FormData();
   for (const field of rfqFields) if (field !== 'attachment') data.set(field, field);
@@ -28,6 +28,37 @@ test('JSON submission uses configurable form ID and typed GraphQL inputs', () =>
   assert.equal(fields.find(f => f.id === 11).value, '1');
   assert.equal(fields.some(f => f.id === 9), false);
   assert.equal(operation.variables.input.saveAsDraft, false);
+});
+
+test('文件需求独立提交至字段15，留空、多选、去重及白名单均保留项目备注', () => {
+  const data = new FormData();
+  const fields = () => JSON.parse(submissionRequest(data, config(), 'test-token').init.body).variables.input.fieldValues;
+  for (const id of [5, 6, 7, 8, 10]) assert.equal(fields().find(field => field.id === id).value, '');
+  assert.deepEqual(fields().find(field => field.id === 15).checkboxValues, []);
+  data.set('details', 'Keep this note.');
+  data.append('documents', 'FAI report');
+  data.append('documents', 'EN 10204 3.1 material cert');
+  data.append('documents', 'FAI report');
+  data.append('documents', 'unrecognised');
+  assert.equal(fields().find(field => field.id === 10).value, 'Keep this note.');
+  assert.deepEqual(fields().find(field => field.id === 15).checkboxValues, [{inputId:15.1,value:'FAI report'},{inputId:15.3,value:'EN 10204 3.1 material cert'}]);
+  data.delete('details');
+  assert.equal(fields().find(field => field.id === 10).value, '');
+  data.delete('documents');
+  for (const choice of config().fields.documents.choices) {
+    data.set('documents', choice.value);
+    assert.deepEqual(fields().find(field => field.id === 15).checkboxValues, [choice]);
+  }
+  data.delete('documents');
+  for (const choice of config().fields.documents.choices) data.append('documents', choice.value);
+  assert.deepEqual(fields().find(field => field.id === 15).checkboxValues, config().fields.documents.choices);
+});
+
+test('拒绝无效或重复的复选框子项配置', () => {
+  for (const choices of [[], [{inputId:14.1,value:'FAI report'}], [{inputId:15,value:'FAI report'}], [{inputId:15.1,value:''}], [{inputId:15.1,value:'a'},{inputId:15.1,value:'b'}], [{inputId:15.1,value:'a'},{inputId:15.2,value:'a'}]]) {
+    const settings = config(); settings.fields.documents.choices = choices;
+    assert.throws(() => submissionRequest(values(), settings, 'test-token'), /checkbox/);
+  }
 });
 
 test('配置 Site Key 后必须提供非空 Token', () => {
@@ -54,6 +85,9 @@ test('未配置 Site Key 时支持普通提交和附件提交，且不发送验�
 test('RFQ omits the retired delivery field while preserving remaining backend IDs', async () => {
   const source = await (await import('node:fs/promises')).readFile(new URL('../src/config.ts', import.meta.url), 'utf8');
   const fields = Object.fromEntries([...source.matchAll(/(\w+): \{ id: (\d+), type: '(\w+)' \}/g)].map(([, name, id, type]) => [name, { id: Number(id), type }]));
+  const documents = source.match(/documents: \{ id: (\d+), type: '(\w+)', choices: \[([\s\S]*?)\]/);
+  assert.ok(documents);
+  fields.documents = { id:Number(documents[1]), type:documents[2], choices:[...documents[3].matchAll(/inputId: ([\d.]+), value: '([^']+)'/g)].map(([, inputId, value]) => ({inputId:Number(inputId),value})) };
   const data = values();
   data.set('delivery', 'legacy delivery value');
   const submitted = JSON.parse(submissionRequest(data, { ...config(), fields }, 'test-token').init.body).variables.input.fieldValues;

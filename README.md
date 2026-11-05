@@ -80,7 +80,7 @@ Quality 页面按七项采购问题提供主题锚点、评审要点和询价入
 
 About 页面区分自有 CNC 加工能力和通过东莞、深圳供应商协调的二次工艺，并列出外协范围确认、图纸及批次交接、回件检查和偏差处理等需按订单确认的控制要求。联系方式复用 `src/config.ts`，不在 About 显示中文法定名称。尚无可发布的真实车间照片、设备型号清单和团队资料，因此对应板块明确说明未公开及项目核实方式，没有用图库或生成图替代真实资料；邮箱收件、WhatsApp 账号和现场地址未通过此次代码测试作外部核验。
 
-RFQ 必填项包括姓名、邮箱、公司、国家/地区、加工工艺、数量和联系同意；同意框默认勾选，客户可取消勾选，取消后需重新勾选才能提交。旁边提供 Privacy Policy 与 Terms of Use 链接，明确询价不订阅营销邮件。电话、材料、要求、附件和项目详情为可选项。表单不收集 Target delivery date，预计交期由 Belaro 在评审需求后提供。国家搜索含国旗，材料既可选也可自填；电话区号随国家选择更新，并可独立修改。
+RFQ 必填项包括姓名、邮箱、公司、国家/地区和联系同意；同意框默认勾选，客户可取消，取消后需重新勾选才能提交。电话和图纸上传保留在外层；加工工艺、材料、预计数量、公差 / 关键要求、所需文件和项目详情放在默认收起的「Add details (optional)」区域，全部可选。文件需求可多选 FAI report、CMM / dimensional report、EN 10204 3.1 material cert，可用性和范围须在报价时确认。文件需求通过 `checkboxValues` 独立提交至字段 15，项目详情字段 13 仅保留用户备注；折叠状态不会清空输入，后台字段错误（含文件复选框组）会自动展开对应区域并聚焦。部署前须同步确认 Gravity Forms 字段 7（工艺）、9（数量）和 15（文件需求）均非必填，本次未更改真实后台配置。旁边提供 Privacy Policy 与 Terms of Use 链接，明确询价不订阅营销邮件。表单不收集 Target delivery date，预计交期由 Belaro 评审后提供。国家搜索含国旗，材料可选或自填；电话区号随国家选择更新，也可独立修改。
 
 已实现页面 Title、Meta Description、Canonical、英文 `lang` 和图片 Alt。全站页脚提供隐私、Cookie 与使用条款入口。当前未实现 Open Graph、Twitter Card、结构化数据、sitemap、robots.txt、自定义 404、分析统计、广告转化、自动报价、订单管理或站内登录。
 
@@ -154,7 +154,7 @@ PUBLIC_TURNSTILE_SITE_KEY=替换为公开的站点公钥
 
 - `graphqlUrl`：当前为 `https://belaroprecision.local/graphql`，部署前替换为正式后台地址。
 - `formId`：当前为 `1`，切换后台表单时应同步复核所有字段映射。
-- `fields`：配置数据库字段 `id` 和 `type`；支持 `text`、`name`、`email`、`file`、`consent`、`checkbox`。标准 Checkbox 还需配置与后台一致的 `inputId`（如 `12.1`）和 `choiceValue`；Consent 使用 `type: 'consent'`。
+- `fields`：配置数据库字段 `id` 和 `type`；支持 `text`、`name`、`email`、`file`、`consent`、`checkbox`、`checkboxes`。单项 Checkbox 使用 `inputId` 和 `choiceValue`；多项 Checkbox 使用 `choices` 数组，逐项配置 `inputId` 和 `value`。Consent 使用 `type: 'consent'`。
 - `uploadsEnabled`：当前为 `true`；部署时须先安装 WPGraphQL Upload，并确认存在 `fileUploadValues` 输入。
 - `turnstileSiteKey`：来自 `PUBLIC_TURNSTILE_SITE_KEY`，只能使用公开 Site Key。
 
@@ -190,6 +190,9 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 | `attachment` | 12 | `file` |
 | `details` | 13 | `text` |
 | `consent` | 14 | `consent` |
+| `documents` | 15 | `checkboxes` |
+
+用户已确认新增文件需求字段 15。当前配置的子项为 `15.1` → `FAI report`、`15.2` → `CMM / dimensional report`、`15.3` → `EN 10204 3.1 material cert`，提交时过滤未知值、去重，未勾选时发送空数组。子项输入编号和存储值必须与后台一致；若后台启用独立 choice value 或修改过选项，应同步修改 `src/config.ts` 的 `documents.choices` 和前端选项。本次本地后台连接被拒绝，尚未核实子项配置，也未创建真实询盘；自动化测试使用模拟后台。
 
 原文记录：2026 年 11 月 4 日本地表单 1 名为 `RFQ`，采用当时的字段（另含交期字段 10）；WPGraphQL Upload `0.1.5`、WPGraphQL `2.23.1`、WPGraphQL for Gravity Forms `0.13.4` 已安装并启用。这些后台版本和启用状态本次没有重新连接核实；WordPress、PHP、Gravity Forms 和数据库的版本及运行配置待确认。
 
@@ -198,6 +201,8 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 2026 年 11 月 5 日已移除前端交期字段及提交映射；其余后台字段 ID 不变。原字段 10 不再发送，既有后台字段和历史条目保留。部署前确认后台字段 10 为非必填，避免后台校验阻止提交。
 
 ### 8.2 上传兼容与后台表单要求
+
+图纸上传区下方显示 SVG 锁图标、保密说明「Files kept confidential, used only to quote and make your parts.」及隐私政策链接，文件输入通过 `aria-describedby` 关联该提示。隐私政策补充技术文件仅用于评估、报价及订单生产检验，不用于营销或公开展示；外协仅分享工作所需信息并遵守保密要求。此为业务处理承诺，不代表新增文件加密或访问控制功能。
 
 原文记载本地 WordPress 已安装配套 MU 插件，本次未复查安装目录。新后台必须复制仓库中的插件文件。它通过 WPGraphQL content-type filter 兼容 WPGraphQL Upload multipart 请求，要求 `GraphQL-Require-Preflight: 1`，并将此 Header 和 Turnstile Header 加入 GraphQL CORS 允许列表。插件也注册了页面声明的 CAD 扩展 MIME 类型；未关闭 WordPress 文件内容检查或 Gravity Forms 扩展检查。文本 CAD 和 DWG 使用注册的 MIME 类型；二进制 CAD 若无法通过后台 MIME 校验，可打包 ZIP 后提交，仍需实际验证。
 

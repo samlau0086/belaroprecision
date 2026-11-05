@@ -62,6 +62,7 @@ test('零件页：响应式导航、无脚本内容、FAQ、SEO 与询价预填'
       await page.goto(`${baseUrl}${link.href}`);
       assert.equal(await page.locator('[name="process"]').inputValue(), link.process);
       assert.match(await page.locator('[name="details"]').inputValue(), new RegExp(`^Part family: ${link.title}`));
+      await page.locator('.rfq-optional summary').click();
       await page.locator('[name="details"]').fill('My own part requirements');
       assert.equal(await page.locator('[name="details"]').inputValue(), 'My own part requirements');
     }

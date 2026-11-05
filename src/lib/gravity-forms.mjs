@@ -1,4 +1,4 @@
-export const rfqFields = ['name', 'email', 'company', 'country', 'process', 'material', 'quantity', 'tolerance', 'attachment', 'details', 'consent', 'phone'];
+export const rfqFields = ['name', 'email', 'company', 'country', 'process', 'material', 'quantity', 'tolerance', 'attachment', 'details', 'consent', 'phone', 'documents'];
 
 export function submissionRequest(values, config, turnstileToken) {
   const turnstileEnabled = Boolean(config.turnstileSiteKey?.trim());
@@ -47,6 +47,17 @@ export function submissionRequest(values, config, turnstileToken) {
         if (!Number.isFinite(mapping.inputId) || Math.trunc(mapping.inputId) !== mapping.id || !mapping.choiceValue) throw new Error('Configure the consent checkbox input ID and choice value.');
         entry.checkboxValues = raw ? [{ inputId: mapping.inputId, value: mapping.choiceValue }] : [];
         break;
+      case 'checkboxes': {
+        const choices = mapping.choices;
+        if (!Array.isArray(choices) || !choices.length || choices.some(choice =>
+          !Number.isFinite(choice.inputId) || Math.trunc(choice.inputId) !== mapping.id || choice.inputId === mapping.id || typeof choice.value !== 'string' || !choice.value.trim()) ||
+          new Set(choices.map(choice => choice.inputId)).size !== choices.length || new Set(choices.map(choice => choice.value)).size !== choices.length) {
+          throw new Error('Configure unique checkbox input IDs and choice values.');
+        }
+        const selected = new Set(values.getAll(field));
+        entry.checkboxValues = choices.filter(choice => selected.has(choice.value)).map(({ inputId, value }) => ({ inputId, value }));
+        break;
+      }
       case 'text': entry.value = value; break;
       default: throw new Error('Unsupported Gravity Forms field mapping.');
     }

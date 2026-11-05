@@ -62,6 +62,7 @@ test('铣削页：站内入口、响应式、SEO、FAQ 与工艺询价', async (
     assert.equal(new URL(page.url()).hash, '#rfq-form');
     assert.equal(await page.locator('[name="process"]').inputValue(), 'CNC Milling');
     assert.equal(await page.locator('[name="details"]').inputValue(), '');
+    await page.locator('.rfq-optional summary').click();
     await page.locator('[name="process"]').selectOption({ label: 'CNC Turning' });
     assert.equal(await page.locator('[name="process"]').inputValue(), 'CNC Turning');
     for (const query of ['?process=unknown', '?process=%3Cscript%3E']) {

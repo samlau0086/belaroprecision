@@ -30,6 +30,11 @@ export const gravityForms = {
     attachment: { id: 12, type: 'file' },
     details: { id: 13, type: 'text' },
     consent: { id: 14, type: 'consent' },
+    documents: { id: 15, type: 'checkboxes', choices: [
+      { inputId: 15.1, value: 'FAI report' },
+      { inputId: 15.2, value: 'CMM / dimensional report' },
+      { inputId: 15.3, value: 'EN 10204 3.1 material cert' },
+    ] },
   },
   uploadsEnabled: true,
   turnstileSiteKey: (import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '').trim(),
