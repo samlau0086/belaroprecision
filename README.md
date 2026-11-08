@@ -42,6 +42,7 @@
 │   ├── data/                 # Machined Parts 分类与评审内容
 │   ├── lib/                  # 国家数据、GraphQL 请求构造与结果解析
 │   └── styles/global.css     # 全局样式和响应式规则
+├── public/images/            # 本地 WebP 页面摄影与工艺图片
 ├── tests/                    # 表单单元测试及浏览器测试
 ├── wordpress/mu-plugins/     # 上传兼容与 Turnstile 校验插件
 ├── .astro/                   # Astro 生成目录，Git 忽略
@@ -49,7 +50,7 @@
 └── node_modules/             # 本地依赖，Git 忽略
 ```
 
-当前没有 `docs/`、`public/`、`.github/`、CHANGELOG.md 或 `.env.example`；未发现 CI、Docker、托管平台部署配置和嵌套 AGENTS.md。
+当前没有 `docs/`、`.github/`、CHANGELOG.md 或 `.env.example`；未发现 CI、Docker、托管平台部署配置和嵌套 AGENTS.md。
 
 ## 4. 已有页面与功能边界
 
@@ -73,12 +74,13 @@
 公共组件包含桌面/移动导航、页脚、年份更新和章节标题。页头的 Capabilities 支持桌面端悬停/键盘聚焦下拉，并在移动菜单中展示 CNC Milling、3-Axis CNC Machining、3+2 CNC Milling、5-Axis CNC Machining、CNC Turning、Secondary Processes 和 OEM & Low-Volume Production 子链接；页头、移动菜单、页脚和首页均提供 Machined Parts 入口。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
 
 首页按九个业务模块组织：首屏定位、采购需求匹配、核心加工服务、代表性零件、加工能力概览、质量与检验、目标应用、合作流程、FAQ 与询价入口。能力概览将 3 轴 CNC 铣削、3+2 定位铣削、联动五轴 CNC 铣削和 CNC 车削作为已确认工艺；材料、尺寸、公差与批量须按图纸和项目要求评审，不在首页展示未经确认的固定范围。代表性零件当前使用明确标注的概念示意，待取得授权的 Belaro 真实样件照片和说明后替换。
+首页采购区域下方展示两项对外优势：完整的图纸询价以 24 小时内报价回复为目标，并支持无最低起订量（No MOQ）。这些内容是报价与订单沟通承诺，具体回复仍取决于资料完整度与项目评审。
 
 首页四步 RFQ 流程为“提交图纸、技术评审与报价、确认生产、检验交付”，使用橙色顶部边框和白色卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
 
 Quality 页面按七项采购问题提供主题锚点、评审要点和询价入口，已移除未经确认的固定公差范围。检测方法示例不代表实际设备资产；设备、校准状态、文件可用性与检验覆盖率须在报价和订单阶段确认。当前缺少经企业核实的设备清单和报告样本，页面不承诺默认提供全部文件、正式 FAI/PPAP 或认证，后续取得确认资料后再补充。
 
-About 页面区分自有 CNC 加工能力和通过东莞、深圳供应商协调的二次工艺，并列出外协范围确认、图纸及批次交接、回件检查和偏差处理等需按订单确认的控制要求。联系方式复用 `src/config.ts`，不在 About 显示中文法定名称。尚无可发布的真实车间照片、设备型号清单和团队资料，因此对应板块明确说明未公开及项目核实方式，没有用图库或生成图替代真实资料；邮箱收件、WhatsApp 账号和现场地址未通过此次代码测试作外部核验。
+About 页面区分自有 CNC 加工能力和通过东莞、深圳供应商协调的二次工艺，并列出外协范围确认、图纸及批次交接、回件检查和偏差处理等需按订单确认的控制要求。联系方式复用 `src/config.ts`，不在 About 显示中文法定名称。页面已接入用户提供的车间场景图片作为加工与检验语境展示；设备型号清单和团队资料仍未公开，具体设备、人员及图片来源真实性仍须在供应商评审时核实。邮箱收件、WhatsApp 账号和现场地址未通过此次代码测试作外部核验。
 
 RFQ 必填项包括姓名、邮箱、公司、国家/地区和联系同意；同意框默认勾选，客户可取消，取消后需重新勾选才能提交。电话和图纸上传保留在外层；加工工艺、材料、预计数量、公差 / 关键要求、所需文件和项目详情放在默认收起的「Add details (optional)」区域，全部可选。文件需求可多选 FAI report、CMM / dimensional report、EN 10204 3.1 material cert，可用性和范围须在报价时确认。文件需求通过 `checkboxValues` 独立提交至字段 15，项目详情字段 13 仅保留用户备注；折叠状态不会清空输入，后台字段错误（含文件复选框组）会自动展开对应区域并聚焦。部署前须同步确认 Gravity Forms 字段 7（工艺）、9（数量）和 15（文件需求）均非必填，本次未更改真实后台配置。旁边提供 Privacy Policy 与 Terms of Use 链接，明确询价不订阅营销邮件。表单不收集 Target delivery date，预计交期由 Belaro 评审后提供。国家搜索含国旗，材料可选或自填；电话区号随国家选择更新，也可独立修改。
 
@@ -124,7 +126,7 @@ npm run preview
 
 1. **配置生产 RFQ 地址。** 原文记录本地 Gravity Forms 曾联调成功；生产环境需修改 `src/config.ts` 的 `gravityForms`，安装下述后台兼容插件，并从正式域名验证条目保存、附件及通知。历史成功不代表当前 Turnstile 配置已验证。
 2. **确认联系邮箱。** 核实 `src/config.ts` 中的 `sales@belaroprecision.com` 是否有人接收处理。
-3. **替换占位图片。** 原有 Unsplash 摄影图片为展示占位，应换成授权且优化过的真实加工、零件和检验图片；Machined Parts 的 SVG 为概念示意，应在获得已授权素材后补充真实零件照片和经核实的案例。未经确认不得暗示图示设备归企业所有或图示零件来自真实客户。
+3. **核实图片授权与真实性。** 原有 Unsplash 摄影占位图已替换为 `public/images/` 中的本地 WebP 素材。上线前仍须核实素材授权、拍摄来源及可公开范围，不得仅凭图片暗示图示设备归企业所有或图示零件来自真实客户。Machined Parts 的 SVG 仍为概念示意，取得已授权的真实样件照片和说明后再逐类替换。
 4. **核实能力描述。** ±0.01–0.02 mm 仅为附条件的典型值；上线前确认实际工艺、车削、材料、批量和检验文件能力。材料下拉选项不代表已验证的可加工范围。
 5. **补齐企业信息。** 用户已确认法定名称为深圳市极客码头科技有限公司（Shenzhen GEEKMATE Technology Co., Ltd.），公司地址为 `Shajing, Bao'an District, Shenzhen, China`，并提供 WhatsApp 联系号码 `+86 186 8218 8709`。完整街道地址、普通联系电话、营业时间、交付条款和认证仍须确认后再发布；当前 `site.phone` 仍为空。
 6. **核定法律页面与实际处理流程。** 隐私政策、Cookie 说明和使用条款已实现；上线前须确认完整地址、监控邮箱、实际服务商与数据位置、CAD 文件保留/删除和供应商访问规则，并按适用地区审核文字。页面没有虚构固定保留年限或自动删除机制，不替代 NDA、商业合同或法律审核，也不保证 Google Ads 审核通过。
@@ -162,7 +164,7 @@ PUBLIC_TURNSTILE_SITE_KEY=替换为公开的站点公钥
 
 ### 7.2 外部服务与 Turnstile 配置
 
-外部服务包括 WordPress GraphQL、Cloudflare Turnstile、Unsplash 图片和 Google Fonts（DM Sans、Manrope）。只有表单后台和验证服务承担询价接收及校验；图片和字体由访问者浏览器外部加载。当前仓库没有邮件发送代码或 SMTP 配置，通知由独立 WordPress/Gravity Forms 环境负责。
+外部服务包括 WordPress GraphQL、Cloudflare Turnstile 和 Google Fonts（DM Sans、Manrope）。只有表单后台和验证服务承担询价接收及校验；页面图片由本站 `public/images/` 提供，字体仍由访问者浏览器从 Google Fonts 加载。当前仓库没有邮件发送代码或 SMTP 配置，通知由独立 WordPress/Gravity Forms 环境负责。
 
 RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅空白）时，前端不加载 Turnstile 脚本、不展示验证组件、不发送验证 Header，允许普通和附件提交；姓名、邮箱等字段校验及防重复提交保持生效。需要启用时，在 Cloudflare 控制台中打开 Turnstile，创建组件，添加正式前端域名（如 `belaroprecision.com`；若使用 `www`，也需加入对应域名），选择 Managed 模式并取得 Site Key 和 Secret Key。控制台入口名称可能变化，以实际界面为准。
 
@@ -226,7 +228,9 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 先阅读根目录 `AGENTS.md`，遵循现有 Astro、TypeScript 和原生 CSS 结构。页面位于 `src/pages/`；公共布局、导航和表单控件优先复用；颜色、字体和通用间距优先使用 `src/styles/global.css` 的现有变量与规则。公开联系方式、域名和字段配置位于 `src/config.ts`。后台上传及验证逻辑位于 PHP MU 插件，修改后需单独部署至 WordPress。
 
-原有摄影图片是 Unsplash 占位资源；上线使用有授权的真实图片，优化尺寸并保留有意义的 Alt。Machined Parts 分类内容统一维护在 `src/data/machined-parts.ts`，代码原生 SVG 示意图维护在 `src/components/PartIllustration.astro`；这些图形仅用于解释零件类型，不是客户案例或标准库存件，实际加工能力仍需以图纸评审为准。
+页面摄影和工艺图片统一放在 `public/images/`，通过根路径 `/images/<文件名>` 引用。当前本地 WebP 素材包括首页铣削与车削主视觉、铣削与车削工艺细节、质量检验、OEM 批量生产、二次工艺、About 车间场景及 RFQ 评审场景；对应页面保留素材原始宽高并使用延迟解码或加载属性。上线前仍须确认授权、真实性和公开范围。Machined Parts 分类内容统一维护在 `src/data/machined-parts.ts`，代码原生 SVG 示意图维护在 `src/components/PartIllustration.astro`；这些图形仅用于解释零件类型，不是客户案例或标准库存件，实际加工能力仍需以图纸评审为准。
+
+图片映射如下：`hero-cnc-milling.webp` 用于首页和 Capabilities 铣削展示，`hero-cnc-turning.webp` 用于车削展示，`milling-process-detail.webp`、`turning-process-detail.webp` 和 `production-oem.webp` 用于对应服务详情页，`quality-inspection.webp` 用于 Quality，`secondary-processes.webp` 用于 Secondary Processes，`about-workshop.webp` 用于 About，`contact-rfq.webp` 用于 RFQ。替换素材时应保持相同文件名，或同步修改页面引用与 Alt 文本。
 
 Machined Parts 卡片通过 `/contact/?part=<id>#rfq-form` 进入询价页。联系页只接受 `src/data/machined-parts.ts` 中的分类 ID，并仅在对应字段为空时预填加工工艺和项目详情；该流程没有新增后端字段，也不会把任意 URL 文本写入表单。字体通过 Google Fonts 外部加载，可根据实际需求考虑自托管。当前没有站内数据库初始化、迁移或页面内容 CMS 发布命令。
 
@@ -256,6 +260,12 @@ Google 官方参考（上线前核对当前要求）：[数据收集和使用政
 - `node --test tests/cnc-milling.test.mjs tests/homepage.test.mjs tests/about.test.mjs` 的 3 项浏览器测试通过；`node --test tests/industries.test.mjs` 通过。行业页首次检查发现旧首页入口断言失效，已按当前两项应用入口同步测试后通过。
 - 覆盖新增能力卡、桌面与移动导航、锚点、FAQ、询价入口及响应式检查；铣削页 1440px 和 390px 截图已复核。
 - 测试阻断外部网络，不验证真实后台；本次未部署。项目未配置完整类型检查与 ESLint，未执行这两项检查。
+
+### 报价时效与起订量优势展示验证（2026 年 11 月 6 日）
+
+- 首页首屏能力证明栏和采购模块下方新增 “Quotes Within 24 Hours” 与 “No MOQ” 展示，并提供直接进入 RFQ 表单的入口。
+- `npm run build`、`node --test tests/homepage.test.mjs tests/hero-slider.test.mjs` 均通过；已覆盖首页响应式布局和轮播回归。
+- 24 小时为完整图纸询价的目标回复时效，不代表所有项目无条件报价；No MOQ 表示不设统一最低起订量，数量仍需按项目确认。
 
 现有测试直接使用 Node.js 执行，无 `npm test` 脚本：
 

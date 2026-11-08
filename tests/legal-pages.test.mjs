@@ -35,7 +35,8 @@ test('政策页面：SEO、互链、表单披露、全站页脚与响应式', as
       assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), `https://belaroprecision.com${path}`);
       assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 50);
       assert.equal(await page.locator('aside nav a[aria-current="page"]').count(), 1);
-      assert.equal(await page.locator('time').getAttribute('datetime'), '2026-11-05');
+      const expectedDate = path === '/terms-of-use/' ? '2026-11-05' : '2026-11-08';
+      assert.equal(await page.locator('time').getAttribute('datetime'), expectedDate);
       for (const width of [320, 390, 700, 701, 900, 1024, 1440]) {
         await page.setViewportSize({ width, height: 900 });
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${path} ${width}px 溢出`);

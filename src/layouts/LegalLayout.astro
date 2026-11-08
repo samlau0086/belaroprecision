@@ -3,8 +3,8 @@ import BaseLayout from './BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { site } from '../config';
-interface Props { title: string; description: string; }
-const { title, description } = Astro.props;
+interface Props { title: string; description: string; updated?: string; updatedLabel?: string; }
+const { title, description, updated = '2026-11-05', updatedLabel = 'November 5, 2026' } = Astro.props;
 const policies = [
   { href: '/privacy-policy/', title: 'Privacy Policy' },
   { href: '/cookie-policy/', title: 'Cookie Policy' },
@@ -17,7 +17,7 @@ const policies = [
     <section class="page-hero page-hero-compact"><div class="container">
       <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">{title}</span></nav>
       <span class="eyebrow eyebrow-light">BELARO / WEBSITE INFORMATION</span>
-      <h1>{title}</h1><p>{description}</p><p class="updated">Last updated: <time datetime="2026-11-05">November 5, 2026</time></p>
+      <h1>{title}</h1><p>{description}</p><p class="updated">Last updated: <time datetime={updated}>{updatedLabel}</time></p>
     </div></section>
     <section class="section"><div class="container legal-grid">
       <aside><nav aria-label="Website policies">{policies.map(policy => <a href={policy.href} aria-current={Astro.url.pathname === policy.href ? 'page' : undefined}>{policy.title}<span aria-hidden="true">→</span></a>)}</nav><div class="legal-contact"><h2>Questions?</h2><p>Contact Belaro Precision about this notice or your enquiry.</p><a href={`mailto:${site.email}`}>{site.email}</a><a href="/contact/">Contact us →</a></div></aside>

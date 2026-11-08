@@ -72,7 +72,7 @@ test('零件页：响应式导航、无脚本内容、FAQ、SEO 与询价预填'
       assert.equal(await page.locator('[name="details"]').inputValue(), '');
     }
     await page.goto(baseUrl);
-    assert.equal(await page.locator('.parts-preview-card').count(), 3);
+    assert.equal(await page.locator('.parts-preview-card').count(), 4);
     await page.getByRole('link', { name: 'Explore machined parts' }).click();
     assert.equal(new URL(page.url()).pathname, '/machined-parts/');
     const noJs = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 900 } });

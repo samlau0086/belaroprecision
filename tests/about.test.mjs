@@ -39,8 +39,14 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.equal(await page.locator('#supplier-coordination .supplier-steps > li').count(), 4);
     assert.match(await page.locator('#supplier-coordination').innerText(), /confidentiality/);
     assert.equal(await page.locator('#workshop-team article').count(), 3);
-    assert.match(await page.locator('#workshop-team').innerText(), /photographs are not currently published/);
-    assert.equal(await page.locator('#workshop-team img').count(), 0);
+    assert.match(await page.locator('#workshop-team').innerText(), /image above provides visual context/);
+    assert.equal(await page.locator('#workshop-team img[src="/images/about-workshop.webp"]').count(), 1);
+    await page.locator('#workshop-team img').scrollIntoViewIfNeeded();
+    await page.locator('#workshop-team img').waitFor({ state: 'visible' });
+    await page.waitForFunction(() => {
+      const image = document.querySelector('#workshop-team img');
+      return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
+    });
     assert.match(await page.locator('#company-contact').innerText(), /Shajing, Bao'an District, Shenzhen, China/);
     assert.equal(await page.locator('#company-contact a[href="mailto:sales@belaroprecision.com"]').count(), 1);
     assert.equal(await page.locator('#company-contact a[href="https://wa.me/8618682188709"]').count(), 1);
