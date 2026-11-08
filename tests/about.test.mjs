@@ -40,7 +40,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.match(await page.locator('#supplier-coordination').innerText(), /confidentiality/);
     assert.equal(await page.locator('#workshop-team article').count(), 3);
     assert.match(await page.locator('#workshop-team').innerText(), /image above provides visual context/);
-    assert.equal(await page.locator('#workshop-team img[src="/images/about-workshop.webp"]').count(), 1);
+    assert.equal(await page.locator('#workshop-team img[src^="/_astro/about-workshop."]').count(), 1);
     await page.locator('#workshop-team img').scrollIntoViewIfNeeded();
     await page.locator('#workshop-team img').waitFor({ state: 'visible' });
     await page.waitForFunction(() => {

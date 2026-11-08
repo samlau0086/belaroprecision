@@ -6,6 +6,8 @@ import SectionHeading from '../components/SectionHeading.astro';
 import HeroSlider from '../components/HeroSlider.astro';
 import PartIllustration from '../components/PartIllustration.astro';
 import { machinedParts } from '../data/machined-parts';
+import { Image } from 'astro:assets';
+import { images } from '../data/images';
 
 const representativeParts = [machinedParts[0], machinedParts[1], machinedParts[2], machinedParts[3]];
 ---
@@ -42,11 +44,11 @@ const representativeParts = [machinedParts[0], machinedParts[1], machinedParts[2
         </div>
         <div class="capability-grid core-service-grid">
           <article class="cap-card">
-            <img src="/images/hero-cnc-milling.webp" alt="CNC milling equipment machining metal" width="1672" height="941" loading="lazy" decoding="async" />
+            <Image src={images['hero-cnc-milling']} alt="CNC milling equipment machining metal" widths={[480, 800, 1160]} sizes="(max-width: 700px) calc(100vw - 48px), 550px" loading="lazy" decoding="async" />
             <div class="cap-body"><span class="card-number">01 / CNC MILLING</span><h3>3-axis, 3+2 and simultaneous 5-axis machining</h3><p>For brackets, mounting bases, plates, housings and machined blocks with multiple faces and detailed features.</p><a href="/services/cnc-milling/" class="button button-orange">Explore CNC Milling <span aria-hidden="true">→</span></a></div>
           </article>
           <article class="cap-card">
-            <img src="/images/hero-cnc-turning.webp" alt="Operator at a CNC turning machine" width="1672" height="941" loading="lazy" decoding="async" />
+            <Image src={images['hero-cnc-turning']} alt="Operator at a CNC turning machine" widths={[480, 800, 1160]} sizes="(max-width: 700px) calc(100vw - 48px), 550px" loading="lazy" decoding="async" />
             <div class="cap-body"><span class="card-number">02 / CNC TURNING</span><h3>Rotational parts and turned features</h3><p>For shafts, bushings, sleeves, connectors and other cylindrical components, subject to drawing review.</p><a href="/services/cnc-turning/" class="button button-orange">Explore CNC Turning <span aria-hidden="true">→</span></a></div>
           </article>
         </div>

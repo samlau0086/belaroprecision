@@ -39,10 +39,10 @@
 │   ├── layouts/BaseLayout.astro # 页面外壳、SEO、字体、移动导航脚本
 │   ├── pages/                # 首页及服务、零件、行业、质量、企业和询价页面
 │   ├── components/           # 页头、页脚、轮播、零件示意图及表单字段等
-│   ├── data/                 # Machined Parts 分类与评审内容
+│   ├── assets/images/        # 交由 Astro 构建优化的 WebP 摄影原图
+│   ├── data/                 # Machined Parts 分类、评审内容与 images.ts 图片映射
 │   ├── lib/                  # 国家数据、GraphQL 请求构造与结果解析
 │   └── styles/global.css     # 全局样式和响应式规则
-├── public/images/            # 本地 WebP 页面摄影与工艺图片
 ├── tests/                    # 表单单元测试及浏览器测试
 ├── wordpress/mu-plugins/     # 上传兼容与 Turnstile 校验插件
 ├── .astro/                   # Astro 生成目录，Git 忽略
@@ -126,7 +126,7 @@ npm run preview
 
 1. **配置生产 RFQ 地址。** 原文记录本地 Gravity Forms 曾联调成功；生产环境需修改 `src/config.ts` 的 `gravityForms`，安装下述后台兼容插件，并从正式域名验证条目保存、附件及通知。历史成功不代表当前 Turnstile 配置已验证。
 2. **确认联系邮箱。** 核实 `src/config.ts` 中的 `sales@belaroprecision.com` 是否有人接收处理。
-3. **核实图片授权与真实性。** 原有 Unsplash 摄影占位图已替换为 `public/images/` 中的本地 WebP 素材。上线前仍须核实素材授权、拍摄来源及可公开范围，不得仅凭图片暗示图示设备归企业所有或图示零件来自真实客户。Machined Parts 的 SVG 仍为概念示意，取得已授权的真实样件照片和说明后再逐类替换。
+3. **核实图片授权与真实性。** 原有 Unsplash 摄影占位图已替换为 `src/assets/images/` 中的本地 WebP 素材。上线前仍须核实素材授权、拍摄来源及可公开范围，不得仅凭图片暗示图示设备归企业所有或图示零件来自真实客户。Machined Parts 的 SVG 仍为概念示意，取得已授权的真实样件照片和说明后再逐类替换。
 4. **核实能力描述。** ±0.01–0.02 mm 仅为附条件的典型值；上线前确认实际工艺、车削、材料、批量和检验文件能力。材料下拉选项不代表已验证的可加工范围。
 5. **补齐企业信息。** 用户已确认法定名称为深圳市极客码头科技有限公司（Shenzhen GEEKMATE Technology Co., Ltd.），公司地址为 `Shajing, Bao'an District, Shenzhen, China`，并提供 WhatsApp 联系号码 `+86 186 8218 8709`。完整街道地址、普通联系电话、营业时间、交付条款和认证仍须确认后再发布；当前 `site.phone` 仍为空。
 6. **核定法律页面与实际处理流程。** 隐私政策、Cookie 说明和使用条款已实现；上线前须确认完整地址、监控邮箱、实际服务商与数据位置、CAD 文件保留/删除和供应商访问规则，并按适用地区审核文字。页面没有虚构固定保留年限或自动删除机制，不替代 NDA、商业合同或法律审核，也不保证 Google Ads 审核通过。
@@ -164,7 +164,7 @@ PUBLIC_TURNSTILE_SITE_KEY=替换为公开的站点公钥
 
 ### 7.2 外部服务与 Turnstile 配置
 
-外部服务包括 WordPress GraphQL、Cloudflare Turnstile 和 Google Fonts（DM Sans、Manrope）。只有表单后台和验证服务承担询价接收及校验；页面图片由本站 `public/images/` 提供，字体仍由访问者浏览器从 Google Fonts 加载。当前仓库没有邮件发送代码或 SMTP 配置，通知由独立 WordPress/Gravity Forms 环境负责。
+外部服务包括 WordPress GraphQL、Cloudflare Turnstile 和 Google Fonts（DM Sans、Manrope）。只有表单后台和验证服务承担询价接收及校验；页面摄影图片由 Astro 在构建时生成至本站 `/_astro/`，字体仍由访问者浏览器从 Google Fonts 加载。当前仓库没有邮件发送代码或 SMTP 配置，通知由独立 WordPress/Gravity Forms 环境负责。
 
 RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅空白）时，前端不加载 Turnstile 脚本、不展示验证组件、不发送验证 Header，允许普通和附件提交；姓名、邮箱等字段校验及防重复提交保持生效。需要启用时，在 Cloudflare 控制台中打开 Turnstile，创建组件，添加正式前端域名（如 `belaroprecision.com`；若使用 `www`，也需加入对应域名），选择 Managed 模式并取得 Site Key 和 Secret Key。控制台入口名称可能变化，以实际界面为准。
 
@@ -228,9 +228,9 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 先阅读根目录 `AGENTS.md`，遵循现有 Astro、TypeScript 和原生 CSS 结构。页面位于 `src/pages/`；公共布局、导航和表单控件优先复用；颜色、字体和通用间距优先使用 `src/styles/global.css` 的现有变量与规则。公开联系方式、域名和字段配置位于 `src/config.ts`。后台上传及验证逻辑位于 PHP MU 插件，修改后需单独部署至 WordPress。
 
-页面摄影和工艺图片统一放在 `public/images/`，通过根路径 `/images/<文件名>` 引用。当前本地 WebP 素材包括首页铣削与车削主视觉、铣削与车削工艺细节、质量检验、OEM 批量生产、二次工艺、About 车间场景及 RFQ 评审场景；对应页面保留素材原始宽高并使用延迟解码或加载属性。上线前仍须确认授权、真实性和公开范围。Machined Parts 分类内容统一维护在 `src/data/machined-parts.ts`，代码原生 SVG 示意图维护在 `src/components/PartIllustration.astro`；这些图形仅用于解释零件类型，不是客户案例或标准库存件，实际加工能力仍需以图纸评审为准。
+页面摄影和工艺图片统一放在 `src/assets/images/`，在 `src/data/images.ts` 显式导入，通过 `astro:assets` 的 `Image` 或公共 `ProcessImage` 组件引用。构建时生成 `/_astro/` 图片及响应式 `srcset`，页面设置对应布局的 `sizes`，宽高来自原图元数据。首屏主图使用 eager，其他图片默认 lazy；首页轮播首张优先加载，其他背景隐藏并延迟加载，切换时同步显示状态。当前本地 WebP 素材包括首页铣削与车削主视觉、铣削与车削工艺细节、质量检验、OEM 批量生产、二次工艺、About 车间场景及 RFQ 评审场景。上线前仍须确认授权、真实性和公开范围。Machined Parts 分类内容统一维护在 `src/data/machined-parts.ts`，代码原生 SVG 示意图维护在 `src/components/PartIllustration.astro`；这些图形仅用于解释零件类型，不是客户案例或标准库存件，实际加工能力仍需以图纸评审为准。
 
-图片映射如下：`hero-cnc-milling.webp` 用于首页和 Capabilities 铣削展示，`hero-cnc-turning.webp` 用于车削展示，`milling-process-detail.webp`、`turning-process-detail.webp` 和 `production-oem.webp` 用于对应服务详情页，`quality-inspection.webp` 用于 Quality，`secondary-processes.webp` 用于 Secondary Processes，`about-workshop.webp` 用于 About，`contact-rfq.webp` 用于 RFQ。替换素材时应保持相同文件名，或同步修改页面引用与 Alt 文本。
+图片映射如下：`hero-cnc-milling.webp` 用于首页和 Capabilities 铣削展示，`hero-cnc-turning.webp` 用于车削展示，`milling-process-detail.webp`、`turning-process-detail.webp` 和 `production-oem.webp` 用于对应服务详情页，`quality-inspection.webp` 用于 Quality，`secondary-processes.webp` 用于 Secondary Processes，`about-workshop.webp` 用于 About，`contact-rfq.webp` 用于 RFQ。替换素材时应保持相同文件名，或同步修改 `src/data/images.ts` 中的导入、组件引用与 Alt 文本；不要直接编辑生成的 `dist/_astro/` 文件。
 
 Machined Parts 卡片通过 `/contact/?part=<id>#rfq-form` 进入询价页。联系页只接受 `src/data/machined-parts.ts` 中的分类 ID，并仅在对应字段为空时预填加工工艺和项目详情；该流程没有新增后端字段，也不会把任意 URL 文本写入表单。字体通过 Google Fonts 外部加载，可根据实际需求考虑自托管。当前没有站内数据库初始化、迁移或页面内容 CMS 发布命令。
 
@@ -253,6 +253,15 @@ Google 官方参考（上线前核对当前要求）：[数据收集和使用政
 2026 年 11 月 6 日补充 3+2 CNC Milling：铣削页新增 `#three-plus-two` 能力卡与工艺区别 FAQ，桌面和移动导航加入对应入口；首页、Capabilities、About、Industries 和 Machined Parts 同步展示。3+2 表述为旋转轴先定位、切削时保持固定角度的定位五轴加工，与联动五轴分别介绍。具体工艺仍按图纸、装夹和刀具可达性确认；没有新增设备型号、公差或加工尺寸承诺，也没有更改 RFQ 后台工艺值。
 
 ## 10. 测试与质量检查
+
+### Astro audit 与图片优化验证（2026 年 11 月 8 日）
+
+- 页面摄影已全部使用 Astro `Image`；同时修复隐藏轮播内容及关闭的 `details` 内容参与 audit 时产生的可访问性提示。
+- `npm run build` 通过，生成 14 页和 48 个优化图片变体；`node --test` 全部 24 项通过，包含轮播、RFQ、SEO 和响应式回归。
+- `node --test tests/astro-audit.test.mjs` 检查构建产物的 14 页，覆盖 390px、1440px 视口、横向溢出、图片实际加载与解码、尺寸、Alt、`srcset`、`sizes` 及当前安装 Astro 的可访问性与性能规则。生产产物没有开发期 Image 标记，因此该模式使用优化资源路径和图片属性检查替代组件识别规则。
+- 开发模式检查：先执行 `npm run dev -- --host 127.0.0.1 --port 4436`，再在另一个 PowerShell 终端执行 `$env:ASTRO_AUDIT_BASE_URL='http://127.0.0.1:4436'; node --test tests/astro-audit.test.mjs`，该模式包含 `Use the Image component` 规则。本次 14 页两种视口全部通过，未输出加载策略建议。测试使用构建产物发现路由，执行前须先构建。
+- 加载策略规则依赖视口和字体位置，测试将相关提示单独报告，不作为失败断言；本次通过不代表任意窗口尺寸均无建议，也不等于完整无障碍合规认证。测试直接使用 Astro 附带的规则及其间接依赖 esbuild，升级 Astro 后应重新验证。
+- 浏览器测试阻断外部网络，未创建真实询盘或部署；未执行项目未配置的完整类型检查及 ESLint。Playwright 的环境限制见下文。
 
 ### 3+2 铣削能力验证（2026 年 11 月 6 日）
 

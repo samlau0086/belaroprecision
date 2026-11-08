@@ -1,8 +1,18 @@
 ---
-interface Props { name: string; alt: string; width?: number; height?: number; }
-const { name, alt, width = 1586, height = 992 } = Astro.props;
+import { Image } from 'astro:assets';
+import { images } from '../data/images';
+interface Props {
+  name: keyof typeof images;
+  alt: string;
+  width?: number;
+  height?: number;
+  loading?: 'eager' | 'lazy';
+  sizes?: string;
+}
+const { name, alt, loading = 'lazy', sizes = '(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 50vw, 550px' } = Astro.props;
+const image = images[name];
 ---
-<figure class="process-image"><img src={`/images/${name}.webp`} alt={alt} width={width} height={height} loading="lazy" decoding="async" /></figure>
+<figure class="process-image"><Image src={image} alt={alt} widths={[480, 800, 1160, image.width]} sizes={sizes} loading={loading} decoding="async" fetchpriority={loading === 'eager' ? 'high' : 'auto'} /></figure>
 <style>
   .process-image{margin:0;min-width:0;overflow:hidden}
   .process-image img{display:block;width:100%;height:auto}

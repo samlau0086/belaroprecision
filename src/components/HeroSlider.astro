@@ -1,35 +1,37 @@
 ---
+import { Image } from 'astro:assets';
+import { images } from '../data/images';
 const slides = [
   {
     label: 'CNC MACHINING FOR INDUSTRIAL OEMS', title: 'Precision CNC Machining', accent: 'for OEM Manufacturers.',
     text: 'Drawing-based machined components for industrial machinery, automation systems and demanding production applications.',
-    link: '/services/', action: 'Explore capabilities', image: '/images/hero-cnc-milling.webp', position: 'center', width: 1672, height: 941,
+    link: '/services/', action: 'Explore capabilities', image: images['hero-cnc-milling'], position: 'center',
   },
   {
     label: 'CNC MILLING & TURNING', title: 'Your drawing.', accent: 'Our machining focus.',
     text: 'From milled housings and brackets to turned shafts and sleeves, every component starts with a review of your requirements.',
-    link: '/services/#milling', action: 'Explore machining', image: '/images/hero-cnc-turning.webp', position: 'center', width: 1672, height: 941,
+    link: '/services/#milling', action: 'Explore machining', image: images['hero-cnc-turning'], position: 'center',
   },
   {
     label: 'QUALITY & INSPECTION', title: 'Critical dimensions.', accent: 'Clear inspection criteria.',
     text: 'Align tolerances, material requirements and inspection documentation before production begins, with capability reviewed for each part.',
-    link: '/quality/', action: 'Our quality approach', image: '/images/quality-inspection.webp', position: '75% center', width: 1585, height: 992,
+    link: '/quality/', action: 'Our quality approach', image: images['quality-inspection'], position: '75% center',
   },
   {
     label: 'LOW-VOLUME OEM PRODUCTION', title: 'Built for your next batch.', accent: 'Ready for repeat orders.',
     text: 'Production support for drawing-based OEM components, with batch quantities and manufacturing requirements confirmed for your project.',
-    link: '/services/#production', action: 'Explore production', image: '/images/production-oem.webp', position: '75% center', width: 1586, height: 992,
+    link: '/services/#production', action: 'Explore production', image: images['production-oem'], position: '75% center',
   },
 ];
 ---
 <section id="home-hero" class="hero hero-slider" aria-label="Belaro machining highlights" aria-roledescription="carousel" data-hero-slider data-home-module="hero">
   <div class="hero-backdrops" aria-hidden="true">
-    {slides.map((slide, index) => <img class:list={['hero-backdrop', { 'is-active': index === 0 }]} src={slide.image} alt="" width={slide.width} height={slide.height} style={{ objectPosition: slide.position }} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" fetchpriority={index === 0 ? 'high' : 'low'} />)}
+    {slides.map((slide, index) => <Image class:list={['hero-backdrop', { 'is-active': index === 0 }]} src={slide.image} alt="" widths={[640, 960, 1280, slide.image.width]} sizes="100vw" hidden={index !== 0} style={{ objectPosition: slide.position }} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" fetchpriority={index === 0 ? 'high' : 'low'} />)}
   </div>
   <div class="hero-shade" aria-hidden="true"></div>
   <div class="hero-stage" aria-live="off">
     {slides.map((slide, index) => (
-      <div id={`hero-slide-${index + 1}`} class:list={['hero-slide', { 'is-active': index === 0 }]} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${slides.length}: ${slide.label}`} aria-hidden={index !== 0} inert={index !== 0}>
+      <div id={`hero-slide-${index + 1}`} class:list={['hero-slide', { 'is-active': index === 0 }]} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${slides.length}: ${slide.label}`} hidden={index !== 0} aria-hidden={index !== 0} inert={index !== 0}>
         <div class="container hero-content">
           <span class="eyebrow eyebrow-light"><i></i>{slide.label}</span>
           {index === 0 ? <h1>{slide.title}<br/><em>{slide.accent}</em></h1> : <h2 class="hero-title">{slide.title}<br/><em>{slide.accent}</em></h2>}
@@ -71,6 +73,7 @@ const slides = [
   .hero-backdrops,.hero-shade{z-index:-1;pointer-events:none}
   .hero-backdrop{object-fit:cover;opacity:0;transition:opacity .7s ease}
   .hero-backdrop.is-active{opacity:.65}
+  .hero-slide[hidden],.hero-backdrop[hidden]{display:none}
   .hero-stage{display:grid}
   .hero-slide{grid-area:1/1;min-width:0;opacity:0;visibility:hidden;transition:opacity .5s ease}
   .hero-slide.is-active{opacity:1;visibility:visible}
@@ -113,7 +116,7 @@ const slides = [
   const hero = document.querySelector<HTMLElement>('[data-hero-slider]');
   if (hero) {
     const slides = [...hero.querySelectorAll<HTMLElement>('.hero-slide')];
-    const backgrounds = [...hero.querySelectorAll<HTMLElement>('.hero-backdrop')];
+    const backgrounds = [...hero.querySelectorAll<HTMLImageElement>('.hero-backdrop')];
     const pages = [...hero.querySelectorAll<HTMLButtonElement>('[data-slide]')];
     const playback = hero.querySelector<HTMLButtonElement>('[data-playback]')!;
     const counter = hero.querySelector<HTMLElement>('[data-current]')!;
@@ -136,9 +139,12 @@ const slides = [
       slides.forEach((slide, i) => {
         const active = i === current;
         slide.classList.toggle('is-active', active);
+        slide.hidden = !active;
         slide.setAttribute('aria-hidden', String(!active));
         slide.inert = !active;
         backgrounds[i].classList.toggle('is-active', active);
+        backgrounds[i].hidden = !active;
+        if (active) backgrounds[i].loading = 'eager';
         if (active) pages[i].setAttribute('aria-current', 'true');
         else pages[i].removeAttribute('aria-current');
       });
