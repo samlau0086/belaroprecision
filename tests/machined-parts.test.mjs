@@ -43,9 +43,9 @@ test('零件页：响应式导航、无脚本内容、FAQ、SEO 与询价预填'
     assert.equal(await page.locator('.illustration-label').count(), 6);
     await page.getByRole('link', { name: 'Precision Shafts', exact: true }).click();
     assert.equal(new URL(page.url()).hash, '#precision-shafts');
-    await page.locator('summary').first().focus();
+    await page.locator('.faq-list summary').first().focus();
     await page.keyboard.press('Enter');
-    assert.equal(await page.locator('details').first().getAttribute('open'), '');
+    assert.equal(await page.locator('.parts-faq details').first().getAttribute('open'), '');
     const shots = await mkdtemp(join(tmpdir(), 'belaro-parts-'));
     for (const width of [320, 390, 700, 701, 768, 1024, 1100, 1101, 1280, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -56,6 +56,19 @@ test('零件页：响应式导航、无脚本内容、FAQ、SEO 与询价预填'
         await page.getByRole('button', { name: 'Toggle navigation' }).click();
         assert.equal(await page.locator('[data-menu-toggle]').getAttribute('aria-expanded'), 'true');
         assert.equal(await page.locator('.mobile-nav').getByRole('link', { name: 'Machined Parts' }).isVisible(), true);
+        assert.equal(await page.locator('.menu-toggle i').count(), 3, '移动菜单图标应为三横线');
+        assert.equal(await page.locator('.mobile-capability-group').evaluate(el => el.open), false, '能力子菜单默认收起');
+        assert.equal(await page.locator('.mobile-nav .mobile-nav-cta').getAttribute('class').then(value => value.includes('button-orange')), true, '移动端询价入口应显示为按钮');
+        assert.equal(await page.locator('.mobile-nav .mobile-nav-cta').evaluate(el => getComputedStyle(el).paddingInline), '20px', '移动端询价按钮应保留左右留白');
+        assert.equal(await page.locator('.mobile-capability-toggle span').evaluate(el => getComputedStyle(el).width), '7px', '能力菜单下拉指示器应使用稳定尺寸');
+        await page.locator('.mobile-capability-toggle').click();
+        assert.equal(await page.locator('#mobile-capability-links').isVisible(), true, '点击能力菜单后展开子链接');
+        await page.locator('.mobile-capability-toggle').click();
+        assert.equal(await page.locator('#mobile-capability-links').isVisible(), false, '再次点击能力菜单后收起子链接');
+        await page.locator('.mobile-capability-toggle').click();
+        await page.getByRole('button', { name: 'Toggle navigation' }).click();
+        await page.getByRole('button', { name: 'Toggle navigation' }).click();
+        assert.equal(await page.locator('.mobile-capability-group').evaluate(el => el.open), false, '重新打开主菜单时能力子菜单应重置为收起');
         await page.getByRole('button', { name: 'Toggle navigation' }).click();
       } else {
         assert.equal(await page.locator('.desktop-nav').getByRole('link', { name: 'Machined Parts' }).isVisible(), true);
@@ -88,8 +101,8 @@ test('零件页：响应式导航、无脚本内容、FAQ、SEO 与询价预填'
     const staticPage = await noJs.newPage();
     await staticPage.goto(`${baseUrl}/machined-parts/`);
     assert.equal(await staticPage.locator('.part-card').count(), 6);
-    await staticPage.locator('summary').first().click();
-    assert.equal(await staticPage.locator('details').first().getAttribute('open'), '');
+    await staticPage.locator('.faq-list summary').first().click();
+    assert.equal(await staticPage.locator('.parts-faq details').first().getAttribute('open'), '');
     await noJs.close();
     assert.deepEqual(errors, []);
     console.log(`零件页截图：${shots}`);

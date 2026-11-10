@@ -29,6 +29,7 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
         const expanded = toggle.getAttribute('aria-expanded') === 'true';
         toggle.setAttribute('aria-expanded', String(!expanded));
         menu?.classList.toggle('is-open', !expanded);
+        if (expanded) menu?.querySelector('.mobile-capability-group')?.removeAttribute('open');
       });
       document.querySelectorAll('[data-year]').forEach((el) => el.textContent = String(new Date().getFullYear()));
     </script>
