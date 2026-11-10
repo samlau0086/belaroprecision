@@ -46,7 +46,8 @@ test('首页九个模块：内容顺序、能力边界、链接、FAQ 与响应�
       'Precision Shafts ↗',
       'Bushings & Sleeves ↗',
     ]);
-    assert.equal(await page.locator('#representative-parts').getByText('CONCEPT ILLUSTRATION', { exact: true }).count(), 4);
+    assert.equal(await page.locator('#representative-parts .parts-preview-card img').count(), 4);
+    assert.equal(await page.locator('#representative-parts').getByText('REPRESENTATIVE PART', { exact: true }).count(), 4);
     assert.equal(await page.locator('#capability-overview a[href="/services/secondary-processes/"]').count(), 1);
     assert.equal(await page.locator('#target-applications a[href="/industries/#automation"]').count(), 1);
     assert.equal(await page.locator('#target-applications a[href="/industries/#machinery"]').count(), 1);

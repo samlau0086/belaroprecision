@@ -5,6 +5,7 @@ import Footer from '../../components/Footer.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import SecondaryProcessSupport from '../../components/SecondaryProcessSupport.astro';
 import ProcessImage from '../../components/ProcessImage.astro';
+import MediaGallery, { type MediaItem } from '../../components/MediaGallery.astro';
 import { site } from '../../config';
 import '../../styles/about.css';
 
@@ -52,8 +53,15 @@ const principles = [
       <article class="scope-card scope-partner"><span class="scope-label">02 / COORDINATED SUPPLIER SERVICES</span><h3>Secondary processes</h3><ul class="scope-features"><li>Grinding</li><li>Heat treatment</li><li>Surface finishing</li></ul><p>Coordinated through suppliers in Dongguan and Shenzhen, subject to the part specification and supplier availability.</p><div class="scope-confirm"><strong>Agree before production</strong><p>Confirm the outsourced route, acceptance criteria and required records. Specialist testing and supplier documents require separate confirmation.</p></div><a class="text-link" href="/services/secondary-processes/">Explore secondary processes <span aria-hidden="true">→</span></a></article>
     </div></div></section>
 
-    <section class="section section-soft" id="workshop-team"><div class="container"><SectionHeading eyebrow="WORKSHOP, EQUIPMENT & PEOPLE" title="Get to know the operation behind your part" text="Our confirmed machining capabilities include 3-axis CNC milling, 3+2 positional milling, simultaneous 5-axis CNC milling and CNC turning. Supporting workshop and team information should relate to the operation proposed for your project."/><div class="workshop-media"><ProcessImage sizes="(max-width: 1208px) calc(100vw - 48px), 1160px" name="about-workshop" alt="Machining team reviewing a component and CAD information in a workshop setting" width={1536} height={1024} /></div><div class="about-principles">
-      <article><span>WORKSHOP</span><h3>Production context</h3><p>The image above provides visual context for component inspection and process review. For supplier assessment, ask which current workshop views and process information can be shared for your proposed machining route.</p></article>
+    <section class="section section-soft" id="workshop-team"><div class="container"><SectionHeading eyebrow="WORKSHOP, EQUIPMENT & PEOPLE" title="Get to know the operation behind your part" text="Our confirmed machining capabilities include 3-axis CNC milling, 3+2 positional milling, simultaneous 5-axis CNC milling and CNC turning. Supporting workshop and team information should relate to the operation proposed for your project."/><div class="workshop-media"><ProcessImage sizes="(max-width: 1208px) calc(100vw - 48px), 1160px" name="about-workshop-overview" alt="workshop overview with enclosed CNC machines along an organized production aisle" /></div>
+    <MediaGallery items={[
+      { name: 'about-3-axis-cnc', alt: 'three-axis vertical CNC milling center with a vise and workpiece', title: '3-axis CNC milling', caption: 'Vertical milling for accessible faces, pockets and hole patterns.' },
+      { name: 'about-simultaneous-5-axis-cnc', alt: 'five-axis CNC machine with a tilted rotary table holding an aluminum workpiece', title: 'Simultaneous 5-axis machining', caption: 'Rotary and tilting workholding for complex machining access; 3+2 positional milling is also available.' },
+      { name: 'about-cnc-lathe', alt: 'CNC lathe interior with a shaft held in a chuck beside a tool turret', title: 'CNC turning', caption: 'Turning for shafts, sleeves and rotational components.' },
+      { name: 'about-team-at-work', alt: 'engineering team reviewing a machined component and a technical drawing at a workbench', title: 'Technical & order coordination', caption: 'Drawing review, machining questions and project communication.' },
+    ] satisfies MediaItem[]} />
+    <div class="about-principles">
+      <article><span>WORKSHOP</span><h3>Production context</h3><p>For supplier assessment, ask which current workshop views and process information can be shared for your proposed machining route.</p></article>
       <article><span>EQUIPMENT</span><h3>Machine details</h3><p>A verified machine inventory, model list and working envelopes are not yet published. Request confirmation of the equipment and measurement capability relevant to your part before order acceptance.</p></article>
       <article><span>TEAM</span><h3>Project responsibilities</h3><p>Team profiles are not currently published. During project review, agree the contacts responsible for technical questions, order coordination and quality follow-up, along with any supplier-assessment information needed.</p></article>
     </div><p class="section-note">Availability of photographs, equipment records, team introductions or a site visit must be confirmed individually.</p></div></section>

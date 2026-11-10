@@ -4,6 +4,19 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import ProcessImage from '../../components/ProcessImage.astro';
+import MediaGallery, { type MediaItem } from '../../components/MediaGallery.astro';
+
+const inspectionMedia: MediaItem[] = [
+  { name: 'quality-inspection-tools', alt: 'inspection workbench with calipers, micrometers, gauge blocks and machined parts', title: 'Dimensional inspection tools', caption: 'Instrument selection, range and calibration status are confirmed for the project.' },
+  { name: 'quality-critical-dimension-check', alt: 'outside micrometer measuring a steel shaft radially between upper and lower contacts', title: 'Checking a critical diameter', caption: 'Agree the measurement method and acceptance limits for critical features.' },
+];
+const documentMedia: MediaItem[] = [
+  { name: 'quality-dimensional-report-sample', alt: 'BelaroPrecision sample dimensional inspection report with populated measurement results and an aluminum block', title: 'Sample dimensional inspection report', caption: 'Sample report with fictional part details and results. Actual report content, methods and inspection coverage are agreed per order.', document: true },
+];
+const packingMedia: MediaItem[] = [
+  { name: 'quality-protective-packaging', alt: 'Machined components individually protected with thick white EPE foam inside a corrugated carton', title: 'Thick EPE foam protection', caption: 'Parts are individually wrapped in a single thick EPE foam sheet and packed in a sturdy corrugated carton; additional protection is agreed as needed.' },
+  { name: 'quality-batch-identification', alt: 'Thick EPE foam-wrapped aluminum bracket beside a corrugated carton with a blank identification label', title: 'Packing & batch identification', caption: 'Part number, revision, quantity and lot / batch information are agreed per order; the blank label is not a shipment record.' },
+];
 
 const topics = [
   { id: 'requirements', label: 'Drawing & material', title: 'Which drawing, material and dimensions govern the order?', intro: 'Use a shared production reference. Resolve open requirements before releasing work for production.', cards: [
@@ -55,6 +68,9 @@ const topics = [
     {topics.map((topic, index) => <section class:list={['section', { 'section-soft': index % 2 === 1 }]} id={topic.id}><div class="container">
       <SectionHeading eyebrow={`0${index + 1} / ${topic.label.toUpperCase()}`} title={topic.title} text={topic.intro}/>
       <div class="quality-cards">{topic.cards.map(([title, text]) => <article><h3>{title}</h3><p>{text}</p></article>)}</div>
+      {topic.id === 'inspection' && <MediaGallery items={inspectionMedia} />}
+      {topic.id === 'documents' && <MediaGallery items={documentMedia} />}
+      {topic.id === 'packing' && <MediaGallery items={packingMedia} />}
       {topic.id === 'inspection' && <p class="related-link"><a class="text-link" href="/services/secondary-processes/">Include secondary process requirements <span aria-hidden="true">→</span></a></p>}
       {topic.id === 'documents' && <p class="quality-footnote">This website does not claim quality certifications or accredited laboratory status. Confirm project-specific evidence before ordering.</p>}
     </div></section>)}

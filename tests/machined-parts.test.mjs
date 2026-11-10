@@ -31,7 +31,15 @@ test('零件页：响应式导航、无脚本内容、FAQ、SEO 与询价预填'
     assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 40);
     assert.equal(await page.locator('h1').count(), 1);
     assert.equal(await page.locator('.part-card').count(), 6);
-    assert.equal(await page.locator('.part-card svg[aria-hidden="true"]').count(), 6);
+    assert.equal(await page.locator('.part-card .part-image').count(), 6);
+    assert.equal(await page.locator('.part-gallery img').count(), 14);
+    const blockDetails = page.locator('#machined-blocks .part-gallery img');
+    assert.equal(await blockDetails.count(), 2);
+    for (const image of await blockDetails.all()) {
+      await image.scrollIntoViewIfNeeded();
+      await image.evaluate(image => image.decode());
+      assert.ok(await image.evaluate(image => image.naturalWidth > 0), '加工块细节图应正常加载');
+    }
     assert.equal(await page.locator('.illustration-label').count(), 6);
     await page.getByRole('link', { name: 'Precision Shafts', exact: true }).click();
     assert.equal(new URL(page.url()).hash, '#precision-shafts');

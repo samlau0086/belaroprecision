@@ -31,7 +31,7 @@ test('铣削页：站内入口、响应式、SEO、FAQ 与工艺询价', async (
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://belaroprecision.com/services/cnc-milling/');
     assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 50);
     assert.equal(await page.locator('.milled-part').count(), 3);
-    assert.equal(await page.locator('.milled-part svg[aria-hidden="true"]').count(), 3);
+    assert.equal(await page.locator('.milled-part-visual img').count(), 3);
     assert.equal(await page.locator('.milling-review-grid article').count(), 4);
     assert.equal(await page.locator('.milling-config-grid article').count(), 3);
     assert.match(await page.locator('#three-plus-two').innerText(), /remain stationary during 3-axis cutting/);

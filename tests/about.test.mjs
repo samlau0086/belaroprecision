@@ -39,10 +39,16 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.equal(await page.locator('#supplier-coordination .supplier-steps > li').count(), 4);
     assert.match(await page.locator('#supplier-coordination').innerText(), /confidentiality/);
     assert.equal(await page.locator('#workshop-team article').count(), 3);
-    assert.match(await page.locator('#workshop-team').innerText(), /image above provides visual context/);
-    assert.equal(await page.locator('#workshop-team img[src^="/_astro/about-workshop."]').count(), 1);
-    await page.locator('#workshop-team img').scrollIntoViewIfNeeded();
-    await page.locator('#workshop-team img').waitFor({ state: 'visible' });
+    assert.doesNotMatch(await page.locator('main').innerText(), /illustrative/i);
+    assert.equal(await page.locator('#workshop-team img').count(), 5);
+    for (const image of await page.locator('#workshop-team img').all()) {
+      await image.scrollIntoViewIfNeeded();
+      await page.waitForFunction(node => node.complete && node.naturalWidth > 0, await image.elementHandle());
+      await image.evaluate(node => node.decode());
+      assert.ok(await image.evaluate(node => node.naturalWidth > 0));
+    }
+    await page.locator('#workshop-team img').first().scrollIntoViewIfNeeded();
+    await page.locator('#workshop-team img').first().waitFor({ state: 'visible' });
     await page.waitForFunction(() => {
       const image = document.querySelector('#workshop-team img');
       return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
@@ -67,7 +73,10 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
       assert.notEqual(await page.locator('.scope-card').first().evaluate(node => getComputedStyle(node).backgroundColor), 'rgba(0, 0, 0, 0)');
       const positions = await page.locator('.about-hero-grid > *').evaluateAll(nodes => nodes.map(node => { const { x, y } = node.getBoundingClientRect(); return { x, y }; }));
       assert.ok(width <= 700 ? positions[0].x === positions[1].x && positions[1].y > positions[0].y : positions[1].x > positions[0].x, `${width}px 首屏列数`);
-      if ([390, 1440].includes(width)) await page.screenshot({ path: join(screenshots, `about-${width}.png`), fullPage: true });
+      if ([390, 1440].includes(width)) {
+        await page.screenshot({ path: join(screenshots, `about-${width}.png`), fullPage: true });
+        await page.locator('#workshop-team').screenshot({ path: join(screenshots, `workshop-${width}.png`) });
+      }
     }
     // 检查正文目标及锚点，不提交询盘。
     const links = await page.locator('main a').evaluateAll(nodes => [...new Set(nodes.map(node => node.href))]);

@@ -31,7 +31,13 @@ test('行业页：行业锚点、零件与服务链接、SEO、FAQ 和响应式'
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://belaroprecision.com/industries/');
     assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 50);
     assert.equal(await page.locator('.industry-detail').count(), 4);
-    assert.equal(await page.locator('.industry-visual svg[aria-hidden="true"]').count(), 4);
+    assert.equal(await page.locator('.industry-visual img').count(), 4);
+    for (const image of await page.locator('.industry-visual img').all()) {
+      await image.scrollIntoViewIfNeeded();
+      await page.waitForFunction(node => node.complete && node.naturalWidth > 0, await image.elementHandle());
+      await image.evaluate(node => node.decode());
+      assert.ok(await image.evaluate(node => node.naturalWidth > 0));
+    }
     assert.match(await page.locator('main').innerText(), /3-axis.*simultaneous 5-axis/is);
     assert.match(await page.locator('main').innerText(), /supplier network/i);
     assert.match(await page.locator('#fluid .scope-note').innerText(), /not assumed services/);

@@ -57,13 +57,13 @@
 | 路由 | 当前实现 |
 | --- | --- |
 | `/` | 首页，按首屏定位、采购需求匹配、核心服务、代表性零件、能力概览、质量检验、目标应用、合作流程、FAQ 与询价入口组织 |
-| `/machined-parts/` | 六类按图加工零件展示、应用方向、工艺归类、图纸评审要点、询价准备资料和 FAQ；零件图为概念示意，不代表客户案例或库存产品 |
+| `/machined-parts/` | 六类按图加工零件展示、应用方向、工艺归类、图纸评审要点、询价准备资料和 FAQ；零件图片为代表性视觉参考，不代表客户案例或库存产品 |
 | `/services/` | CNC 铣削、车削及小批量生产介绍；锚点为 `milling`、`turning`、`production` |
 | `/services/production/` | OEM 与小批量生产专页，包含需求对齐、生产流程、重复订单、检验要求和项目讨论入口 |
 | `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、3+2 CNC Milling、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
 | `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口 |
 | `/services/secondary-processes/` | 配套工艺专页，说明通过东莞及深圳供应商网络协调磨削、热处理、表面处理及其他二次工艺的方式、询价资料和能力边界 |
-| `/industries/` | 自动化、工业机械、液压/气动、实验室与测试设备四个目标领域的应用说明、概念零件图、零件分类链接、图纸评审重点、加工与配套工艺入口、RFQ 清单及 FAQ；不代表已有客户关系或行业认证 |
+| `/industries/` | 自动化、工业机械、液压/气动、实验室与测试设备四个目标领域的应用说明、应用场景示意图、零件分类链接、图纸评审重点、加工与配套工艺入口、RFQ 清单及 FAQ；不代表已有客户关系或行业认证 |
 | `/quality/` | 图纸与材料确认、公差可行性、检测方法与环节、文件范围、首件/抽检/全检约定、偏差处理、包装标识七项质量说明；设备与文件能力按项目核实，没有在线检验管理功能 |
 | `/about/` | 法定英文名称、沙井所在地、业务身份、自有加工与外协范围、车间/设备/团队资料说明、OEM 订单配合、外协管理约定、邮箱与 WhatsApp、质量评审与 FAQ |
 | `/contact/` | 询价字段、国家搜索、电话区号、材料自定义输入、单附件上传、Turnstile 与 GraphQL 提交 |
@@ -73,10 +73,12 @@
 
 公共组件包含桌面/移动导航、页脚、年份更新和章节标题。页头的 Capabilities 支持桌面端悬停/键盘聚焦下拉，并在移动菜单中展示 CNC Milling、3-Axis CNC Machining、3+2 CNC Milling、5-Axis CNC Machining、CNC Turning、Secondary Processes 和 OEM & Low-Volume Production 子链接；页头、移动菜单、页脚和首页均提供 Machined Parts 入口。轮播支持约 7 秒自动切换、前后按钮、分页、暂停、方向键和触摸滑动；悬停、内部焦点、页面隐藏或离开视口时暂停计时，减少动态效果的 CSS 会关闭过渡。禁用 JavaScript 时显示首张轮播；询价提交需要 JavaScript。
 
-首页按九个业务模块组织：首屏定位、采购需求匹配、核心加工服务、代表性零件、加工能力概览、质量与检验、目标应用、合作流程、FAQ 与询价入口。能力概览将 3 轴 CNC 铣削、3+2 定位铣削、联动五轴 CNC 铣削和 CNC 车削作为已确认工艺；材料、尺寸、公差与批量须按图纸和项目要求评审，不在首页展示未经确认的固定范围。代表性零件当前使用明确标注的概念示意，待取得授权的 Belaro 真实样件照片和说明后替换。
+首页按九个业务模块组织：首屏定位、采购需求匹配、核心加工服务、代表性零件、加工能力概览、质量与检验、目标应用、合作流程、FAQ 与询价入口。能力概览将 3 轴 CNC 铣削、3+2 定位铣削、联动五轴 CNC 铣削和 CNC 车削作为已确认工艺；材料、尺寸、公差与批量须按图纸和项目要求评审，不在首页展示未经确认的固定范围。Machined Parts 页面使用按类别整理的代表性图片和细节图，作为视觉参考，不宣称为客户案例或库存产品。
 首页采购区域下方展示两项对外优势：完整的图纸询价以 24 小时内报价回复为目标，并支持无最低起订量（No MOQ）。这些内容是报价与订单沟通承诺，具体回复仍取决于资料完整度与项目评审。
 
 首页四步 RFQ 流程为“提交图纸、技术评审与报价、确认生产、检验交付”，使用橙色顶部边框和白色卡片，卡片间以箭头连接。宽度大于 900px 时横向排列、箭头向右；900px 及以下纵向排列、箭头向下。流程使用有序列表，装饰箭头对辅助技术隐藏，无需 JavaScript。
+
+首页“代表性零件”、CNC Milling“典型零件”和 CNC Turning“典型零件”卡片直接复用 `public/images/machined-parts/` 中六类零件的主图，并通过 `src/data/machined-parts.ts` 的 `image` 字段保持类别与图片映射一致。
 
 Quality 页面按七项采购问题提供主题锚点、评审要点和询价入口，已移除未经确认的固定公差范围。检测方法示例不代表实际设备资产；设备、校准状态、文件可用性与检验覆盖率须在报价和订单阶段确认。当前缺少经企业核实的设备清单和报告样本，页面不承诺默认提供全部文件、正式 FAI/PPAP 或认证，后续取得确认资料后再补充。
 
@@ -126,7 +128,7 @@ npm run preview
 
 1. **配置生产 RFQ 地址。** 原文记录本地 Gravity Forms 曾联调成功；生产环境需修改 `src/config.ts` 的 `gravityForms`，安装下述后台兼容插件，并从正式域名验证条目保存、附件及通知。历史成功不代表当前 Turnstile 配置已验证。
 2. **确认联系邮箱。** 核实 `src/config.ts` 中的 `sales@belaroprecision.com` 是否有人接收处理。
-3. **核实图片授权与真实性。** 原有 Unsplash 摄影占位图已替换为 `src/assets/images/` 中的本地 WebP 素材。上线前仍须核实素材授权、拍摄来源及可公开范围，不得仅凭图片暗示图示设备归企业所有或图示零件来自真实客户。Machined Parts 的 SVG 仍为概念示意，取得已授权的真实样件照片和说明后再逐类替换。
+3. **核实图片授权与真实性。** 原有 Unsplash 摄影占位图和 Machined Parts 概念图已替换为本地 WebP 素材。上线前仍须核实素材授权、生成来源及可公开范围，不得仅凭图片暗示图示设备归企业所有或图示零件来自真实客户。Machined Parts 图片仍应标注为代表性视觉参考，取得已授权的真实样件照片和说明后再逐类替换。
 4. **核实能力描述。** ±0.01–0.02 mm 仅为附条件的典型值；上线前确认实际工艺、车削、材料、批量和检验文件能力。材料下拉选项不代表已验证的可加工范围。
 5. **补齐企业信息。** 用户已确认法定名称为深圳市极客码头科技有限公司（Shenzhen GEEKMATE Technology Co., Ltd.），公司地址为 `Shajing, Bao'an District, Shenzhen, China`，并提供 WhatsApp 联系号码 `+86 186 8218 8709`。完整街道地址、普通联系电话、营业时间、交付条款和认证仍须确认后再发布；当前 `site.phone` 仍为空。
 6. **核定法律页面与实际处理流程。** 隐私政策、Cookie 说明和使用条款已实现；上线前须确认完整地址、监控邮箱、实际服务商与数据位置、CAD 文件保留/删除和供应商访问规则，并按适用地区审核文字。页面没有虚构固定保留年限或自动删除机制，不替代 NDA、商业合同或法律审核，也不保证 Google Ads 审核通过。
@@ -228,7 +230,9 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 先阅读根目录 `AGENTS.md`，遵循现有 Astro、TypeScript 和原生 CSS 结构。页面位于 `src/pages/`；公共布局、导航和表单控件优先复用；颜色、字体和通用间距优先使用 `src/styles/global.css` 的现有变量与规则。公开联系方式、域名和字段配置位于 `src/config.ts`。后台上传及验证逻辑位于 PHP MU 插件，修改后需单独部署至 WordPress。
 
-页面摄影和工艺图片统一放在 `src/assets/images/`，在 `src/data/images.ts` 显式导入，通过 `astro:assets` 的 `Image` 或公共 `ProcessImage` 组件引用。构建时生成 `/_astro/` 图片及响应式 `srcset`，页面设置对应布局的 `sizes`，宽高来自原图元数据。首屏主图使用 eager，其他图片默认 lazy；首页轮播首张优先加载，其他背景隐藏并延迟加载，切换时同步显示状态。当前本地 WebP 素材包括首页铣削与车削主视觉、铣削与车削工艺细节、质量检验、OEM 批量生产、二次工艺、About 车间场景及 RFQ 评审场景。上线前仍须确认授权、真实性和公开范围。Machined Parts 分类内容统一维护在 `src/data/machined-parts.ts`，代码原生 SVG 示意图维护在 `src/components/PartIllustration.astro`；这些图形仅用于解释零件类型，不是客户案例或标准库存件，实际加工能力仍需以图纸评审为准。
+页面摄影和工艺图片分两类管理：既有根路径素材位于 `public/images/`，Machined Parts 分类主图和细节图位于 `public/images/machined-parts/`；需要 Astro 构建期优化的页面素材位于 `src/assets/images/`，通过 `src/data/images.ts` 显式映射并由 `ProcessImage.astro` 或 `MediaGallery.astro` 输出响应式图片。页面图片保持响应式宽度，非首屏图片默认 lazy。当前本地 WebP 素材包括首页铣削与车削主视觉、铣削与车削工艺细节、质量检验、OEM 批量生产、二次工艺、About 车间与设备团队场景、Industries 四类应用场景、Quality 检测与交付场景、RFQ 评审场景，以及六类 Machined Parts 代表性图片。上线前仍须确认授权、生成来源和公开范围；示意图片不代表客户案例、库存产品、设备资产证明或真实检测记录，实际能力仍需以图纸和项目评审为准。
+
+Machined Blocks 卡片的细节图库使用 `machined-block-pocket.webp`（型腔与加工纹路）和 `machined-block-threaded-hole.webp`（螺纹孔与倒角），文件位于 `public/images/machined-parts/`；原始素材保留在 `webp/Machined Blocks/`。
 
 图片映射如下：`hero-cnc-milling.webp` 用于首页和 Capabilities 铣削展示，`hero-cnc-turning.webp` 用于车削展示，`milling-process-detail.webp`、`turning-process-detail.webp` 和 `production-oem.webp` 用于对应服务详情页，`quality-inspection.webp` 用于 Quality，`secondary-processes.webp` 用于 Secondary Processes，`about-workshop.webp` 用于 About，`contact-rfq.webp` 用于 RFQ。替换素材时应保持相同文件名，或同步修改 `src/data/images.ts` 中的导入、组件引用与 Alt 文本；不要直接编辑生成的 `dist/_astro/` 文件。
 
@@ -240,7 +244,24 @@ CNC Milling 页面位于 `src/pages/services/cnc-milling/index.astro`，沿用�
 
 配套工艺页面位于 `src/pages/services/secondary-processes/index.astro`。网站将磨削、热处理、表面处理和其他二次工艺描述为依托东莞及深圳制造生态与供应商网络协调的项目支持，不将其表述为全部自营能力。具体供应商、工艺标准、证书、检验方式和交期必须在报价阶段按图纸确认。公共 `SecondaryProcessSupport.astro` 区块已用于首页、Machined Parts、CNC Milling、CNC Turning 和 OEM Production 页面；Capabilities、About、Quality、页头和页脚也提供相应说明或入口。该变更未新增依赖、环境变量或 RFQ 后端字段。
 
-Industries 页面位于 `src/pages/industries/index.astro`，保留首页引用的 `automation`、`machinery`、`fluid`、`laboratory` 四个锚点。行业与零件分类映射在页面中维护，零件名称和示意图复用共享数据与 `PartIllustration.astro`；配套工艺说明复用 `SecondaryProcessSupport.astro`。页面连接已有 RFQ 表单，不新增行业参数预填、后端字段、依赖或环境变量。液压/气动部分的压力、泄漏、清洁度与行业合规要求均需逐项目确认，未作现成测试服务承诺。
+Industries 页面位于 `src/pages/industries/index.astro`，保留首页引用的 `automation`、`machinery`、`fluid`、`laboratory` 四个锚点。行业与零件分类映射在页面中维护，零件名称复用共享数据，应用图通过 `ProcessImage.astro` 展示；配套工艺说明复用 `SecondaryProcessSupport.astro`。页面连接已有 RFQ 表单，不新增行业参数预填、后端字段、依赖或环境变量。液压/气动部分的压力、泄漏、清洁度与行业合规要求均需逐项目确认，未作现成测试服务承诺。
+
+2026 年 11 月 10 日接入 `webp/待处理/` 中 14 张素材，原文件保留，发布素材复制至 `src/assets/images/` 并在 `src/data/images.ts` 映射，沿用 Astro 图片优化、响应式尺寸及懒加载：
+
+| 页面位置 | 发布图片文件名（均为 `.webp`） |
+| --- | --- |
+| Industries 自动化、机械轴系、气动接口、测试设备 | `industry-automation-fixture`、`industry-machinery-shaft-assembly`、`industry-fluid-interface`、`industry-test-equipment-mounting` |
+| About 车间、3 轴、联动五轴、车床、团队 | `about-workshop-overview`、`about-3-axis-cnc`、`about-simultaneous-5-axis-cnc`、`about-cnc-lathe`、`about-team-at-work` |
+| Quality 检测设备、尺寸测量、报告、包装、标识 | `quality-inspection-tools`、`quality-critical-dimension-check`、`quality-dimensional-report-sample`、`quality-protective-packaging`、`quality-batch-identification` |
+
+About 和 Quality 复用 `MediaGallery.astro`，桌面双列、手机单列；报告以完整原比例展示，可打开原始大图。页面已按要求移除所有 Illustrative 展示标签及相关图片 Alt 中的该表述，保留工艺说明；报告仍明确为样本，包装空白标签不代表真实批次记录。包装内容采用用户确认的单层加厚珍珠棉与硬纸箱方式；未增加设备型号、认证或检测能力承诺。
+
+### Industries、About 与 Quality 图片接入验证（2026 年 11 月 10 日）
+
+- `npm run build` 通过，生成 14 个静态页面和 99 个优化图片变体。
+- `node --test tests/about.test.mjs tests/industries.test.mjs tests/quality.test.mjs` 的 3 项浏览器测试通过，覆盖 14 张新增图片的加载与解码、Quality 报告原比例及原图链接、关键正文和 320–1440px 响应式布局。
+- Industries 全页、About 设备与团队、Quality 检测、报告、包装区域的桌面端和手机端截图已复核，未发现图片与文字交错、遮挡或横向溢出。
+- 测试阻断外部网络，不验证图片的真实设备归属、报告真实性、联系方式或生产后台；本次未部署，项目未配置完整 TypeScript 类型检查和 ESLint，因此未执行这两项检查。
 
 About 页面位于 `src/pages/about/index.astro`，以海外 OEM 按图加工需求为主线，展示 3 轴与联动五轴铣削、车削、小批量及重复订单定位，复用 `SecondaryProcessSupport.astro` 说明东莞及深圳供应商网络支持。合作流程和质量内容用于介绍评审方式；未添加未经确认的成立年份、设备数量、认证或客户案例。页面提供能力、行业、质量和 RFQ 入口，未新增依赖、后端字段或环境变量。
 
@@ -253,6 +274,11 @@ Google 官方参考（上线前核对当前要求）：[数据收集和使用政
 2026 年 11 月 6 日补充 3+2 CNC Milling：铣削页新增 `#three-plus-two` 能力卡与工艺区别 FAQ，桌面和移动导航加入对应入口；首页、Capabilities、About、Industries 和 Machined Parts 同步展示。3+2 表述为旋转轴先定位、切削时保持固定角度的定位五轴加工，与联动五轴分别介绍。具体工艺仍按图纸、装夹和刀具可达性确认；没有新增设备型号、公差或加工尺寸承诺，也没有更改 RFQ 后台工艺值。
 
 ## 10. 测试与质量检查
+
+### Illustrative 文案移除验证（2026 年 11 月 10 日）
+
+- 已移除 About、Quality、Industries、Machined Parts 的 Illustrative 展示文案及图片 Alt 中的该表述，保留工艺说明和检测报告样本名称。
+- `npm run build` 通过；`node --test tests/about.test.mjs tests/industries.test.mjs tests/quality.test.mjs tests/machined-parts.test.mjs` 的 4 项浏览器测试全部通过，覆盖图片加载、链接及响应式布局；未部署。
 
 ### Astro audit 与图片优化验证（2026 年 11 月 8 日）
 
@@ -399,7 +425,7 @@ node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 - 首页已按首屏定位、采购需求匹配、核心服务、代表性零件、能力概览、质量检验、目标应用、合作流程、FAQ 与询价入口的顺序重组。
 - `npm run build` 通过，生成 14 个静态页面；`node --test tests/homepage.test.mjs tests/process-flow.test.mjs tests/hero-slider.test.mjs` 的 3 项测试通过。
 - 自动化测试覆盖九模块顺序、单一 H1、核心站内链接、FAQ 无 JavaScript 内容、轮播回归、流程卡片及 320–1440px 横向溢出；1440px 和 390px 长截图已复核。
-- 测试阻断外部网络，因此截图不验证 Unsplash 摄影加载；真实样件照片、材料、尺寸、公差和批量固定范围仍须取得企业确认后补充。本次未部署，也未执行项目尚未配置的完整类型检查和 ESLint。
+- 测试阻断外部网络，因此截图不验证外部字体；Machined Parts 代表性图片、材料、尺寸、公差和批量固定范围仍须取得企业确认后补充。本次未部署，也未执行项目尚未配置的完整类型检查和 ESLint。
 
 ### 可选 Turnstile 验证（2026 年 11 月 5 日）
 
