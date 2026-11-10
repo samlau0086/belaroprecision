@@ -25,14 +25,54 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
     <slot />
     <BackToTop />
     <script>
-      const toggle = document.querySelector('[data-menu-toggle]');
-      const menu = document.querySelector('[data-mobile-menu]');
-      toggle?.addEventListener('click', () => {
-        const expanded = toggle.getAttribute('aria-expanded') === 'true';
-        toggle.setAttribute('aria-expanded', String(!expanded));
-        menu?.classList.toggle('is-open', !expanded);
-        if (expanded) menu?.querySelector('.mobile-capability-group')?.removeAttribute('open');
-      });
+      const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+      const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
+      const overlay = document.querySelector<HTMLButtonElement>('[data-menu-overlay]');
+      if (toggle && menu && overlay) {
+        const mobileViewport = window.matchMedia('(max-width: 1100px)');
+        const background = [...document.querySelectorAll<HTMLElement>('main, .site-footer, [data-back-to-top]')];
+        const previousInert = new Map<HTMLElement, boolean>();
+        const setMenuOpen = (open: boolean, restoreFocus = false) => {
+          const expanded = open && mobileViewport.matches;
+          toggle.setAttribute('aria-expanded', String(expanded));
+          menu.classList.toggle('is-open', expanded);
+          overlay.hidden = !expanded;
+          document.documentElement.classList.toggle('mobile-menu-open', expanded);
+          // 保留背景原有的 inert 状态，避免关闭菜单时改变其他组件的约束。
+          for (const element of background) {
+            if (expanded) {
+              if (!previousInert.has(element)) previousInert.set(element, element.inert);
+              element.inert = true;
+            } else if (previousInert.has(element)) {
+              element.inert = previousInert.get(element)!;
+            }
+          }
+          if (!expanded) {
+            previousInert.clear();
+            menu.querySelector('.mobile-capability-group')?.removeAttribute('open');
+            if (restoreFocus) toggle.focus({ preventScroll: true });
+          }
+        };
+        toggle.addEventListener('click', () => setMenuOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+        overlay.addEventListener('click', () => setMenuOpen(false, true));
+        document.addEventListener('keydown', event => {
+          if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+            event.preventDefault();
+            setMenuOpen(false, true);
+          }
+        });
+        menu.addEventListener('click', event => {
+          if (event.target instanceof Element && event.target.closest('a')) setMenuOpen(false);
+        });
+        mobileViewport.addEventListener('change', () => {
+          if (!mobileViewport.matches) {
+            const focusInMenu = menu.contains(document.activeElement) || document.activeElement === toggle;
+            setMenuOpen(false);
+            if (focusInMenu) document.querySelector<HTMLAnchorElement>('.site-header .brand')?.focus({ preventScroll: true });
+          }
+        });
+        window.addEventListener('pageshow', () => setMenuOpen(false));
+      }
       document.querySelectorAll('[data-year]').forEach((el) => el.textContent = String(new Date().getFullYear()));
     </script>
   </body>

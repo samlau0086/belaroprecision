@@ -18,9 +18,10 @@
       <a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a>
     </nav>
     <a class="button button-small button-orange nav-cta" href="/contact/">Request a Quote <span>↗</span></a>
-    <button class="menu-toggle" data-menu-toggle aria-expanded="false" aria-label="Toggle navigation"><i></i><i></i><i></i></button>
+    <button class="menu-toggle" type="button" data-menu-toggle aria-controls="mobile-navigation" aria-expanded="false" aria-label="Toggle navigation"><i></i><i></i><i></i></button>
   </div>
-  <nav class="mobile-nav" data-mobile-menu aria-label="Mobile navigation">
+  <button class="mobile-menu-overlay" type="button" data-menu-overlay aria-label="Close navigation" tabindex="-1" hidden></button>
+  <nav class="mobile-nav" id="mobile-navigation" data-mobile-menu aria-label="Mobile navigation">
     <details class="mobile-capability-group">
       <summary class="mobile-capability-toggle">Capabilities <span aria-hidden="true"></span></summary>
       <div class="mobile-capability-links" id="mobile-capability-links" aria-label="Capabilities submenu">
@@ -40,7 +41,13 @@
 
 <style>
   .site-header{position:sticky;top:0;height:var(--header-height)}
-  .mobile-nav{max-height:calc(100vh - var(--header-height));max-height:calc(100dvh - var(--header-height));overflow-y:auto;overscroll-behavior:contain}
+  .nav-wrap{position:relative;z-index:2}
+  .mobile-menu-overlay{position:fixed;inset:var(--header-height) 0 0;z-index:0;width:100%;padding:0;border:0;background:rgba(11,23,40,.55);cursor:pointer}
+  .mobile-menu-overlay[hidden]{display:none}
+  .mobile-nav{z-index:1;max-height:calc(100vh - var(--header-height));max-height:calc(100dvh - var(--header-height));overflow-y:auto;overscroll-behavior:contain}
+  /* 只锁定根滚动容器，避免 body 产生新滚动容器使吸顶页头移出视窗。 */
+  :global(html.mobile-menu-open){overflow:hidden}
+  @media(min-width:1101px){.mobile-menu-overlay{display:none}}
   /* 增加导航项后提前切换移动菜单，避免平板宽度下挤压。 */
   .desktop-nav{gap:24px;margin-right:24px}
   .nav-dropdown{position:relative;display:block;flex:0 0 auto}
