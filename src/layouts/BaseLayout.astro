@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import 'flag-icons/css/flag-icons.min.css';
 import { site } from '../config';
+import BackToTop from '../components/BackToTop.astro';
 const { title = 'Precision CNC Machining for OEM Manufacturers', description = site.description, canonical } = Astro.props;
 const pageTitle = title.includes('Belaro') ? title : `${title} | Belaro Precision`;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toString();
@@ -22,6 +23,7 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
   </head>
   <body>
     <slot />
+    <BackToTop />
     <script>
       const toggle = document.querySelector('[data-menu-toggle]');
       const menu = document.querySelector('[data-mobile-menu]');

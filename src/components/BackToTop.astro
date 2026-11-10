@@ -1,0 +1,33 @@
+<button class="back-to-top" type="button" aria-label="Back to top" title="Back to top" data-back-to-top hidden>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M12 19V5M5 12l7-7 7 7" />
+  </svg>
+</button>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-back-to-top]');
+  if (button) {
+    const updateVisibility = () => {
+      button.hidden = window.scrollY < window.innerHeight;
+    };
+    window.addEventListener('scroll', updateVisibility, { passive: true });
+    window.addEventListener('resize', updateVisibility);
+    window.addEventListener('pageshow', updateVisibility);
+    updateVisibility();
+
+    button.addEventListener('click', () => {
+      // 返回页头后转移焦点，避免按钮隐藏时丢失键盘操作位置。
+      document.querySelector<HTMLAnchorElement>('.site-header .brand')?.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    });
+  }
+</script>
+
+<style>
+  .back-to-top{position:fixed;right:calc(24px + env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:19;display:grid;place-items:center;width:48px;height:48px;padding:0;border:1px solid var(--orange);border-radius:50%;background:var(--navy);color:#fff;box-shadow:0 4px 18px rgba(16,31,53,.2);cursor:pointer;transition:background .2s,border-color .2s}
+  .back-to-top[hidden]{display:none}
+  .back-to-top:hover{background:var(--navy2);border-color:#fff}
+  .back-to-top:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
+  @media(max-width:700px){.back-to-top{right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px))}}
+  @media(prefers-reduced-motion:reduce){.back-to-top{transition:none}}
+</style>
