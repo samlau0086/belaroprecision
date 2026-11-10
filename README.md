@@ -234,6 +234,8 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 先阅读根目录 `AGENTS.md`，遵循现有 Astro、TypeScript 和原生 CSS 结构。页面位于 `src/pages/`；公共布局、导航和表单控件优先复用；颜色、字体和通用间距优先使用 `src/styles/global.css` 的现有变量与规则。公开联系方式、域名和字段配置位于 `src/config.ts`。后台上传及验证逻辑位于 PHP MU 插件，修改后需单独部署至 WordPress。
 
+全站文字最小字号为 **16px**，桌面、平板和手机端一致；包括导航、页脚、标签、图片说明、表单提示与政策页面。页面及组件局部样式中的 `font-size`、`font` 简写和媒体查询也须遵守此限制；`small`、`sub`、`sup` 在全局样式中设有 16px 下限。新增样式时保留现有较大的标题字号。构建后执行 `node --test tests/site-typography.test.mjs`，检查全部静态页面的计算字号及响应式溢出。
+
 页面摄影和工艺图片分两类管理：既有根路径素材位于 `public/images/`，Machined Parts 分类主图和细节图位于 `public/images/machined-parts/`；需要 Astro 构建期优化的页面素材位于 `src/assets/images/`，通过 `src/data/images.ts` 显式映射并由 `ProcessImage.astro` 或 `MediaGallery.astro` 输出响应式图片。页面图片保持响应式宽度，非首屏图片默认 lazy。当前本地 WebP 素材包括首页铣削与车削主视觉、铣削与车削工艺细节、质量检验、OEM 批量生产、二次工艺、About 车间与设备团队场景、Industries 四类应用场景、Quality 检测与交付场景、RFQ 评审场景，以及六类 Machined Parts 代表性图片。上线前仍须确认授权、生成来源和公开范围；示意图片不代表客户案例、库存产品、设备资产证明或真实检测记录，实际能力仍需以图纸和项目评审为准。
 
 Machined Blocks 卡片的细节图库使用 `machined-block-pocket.webp`（型腔与加工纹路）和 `machined-block-threaded-hole.webp`（螺纹孔与倒角），文件位于 `public/images/machined-parts/`；原始素材保留在 `webp/Machined Blocks/`。
@@ -278,6 +280,14 @@ Google 官方参考（上线前核对当前要求）：[数据收集和使用政
 2026 年 11 月 6 日补充 3+2 CNC Milling：铣削页新增 `#three-plus-two` 能力卡与工艺区别 FAQ，桌面和移动导航加入对应入口；首页、Capabilities、About、Industries 和 Machined Parts 同步展示。3+2 表述为旋转轴先定位、切削时保持固定角度的定位五轴加工，与联动五轴分别介绍。具体工艺仍按图纸、装夹和刀具可达性确认；没有新增设备型号、公差或加工尺寸承诺，也没有更改 RFQ 后台工艺值。
 
 ## 10. 测试与质量检查
+
+### 全站最小字号验证
+
+- 全站局部样式中原有的 9–15px 字号统一调整为 16px，较大的字号保持原值；全局补充 `small`、`sub`、`sup` 的字号下限。
+- `npm run build` 通过，生成 14 个静态页面。
+- `node --test tests/site-typography.test.mjs` 通过，覆盖全部 14 页在 320、390、700、701、1024、1100、1101、1440px 下的计算字号、展开内容、移动菜单和页面横向溢出。
+- `node --test tests/site-navigation.test.mjs tests/rfq-submission.test.mjs tests/hero-slider.test.mjs` 的 4 项既有浏览器回归测试全部通过；`git diff --check` 通过。
+- 构建与测试首次执行受沙箱 `spawn EPERM` 限制，获准在沙箱外重试后通过。浏览器测试阻断外部网络，询价测试使用模拟后台；未部署。项目未配置独立类型检查及 ESLint 脚本，本次未执行这两项。
 
 ### Illustrative 文案移除验证（2026 年 11 月 10 日）
 
