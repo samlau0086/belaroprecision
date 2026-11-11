@@ -1,0 +1,18 @@
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY . .
+ARG PUBLIC_GRAPHQL_URL
+ARG PUBLIC_TURNSTILE_SITE_KEY
+ENV PUBLIC_GRAPHQL_URL=$PUBLIC_GRAPHQL_URL \
+    PUBLIC_TURNSTILE_SITE_KEY=$PUBLIC_TURNSTILE_SITE_KEY \
+    ASTRO_TELEMETRY_DISABLED=1
+RUN node --test tests/gravity-forms.test.mjs && npm run build
+
+FROM nginx:stable-alpine AS runtime
+COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 \
+    CMD wget -q -O /dev/null http://127.0.0.1/ || exit 1

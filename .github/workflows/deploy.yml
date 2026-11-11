@@ -1,0 +1,122 @@
+name: Docker 部署到 VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belaroprecision-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # 手动运行也只允许发布 main。
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: production
+    defaults:
+      run:
+        shell: bash
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      DOCKER_PLATFORM: ${{ vars.DOCKER_PLATFORM || 'linux/amd64' }}
+      HTTP_BIND_ADDRESS: ${{ vars.HTTP_BIND_ADDRESS || '127.0.0.1' }}
+      HTTP_PORT: ${{ vars.HTTP_PORT || '8080' }}
+      PUBLIC_GRAPHQL_URL: ${{ vars.PUBLIC_GRAPHQL_URL }}
+      PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
+
+    steps:
+      - name: 获取代码
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: 校验部署配置
+        run: |
+          node --input-type=module <<'NODE'
+          const env = process.env;
+          for (const name of ['VPS_HOST', 'VPS_USER', 'VPS_SSH_KEY', 'PUBLIC_GRAPHQL_URL']) {
+            if (!env[name]?.trim()) throw new Error(`缺少配置：${name}`);
+          }
+          if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(env.VPS_HOST)) throw new Error('VPS_HOST 仅支持域名或 IPv4');
+          if (!/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(env.VPS_USER)) throw new Error('VPS_USER 无效');
+          for (const name of ['VPS_SSH_PORT', 'HTTP_PORT']) {
+            if (!/^[1-9][0-9]{0,4}$/.test(env[name]) || Number(env[name]) > 65535) throw new Error(`${name} 无效`);
+          }
+          if (!['127.0.0.1', '0.0.0.0'].includes(env.HTTP_BIND_ADDRESS)) throw new Error('HTTP_BIND_ADDRESS 无效');
+          if (!['linux/amd64', 'linux/arm64'].includes(env.DOCKER_PLATFORM)) throw new Error('DOCKER_PLATFORM 无效');
+          const url = new URL(env.PUBLIC_GRAPHQL_URL);
+          if (url.protocol !== 'https:' || url.username || url.password || url.hostname === 'localhost' || url.hostname.endsWith('.local')) {
+            throw new Error('PUBLIC_GRAPHQL_URL 必须是正式 HTTPS 后台地址，且不能包含凭证');
+          }
+          NODE
+          echo "RELEASE_ID=${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_ENV"
+
+      - name: 配置 ARM 镜像构建支持
+        if: env.DOCKER_PLATFORM == 'linux/arm64'
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
+        with:
+          platforms: arm64
+
+      - name: 检查部署参数与脚本
+        run: |
+          npm ci --no-audit --no-fund
+          node --test tests/deployment.test.mjs
+
+      - name: 构建镜像与验证 HTTP 路由
+        run: |
+          docker build --platform "$DOCKER_PLATFORM" \
+            --build-arg PUBLIC_GRAPHQL_URL \
+            --build-arg PUBLIC_TURNSTILE_SITE_KEY \
+            --tag "belaroprecision:$RELEASE_ID" .
+          docker run -d --name belaro-smoke --platform "$DOCKER_PLATFORM" \
+            -p 127.0.0.1:18080:80 "belaroprecision:$RELEASE_ID"
+          trap 'docker logs belaro-smoke; docker rm -f belaro-smoke' EXIT
+          curl --fail --retry 15 --retry-delay 2 --retry-connrefused http://127.0.0.1:18080/healthz
+          curl --fail --silent --output /dev/null http://127.0.0.1:18080/
+          curl --fail --silent --output /dev/null http://127.0.0.1:18080/contact/
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:18080/nonexistent-deploy-check/)" = 404
+          mkdir -p bundle
+          docker save --output bundle/image.tar "belaroprecision:$RELEASE_ID"
+          cp compose.yaml bundle/compose.yaml
+          tar -czf "belaroprecision-$RELEASE_ID.tar.gz" -C bundle image.tar compose.yaml
+
+      - name: 配置 SSH 私钥
+        run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/belaro-ssh"
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' > "$RUNNER_TEMP/belaro-ssh/id"
+          ssh-keygen -y -P '' -f "$RUNNER_TEMP/belaro-ssh/id" > /dev/null
+          cat > "$RUNNER_TEMP/belaro-ssh/config" <<EOF
+          Host belaro-vps
+            HostName $VPS_HOST
+            User $VPS_USER
+            Port $VPS_SSH_PORT
+            IdentityFile $RUNNER_TEMP/belaro-ssh/id
+            UserKnownHostsFile $RUNNER_TEMP/belaro-ssh/known_hosts
+            StrictHostKeyChecking accept-new
+            BatchMode yes
+            IdentitiesOnly yes
+            ConnectTimeout 15
+            ServerAliveInterval 15
+            ServerAliveCountMax 4
+          EOF
+
+      - name: 上传镜像并更新 VPS 容器
+        run: |
+          scp -F "$RUNNER_TEMP/belaro-ssh/config" "belaroprecision-$RELEASE_ID.tar.gz" belaro-vps:./
+          ssh -T -F "$RUNNER_TEMP/belaro-ssh/config" belaro-vps \
+            "bash -s -- '$RELEASE_ID' '$HTTP_BIND_ADDRESS' '$HTTP_PORT'" < deploy/deploy.sh
+
+      - name: 清理临时 SSH 凭证
+        if: always()
+        run: |
+          rm -f -- "$RUNNER_TEMP/belaro-ssh/id" "$RUNNER_TEMP/belaro-ssh/known_hosts" "$RUNNER_TEMP/belaro-ssh/config"

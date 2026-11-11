@@ -50,7 +50,7 @@
 └── node_modules/             # 本地依赖，Git 忽略
 ```
 
-当前没有 `docs/`、`.github/`、CHANGELOG.md 或 `.env.example`；未发现 CI、Docker、托管平台部署配置和嵌套 AGENTS.md。
+已新增 `.github/workflows/deploy.yml`、`Dockerfile`、`compose.yaml`、`deploy/`、`.env.example` 和 [VPS 部署指南](docs/DEPLOYMENT.md)，用于 GitHub Actions 通过 SSH 私钥部署 Docker 静态站点。当前没有 CHANGELOG.md 或嵌套 AGENTS.md。
 
 ## 4. 已有页面与功能边界
 
@@ -149,22 +149,24 @@ npm run preview
 
 | 配置项 | 位置 | 用途及要求 |
 | --- | --- | --- |
+| `PUBLIC_GRAPHQL_URL` | 静态站点构建环境或根目录 `.env` | 公开 WordPress GraphQL 地址；本地留空时沿用 `.local` 开发地址，GitHub 自动部署必须设置正式 HTTPS 地址 |
 | `PUBLIC_TURNSTILE_SITE_KEY` | 静态站点构建环境或根目录 `.env` | Turnstile 公开 Site Key，会写入产物；为空或仅空白时不启用人机验证，表单仍可提交 |
 | `BELARO_TURNSTILE_SECRET_KEY` | WordPress `wp-config.php` 中的 PHP 常量 | 未配置或仅空白时停用后台验证；配置后强制校验 Token，仅后台使用，不得放入前端源码或静态站点构建环境 |
 | `BELARO_TURNSTILE_HOSTNAME` | WordPress `wp-config.php` 中的 PHP 常量 | 校验访问者域名，必须与验证返回的 hostname 精确一致，不含协议或路径 |
 | `RFQ_SCREENSHOT_PATH` | 浏览器测试进程环境 | 可选的 RFQ 截图路径；测试还会生成带 `-dropdown.png` 后缀的下拉截图 |
 
-本次未发现根目录 `.env*` 文件，也未检查构建进程外部注入的公钥。当前没有 `.env.example` 或启动时必填变量校验。若需要本地配置，可手动创建 `.env`，仅填写公开变量：
+仓库提供 `.env.example`，可复制为本地 `.env` 并填写公开构建变量。GitHub 自动部署的必填配置在构建前校验；静态站点没有 Node.js 生产启动过程。示例：
 
 ```dotenv
-PUBLIC_TURNSTILE_SITE_KEY=替换为公开的站点公钥
+PUBLIC_GRAPHQL_URL=https://cms.example.com/graphql
+PUBLIC_TURNSTILE_SITE_KEY=
 ```
 
-`.gitignore` 当前只明确忽略 `.env`，未覆盖 `.env.local` 等变体；不要将含凭证的其他环境文件纳入版本管理。本次只更新 README，没有创建环境文件或修改忽略规则。
+`.gitignore` 已忽略 `.env`、`.env.*`（保留 `.env.example`）和常见 `.pem`/`.key` 私钥文件；`.dockerignore` 排除本地依赖、构建产物、Git、环境文件和私钥。真实 SSH 私钥仅保存在 GitHub Secrets，不得写入源码或公开构建变量。
 
 在 `src/config.ts` 中配置 `gravityForms`：
 
-- `graphqlUrl`：当前为 `https://belaroprecision.local/graphql`，部署前替换为正式后台地址。
+- `graphqlUrl`：优先使用 `PUBLIC_GRAPHQL_URL`，未配置或空白时使用 `https://belaroprecision.local/graphql`；生产必须配置正式后台地址并重新构建。
 - `formId`：当前为 `1`，切换后台表单时应同步复核所有字段映射。
 - `fields`：配置数据库字段 `id` 和 `type`；支持 `text`、`name`、`email`、`file`、`consent`、`checkbox`、`checkboxes`。单项 Checkbox 使用 `inputId` 和 `choiceValue`；多项 Checkbox 使用 `choices` 数组，逐项配置 `inputId` 和 `value`。Consent 使用 `type: 'consent'`。
 - `uploadsEnabled`：当前为 `true`；部署时须先安装 WPGraphQL Upload，并确认存在 `fileUploadValues` 输入。
@@ -459,7 +461,15 @@ node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 
 `astro.config.mjs` 配置 `output: 'static'`。执行 `npm run build` 后，将 `dist/` 发布到静态托管服务或 Web 服务器，不需要运行 Node.js 生产后端。`npm run preview` 用于本地核查构建产物。
 
-生产托管平台、自动发布流水线、域名解析、证书、重定向及缓存策略当前没有仓库配置，具体方案待确认。上线前配置 HTTPS、目录路由、404、sitemap、robots.txt，检查真实域名下的 Canonical、后台 CORS 和 Turnstile。WordPress 及插件需要独立安装维护；部署静态 `dist/` 不会部署后台，也不会自动更新 MU 插件。
+### GitHub Actions → SSH → VPS Docker
+
+已提供 `.github/workflows/deploy.yml`：推送 `main` 或手动运行后，构建 Node.js 22 / Nginx 多阶段镜像，执行表单单元测试与容器 HTTP 检查，通过 SSH 用户名及私钥传输镜像，再由 VPS 的 Docker Compose 更新容器。无需镜像仓库登录；使用 OpenSSH `accept-new` 首次信任 SSH 主机密钥、串行部署、容器健康检查和失败后的上一成功版本恢复。GitHub 临时 Runner 每次都会重新建立首次信任，不能预先核验服务器身份，存在首次连接被中间人攻击的风险。
+
+在 GitHub 的 `production` Environment 或仓库配置 Secrets：`VPS_HOST`、`VPS_USER`、`VPS_SSH_KEY`；配置必填 Variable `PUBLIC_GRAPHQL_URL`。不需要 `VPS_KNOWN_HOSTS`。SSH 端口默认 `22`，容器默认映射至 VPS 的 `127.0.0.1:8080`，可通过 Variables 调整端口、监听地址、镜像架构和公开 Turnstile Site Key。完整配置表、公钥安装、VPS 前提、首次验收与回滚步骤见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。
+
+Nginx 容器支持目录路由、未知路径 404、HTML 重新验证和哈希资源缓存。域名解析、HTTPS 证书和外层反向代理仍需在 VPS 配置；上线前检查 Canonical、后台 CORS、Turnstile，并按需补齐 sitemap、robots.txt。WordPress 及插件独立安装维护，前端发布不会更新后台或 MU 插件。单容器重建可能短暂中断服务。
+
+2026 年 11 月 11 日本地检查：`npm run build` 通过，生成 14 页；`node --test tests/deployment.test.mjs tests/gravity-forms.test.mjs` 的 14 项测试通过，覆盖部署参数校验、全部工作流步骤及部署脚本的 Bash 语法和表单映射；`node --test tests/rfq-submission.test.mjs` 的 2 项浏览器回归通过。Compose 配置、工作流 YAML 和公开 GraphQL 构建变量替换检查通过，检查后已恢复默认本地产物。部署测试解析现有 Astro 间接依赖 `js-yaml`，没有新增依赖；浏览器测试仍依赖本机既有 Playwright 环境。构建、Node 测试和 Bash 首次受沙箱权限阻止，获准在沙箱外重试通过。本机 Docker 引擎未启动，尚未执行真实镜像构建、容器运行、GitHub 工作流或 VPS 恢复验证；上线须完成部署指南中的验收步骤。
 
 ## 12. 常见问题与待确认事项
 
@@ -474,12 +484,10 @@ node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 
 ## 13. 缺失的重要技术文档
 
-当前 README 已补充项目概览、架构、环境、运行、字段和验证说明。以下独立文档尚不存在；需在对应事实确认后补齐，本次没有创建占位文档：
+当前 README 已补充项目概览、架构、环境、运行、字段和验证说明；已提供 `.env.example` 和 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。以下独立文档尚不存在，需在对应事实确认后补齐：
 
 | 建议文档 | 需补充的内容 |
 | --- | --- |
-| `.env.example` | 公开构建变量示例，明确前端与 WordPress 常量的边界 |
-| `docs/DEPLOYMENT.md` | 实际托管平台、DNS/HTTPS、WordPress 插件部署、CORS、上传限制、回滚与验收步骤 |
 | `docs/API.md` | 实际后台 Schema/插件版本、字段设置、错误响应和匿名提交权限 |
 | `docs/DEVELOPMENT.md` | 可复现的 Playwright/Chromium 环境、类型检查、Lint 与 CI 方案 |
 | `docs/ARCHITECTURE.md` | 前后端信任边界、图纸存储/访问/保留/删除和 Turnstile 校验限制 |
