@@ -473,6 +473,133 @@ GitHub Runner 的临时测试容器固定使用 `127.0.0.1:18080`，与 VPS 的 
 
 2026 年 11 月 11 日本地检查：`npm run build` 通过，生成 14 页；`node --test tests/deployment.test.mjs tests/gravity-forms.test.mjs` 的 14 项测试通过，覆盖部署参数校验、全部工作流步骤及部署脚本的 Bash 语法和表单映射；`node --test tests/rfq-submission.test.mjs` 的 2 项浏览器回归通过。Compose 配置、工作流 YAML 和公开 GraphQL 构建变量替换检查通过，检查后已恢复默认本地产物。部署测试解析现有 Astro 间接依赖 `js-yaml`，没有新增依赖；浏览器测试仍依赖本机既有 Playwright 环境。构建、Node 测试和 Bash 首次受沙箱权限阻止，获准在沙箱外重试通过。本机 Docker 引擎未启动，尚未执行真实镜像构建、容器运行、GitHub 工作流或 VPS 恢复验证；上线须完成部署指南中的验收步骤。
 
+### Cloudflare Cache Rules：官网高命中率配置
+
+以下为 **2026 年 11 月 11 日核对的配置建议，尚未在 Cloudflare 账户中应用或线上验收**。官网为 Astro 静态输出，用户已确认独立 WordPress 后台域名为 `wp.belaroprecision.com`。目标是尽量复用官网缓存，同时让询价、上传、登录和后台请求绕过缓存；不能保证所有请求或所有地区均达到 100% 命中。
+
+#### 配置前提
+
+- 官网 DNS 记录必须启用 Cloudflare 代理（橙云），关闭 Development Mode。后台绕过规则也仅对经过 Cloudflare 代理的请求生效。
+- 生产构建变量应设置 `PUBLIC_GRAPHQL_URL=https://wp.belaroprecision.com/graphql`，确认后台实际 GraphQL 路径后重新构建；本次没有修改环境文件或部署变量。
+- 当前 `deploy/nginx.conf` 对 `/_astro/` 返回 `public, max-age=31536000, immutable`，其他页面和 `/images/` 返回 `no-cache`。下列规则主动覆盖 **Edge TTL**；Browser TTL 单独设置，不能只勾选 Eligible for cache 就认为源站的 `no-cache` 已被覆盖。
+- 只在当前静态官网使用强制缓存。将来增加服务端登录、个性化内容、服务端搜索或动态图片转换时，先调整规则和缓存键。
+
+#### 四条规则及顺序
+
+在 Cloudflare 控制台选择 `belaroprecision.com` → **Rules → Cache Rules → Create rule → Custom filter expression → Edit expression**。按下表从上到下创建。Cache Rules 会叠加，同一设置以最后匹配的规则为准，因此绕过规则必须放在最后；已有规则也需检查，不能在其后再放全站强制缓存。
+
+| 顺序 / 建议名称 | 范围 | Edge TTL | Browser TTL |
+| --- | --- | --- | --- |
+| 1 / `官网公共静态内容` | 官网全部公共内容，包含 HTML 和 Contact 页面外壳 | 7 天（604800 秒） | Respect existing headers |
+| 2 / `官网普通图片` | 官网 `/images/` | 30 天（2592000 秒） | Override origin，1 天（86400 秒） |
+| 3 / `Astro 哈希资源` | 官网 `/_astro/` | 1 年（31536000 秒） | Respect existing headers，沿用源站 1 年 |
+| 4 / `后台与敏感请求绕过` | WordPress 整个域名及官网接口、认证请求 | Bypass cache | 不设置覆盖 |
+
+**规则 1：官网公共静态内容**
+
+```text
+(http.host in {"belaroprecision.com" "www.belaroprecision.com"})
+```
+
+设置 **Cache eligibility → Eligible for cache**；**Edge TTL → Ignore cache-control header and use this TTL → 7 days**；**Browser TTL → Respect existing headers**。HTML 在边缘缓存 7 天，浏览器继续按源站 `no-cache` 重新验证，以便发布后通过清理边缘缓存更新页面。这里的 `no-cache` 表示重新验证，不等于 `no-store`。
+
+**规则 2：官网普通图片**
+
+```text
+(http.host in {"belaroprecision.com" "www.belaroprecision.com"}
+ and starts_with(http.request.uri.path, "/images/"))
+```
+
+设置 **Eligible for cache**；**Edge TTL → Ignore cache-control header and use this TTL → 30 days**；**Browser TTL → Override origin and use this TTL → 1 day**。这些图片使用固定文件名，浏览器缓存 1 天可减少重复下载；同名替换后，即使清理 Cloudflare，已缓存图片的浏览器仍可能显示旧图至到期。需要即时更新时，使用新文件名并更新引用。
+
+**规则 3：Astro 哈希资源**
+
+```text
+(http.host in {"belaroprecision.com" "www.belaroprecision.com"}
+ and starts_with(http.request.uri.path, "/_astro/"))
+```
+
+设置 **Eligible for cache**；**Edge TTL → Ignore cache-control header and use this TTL → 1 year**；**Browser TTL → Respect existing headers**。该目录包含构建生成的 CSS、JavaScript 和优化图片，内容变化时由构建产生新的哈希 URL，适合长期缓存。
+
+**前三条规则的共同补充设置：**
+
+- 在 **Edge TTL → Status code TTL** 中为 `300–399` 设置 **2 小时**，为 `400–599` 设置 **No cache / No store**（API 对应 `-1`）。成功响应沿用各规则的默认 Edge TTL，避免错误页被缓存数天或一年。若界面要求列出成功范围，再添加 `200–299` 并填写该规则的 Edge TTL。
+- 在 **Cache Key** 中启用 **Ignore query string**，让不同 `utm_*`、`gclid`、`part`、`process` 等参数复用同一路径的静态资源。它只改变缓存键，不会删除浏览器地址栏中的参数；当前 Contact 页的 `part` / `process` 由浏览器脚本读取，仍可预填。不要改用重定向删除参数。
+- 官方 Cache keys 可用性表列出 Ignore query string 支持所有套餐；精细选择保留/排除哪些参数是另外的权限。若当前账户界面没有该选项，先保留默认缓存键，参数 URL 会分别缓存，不能将其当成已合并。
+- 不启用 **Cache by device type**，不额外加入 Cookie、User-Agent、国家或语言作为缓存键；官网使用同一份响应式 HTML。其余未列出的高级选项保持默认，不设置缓存读取超时或源站错误回退的特殊覆盖。
+- 忽略查询参数后，`?v=2` 不能用于刷新图片或脚本缓存，应更换文件名。未来若参数会改变源站响应内容，必须恢复相应参数进入缓存键或为该路径绕过缓存。
+
+前三条表达式不限制为 GET：Cloudflare 自身控制可缓存方法，且官方提示仅匹配 GET 的规则可能影响按 URL 清缓存。下面的绕过规则为内部清缓存匹配保留 `PURGE` 方法，这不代表源站支持或允许匿名 PURGE。
+
+**规则 4：后台与敏感请求绕过，必须最后执行**
+
+```text
+(
+ http.host eq "wp.belaroprecision.com"
+ or (
+  http.host in {"belaroprecision.com" "www.belaroprecision.com"}
+  and (
+   not http.request.method in {"GET" "HEAD" "PURGE"}
+   or starts_with(http.request.uri.path, "/graphql")
+   or http.request.uri.path eq "/api"
+   or starts_with(http.request.uri.path, "/api/")
+   or starts_with(http.request.uri.path, "/wp-admin")
+   or starts_with(http.request.uri.path, "/wp-json")
+   or http.request.uri.path eq "/wp-login.php"
+   or http.request.uri.path eq "/healthz"
+   or starts_with(http.request.uri.path, "/cdn-cgi/")
+   or any(http.request.headers["authorization"][*] ne "")
+   or http.cookie contains "wordpress_logged_in_"
+  )
+ )
+)
+```
+
+只设置 **Cache eligibility → Bypass cache**，不设置 Edge TTL 或 Browser TTL。WordPress 的所有页面、GraphQL、预检、上传和登录均绕过 Cloudflare 缓存；已有 WordPress 页面缓存插件或服务器缓存仍须单独排除 GraphQL、登录与上传。官网 `/contact/` 是可缓存的公共静态表单页面，真实提交发往后台，不需要因为有表单就绕过整个联系页。不要增加“存在任何 Cookie 就绕过”的规则，以免普通访问者带安全或统计 Cookie 时丢失命中。
+
+#### 进一步提高命中率
+
+- **Cache Key 合并查询参数**与**长 Edge TTL**配合使用，避免广告参数和询价入口参数分散相同内容的缓存。
+- 在 **Caching → Tiered Cache** 中启用 **Smart Tiered Cache**（以账户实际入口为准），让边缘节点未命中时优先从上层缓存获取，减少回源。它不意味着所有首次访问都一定显示 HIT，也不替代上述规则。
+- 统一访问 `https://belaroprecision.com`：在 Redirect Rules 或现有反向代理中将 HTTP 和 `www` 重定向到该规范地址，保留路径与查询参数。规则仍兼容两个官网域名，但长期分散访问会产生不同主机的缓存副本；不要重定向 `wp` 后台到官网。
+- 静态官网响应应避免无意义的 `Set-Cookie` 和按用户变化的响应；保留后台认证及 CORS 所需设置。Google Fonts 和 Turnstile 使用第三方域名，不在这四条规则的加速范围内。
+- 新部署前后不要反复 Purge Everything。TTL 是新鲜度上限，不是保留保证；低访问量内容仍可能提前被逐出。用 Cache Analytics 分别查看官网与后台、请求与字节命中率，后台绕过和冷请求不应被视为官网规则失效。
+
+#### 每次发布后的操作
+
+1. 先确认新容器健康检查及源站页面正常，再清除发生变化的 HTML URL；公共导航、页脚或样式引用变化时清除全部 14 个页面 URL。当前部署工作流**未实现自动 Cloudflare 清缓存**，必须手动执行，不能假设发布后立刻显示新内容。
+2. 在 **Caching → Configuration → Purge Cache → Custom Purge → URL** 中填写完整 HTTPS URL，路径及末尾斜杠与用户实际访问一致；如仍使用 `www`，其缓存也需处理。不支持用单文件清理中的 `*` 代替整批路径。
+3. 同名替换 `/images/` 文件时清理对应图片 URL；需要即时覆盖浏览器缓存时改文件名并清理引用它的 HTML。新哈希 `/_astro/` 文件通常不用清理；旧 HTML 可能仍引用旧哈希资源，部署时应保留上一版资源至旧页面缓存刷新完成，或安排一致的发布及清缓存流程。当前镜像部署未实现跨版本资源保留。
+4. 默认不要清除所有哈希资源。仅在缓存策略迁移、旧变体无法定向清理或故障恢复时考虑 Purge Everything；它会清空整个 zone，增加冷请求和回源压力。
+5. 正常文档请求按 URL 清理即可；若资源请求带 `Origin` 等参与默认缓存键的特殊 Header，控制台单 URL 清理可能无法覆盖该副本，需按官方说明通过 API 携带对应 Header，或使用账户支持的按主机/前缀清理。忽略查询参数本身通常不阻止单 URL 清理。
+
+#### 验收与排查
+
+使用 Windows 自带 `curl.exe` 连续执行两次普通 GET，避免只用 HEAD 代替实际页面请求；用自己站点实际存在的哈希文件替换最后一条的占位文件名：
+
+```powershell
+curl.exe -sS -D - -o NUL "https://belaroprecision.com/"
+curl.exe -sS -D - -o NUL "https://belaroprecision.com/"
+curl.exe -sS -D - -o NUL "https://belaroprecision.com/?utm_source=cache-check"
+curl.exe -sS -D - -o NUL "https://belaroprecision.com/contact/?process=milling"
+curl.exe -sS -D - -o NUL "https://belaroprecision.com/images/machined-parts/precision-shaft-main.webp"
+curl.exe -sS -D - -o NUL "https://belaroprecision.com/_astro/替换为实际哈希文件名.css"
+curl.exe -sS -D - -o NUL "https://wp.belaroprecision.com/wp-login.php"
+curl.exe -sS -D - -o NUL "https://belaroprecision.com/cache-check-missing-page-20261111/"
+```
+
+- 官网成功响应：首次可能为 `MISS`，同一节点后续请求期望 `CF-Cache-Status: HIT`，通常伴随 `Age`；启用查询参数忽略后，带追踪参数的同路径应复用缓存。`Cache-Control: no-cache` 仍可能出现在 HTML 响应头中，它描述浏览器侧策略，不能据此单独判断 Edge TTL 未生效。
+- 后台登录及 GraphQL：不得命中共享缓存；Cache Rules 绕过时可能显示 `DYNAMIC` 或 `BYPASS`，不要只认其中一种。此处仅 GET 登录页，不执行真实登录或表单提交。
+- 不存在的页面：应返回 404，重复请求不应成为长期 `HIT`。部署健康检查与浏览器中的 GraphQL OPTIONS / POST、附件上传、Turnstile 和表单预填也需逐项验收；真实提交应使用明确标记的测试询盘并核实后台保存。
+- 官网持续 `DYNAMIC` / `BYPASS` 时，检查橙云、Development Mode、规则顺序、实际请求域名、认证 Header / 登录 Cookie、Workers 及其他覆盖配置；用 Rules simulator 核对匹配。浏览器 Network 中的内存/磁盘缓存和 Cloudflare 边缘命中是两层不同缓存。
+
+官方参考（上述建议的依据，界面与套餐权限以账户实际显示为准）：
+
+- [Cache Rules 设置](https://developers.cloudflare.com/cache/how-to/cache-rules/settings/)与[规则顺序](https://developers.cloudflare.com/cache/how-to/cache-rules/order/)。
+- [Cache keys 与套餐可用性](https://developers.cloudflare.com/cache/how-to/cache-keys/)。
+- [Tiered Cache](https://developers.cloudflare.com/cache/how-to/tiered-cache/)与[TTL 和缓存保留的区别](https://developers.cloudflare.com/cache/concepts/retention-vs-freshness/)。
+- [单 URL 清理及限制](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-single-file/)与[缓存响应状态](https://developers.cloudflare.com/cache/concepts/cache-responses/)。
+
 ## 12. 常见问题与待确认事项
 
 2026 年 11 月 11 日平台依赖修复验证：锁文件补齐 100 条缺失的平台及其依赖记录，原有包记录保持不变；Docker 安装显式包含可选依赖。`node --test tests/deployment.test.mjs tests/gravity-forms.test.mjs` 的 15 项测试和本地 `npm run build` 通过。实际执行 `docker build --target build --platform linux/amd64 --build-arg PUBLIC_GRAPHQL_URL=https://cms.example.com/graphql --tag belaroprecision:sharp-build-check .`，Alpine 内完成 11 项表单测试、14 页构建及 99 张图片优化，确认 Sharp/libvips 可用。完整运行镜像构建因 Docker Hub 的 Nginx 认证请求超时未完成；未验证 ARM64 实际构建、容器 HTTP 服务或 VPS 部署。
