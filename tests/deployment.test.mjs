@@ -7,6 +7,30 @@ import yaml from 'js-yaml';
 const workflow = yaml.load(readFileSync(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8'));
 const validationStep = workflow.jobs.deploy.steps.find(step => step.name === '校验部署配置');
 const validationCode = validationStep.run.match(/<<'NODE'\n([\s\S]*?)\nNODE\n/)[1];
+const lockPackages = JSON.parse(readFileSync(new URL('../package-lock.json', import.meta.url), 'utf8')).packages;
+
+test('Linux x64 和 ARM64 构建的原生依赖完整锁定，Sharp 包含 libvips', () => {
+  const required = [
+    ['node_modules/rollup', '@rollup/rollup-linux-x64-musl'],
+    ['node_modules/rollup', '@rollup/rollup-linux-arm64-musl'],
+    ['node_modules/esbuild', '@esbuild/linux-x64'],
+    ['node_modules/esbuild', '@esbuild/linux-arm64'],
+    ['node_modules/vite/node_modules/esbuild', '@esbuild/linux-x64'],
+    ['node_modules/vite/node_modules/esbuild', '@esbuild/linux-arm64'],
+    ...['linux-x64', 'linux-arm64', 'linuxmusl-x64', 'linuxmusl-arm64'].flatMap(target => [
+      ['node_modules/sharp', `@img/sharp-${target}`],
+      ['node_modules/sharp', `@img/sharp-libvips-${target}`],
+    ]),
+  ];
+  for (const [parent, name] of required) {
+    const version = lockPackages[parent].optionalDependencies[name];
+    const candidates = [lockPackages[`${parent}/node_modules/${name}`], lockPackages[`node_modules/${name}`]];
+    const entry = candidates.find(candidate => candidate?.version === version);
+    assert.ok(entry, `${parent} 缺少 ${name}@${version} 的平台依赖记录`);
+    assert.ok(entry.optional, `${name} 应为可选依赖`);
+    assert.match(entry.integrity, /^sha512-/, `${name} 缺少包完整性校验`);
+  }
+});
 const validEnvironment = {
   ...process.env,
   VPS_HOST: '203.0.113.10', VPS_USER: 'deploy', VPS_SSH_PORT: '22',

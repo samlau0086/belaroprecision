@@ -1,7 +1,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm ci --include=optional --no-audit --no-fund
 COPY . .
 ARG PUBLIC_GRAPHQL_URL
 ARG PUBLIC_TURNSTILE_SITE_KEY

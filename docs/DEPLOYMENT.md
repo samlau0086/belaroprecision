@@ -143,6 +143,10 @@ flock -w 300 deploy.lock bash -euo pipefail -c '
 
 ## 本地 Docker 核查
 
+构建依赖包含 Rollup、esbuild 和 Sharp 的原生平台包；Sharp 在 Alpine 下还需要对应的 musl libvips 包。Docker 使用 `npm ci --include=optional`，不可省略可选依赖。仓库锁文件应同时保留 Windows 和 Linux 平台记录；不要为修复安装错误直接升级全部依赖。`node --test tests/deployment.test.mjs` 会检查 x64/ARM64 Linux 构建依赖及 Sharp/libvips 是否按现有版本锁定。该检查不替代实际 Docker 镜像构建。
+
+若出现 `MissingSharp` 或 `Cannot find module @rollup/rollup-linux-x64-musl`，先检查锁文件的平台包记录。锁文件修复后须提交并推送，再运行新提交的工作流；重新运行旧记录不会使用新文件。
+
 先启动 Docker 引擎，从 `.env.example` 创建本地 `.env` 并填写公开配置，再执行：
 
 ```bash

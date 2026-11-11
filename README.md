@@ -473,6 +473,9 @@ Nginx 容器支持目录路由、未知路径 404、HTML 重新验证和哈希�
 
 ## 12. 常见问题与待确认事项
 
+2026 年 11 月 11 日平台依赖修复验证：锁文件补齐 100 条缺失的平台及其依赖记录，原有包记录保持不变；Docker 安装显式包含可选依赖。`node --test tests/deployment.test.mjs tests/gravity-forms.test.mjs` 的 15 项测试和本地 `npm run build` 通过。实际执行 `docker build --target build --platform linux/amd64 --build-arg PUBLIC_GRAPHQL_URL=https://cms.example.com/graphql --tag belaroprecision:sharp-build-check .`，Alpine 内完成 11 项表单测试、14 页构建及 99 张图片优化，确认 Sharp/libvips 可用。完整运行镜像构建因 Docker Hub 的 Nginx 认证请求超时未完成；未验证 ARM64 实际构建、容器 HTTP 服务或 VPS 部署。
+
+- **Docker 构建提示 MissingSharp 或缺少 Rollup 原生包：** Windows 下生成的不完整 npm 锁文件可能漏掉 Linux 平台依赖。当前锁文件已补齐 Sharp/libvips、Rollup 和 esbuild 的平台包，保留已有依赖版本；Docker 安装显式包含可选依赖。提交并推送更新后的锁文件后运行新提交的工作流，旧运行记录的 Re-run 仍使用原提交。维护锁文件时须保留跨平台记录，并执行 `node --test tests/deployment.test.mjs`；仅在 Windows 构建成功或使用 `--ignore-scripts` 安装成功，不能证明 Linux 图片优化可用。
 - **页面可打开但不能提交：** 检查 GraphQL 地址、字段 ID 和后台必填规则。未配置 Site Key 时应可提交；若后台仍配置 Secret Key，需将前后端验证配置保持一致。启用时还需检查浏览器是否加载 Turnstile、后台 Secret/hostname 是否正确。
 - **附件或跨域请求失败：** 核对 WPGraphQL Upload、MU 插件、允许 Origin、预检 Header、证书信任、扩展/MIME 及服务器大小限制。上传兼容插件不替代完整 CORS 配置。
 - **没有成功提示：** 只有保存条目 ID 才能确认接收，网络异常可能发生在后台已保存之后，应先核实再人工重试。
