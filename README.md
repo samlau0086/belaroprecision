@@ -469,6 +469,8 @@ node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 
 Nginx 容器支持目录路由、未知路径 404、HTML 重新验证和哈希资源缓存。域名解析、HTTPS 证书和外层反向代理仍需在 VPS 配置；上线前检查 Canonical、后台 CORS、Turnstile，并按需补齐 sitemap、robots.txt。WordPress 及插件独立安装维护，前端发布不会更新后台或 MU 插件。单容器重建可能短暂中断服务。
 
+GitHub Runner 的临时测试容器固定使用 `127.0.0.1:18080`，与 VPS 的 `HTTP_PORT` 独立；例如设置 `HTTP_PORT=28080` 只影响 VPS 映射端口，现有反向代理的上游端口也应同步调整。工作流先对临时容器 `/healthz` 执行有限次数重试，覆盖启动期间的连接重置或拒绝，并设置连接和单次请求超时；健康检查通过后才验证页面及打包上传。修复后须推送新提交到 `main` 触发部署，重新运行旧记录不会使用更新后的工作流。
+
 2026 年 11 月 11 日本地检查：`npm run build` 通过，生成 14 页；`node --test tests/deployment.test.mjs tests/gravity-forms.test.mjs` 的 14 项测试通过，覆盖部署参数校验、全部工作流步骤及部署脚本的 Bash 语法和表单映射；`node --test tests/rfq-submission.test.mjs` 的 2 项浏览器回归通过。Compose 配置、工作流 YAML 和公开 GraphQL 构建变量替换检查通过，检查后已恢复默认本地产物。部署测试解析现有 Astro 间接依赖 `js-yaml`，没有新增依赖；浏览器测试仍依赖本机既有 Playwright 环境。构建、Node 测试和 Bash 首次受沙箱权限阻止，获准在沙箱外重试通过。本机 Docker 引擎未启动，尚未执行真实镜像构建、容器运行、GitHub 工作流或 VPS 恢复验证；上线须完成部署指南中的验收步骤。
 
 ## 12. 常见问题与待确认事项

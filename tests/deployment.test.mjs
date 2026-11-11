@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { createServer } from 'node:http';
 import yaml from 'js-yaml';
 
 const workflow = yaml.load(readFileSync(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8'));
@@ -49,7 +50,47 @@ function validate(changes = {}) {
 
 test('部署配置允许正式后台、非默认 SSH 端口和 ARM 架构', () => {
   assert.equal(validate().status, 0);
-  assert.equal(validate({ VPS_SSH_PORT: '2222', DOCKER_PLATFORM: 'linux/arm64', HTTP_BIND_ADDRESS: '0.0.0.0' }).status, 0);
+  assert.equal(validate({ VPS_SSH_PORT: '2222', DOCKER_PLATFORM: 'linux/arm64', HTTP_BIND_ADDRESS: '0.0.0.0', HTTP_PORT: '28080' }).status, 0);
+});
+
+test('临时容器健康检查在首次连接重置后重试成功', { timeout: 20000 }, async (t) => {
+  const buildStep = workflow.jobs.deploy.steps.find(step => step.name === '构建镜像与验证 HTTP 路由');
+  const command = buildStep.run.split('\n').find(line => line.startsWith('curl ') && line.endsWith('/healthz'));
+  assert.ok(command, '工作流必须先等待健康检查成功');
+  let requests = 0;
+  const server = createServer((request, response) => {
+    requests += 1;
+    if (requests === 1) {
+      request.socket.resetAndDestroy();
+      return;
+    }
+    response.end('ok');
+  });
+  t.after(() => new Promise(resolve => {
+    server.close(resolve);
+    server.closeAllConnections();
+  }));
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const args = command.split(/\s+/).slice(1);
+  args[args.length - 1] = `http://127.0.0.1:${server.address().port}/healthz`;
+  const result = await new Promise((resolve, reject) => {
+    const child = spawn(process.platform === 'win32' ? 'curl.exe' : 'curl', args, {
+      env: { ...process.env, NO_PROXY: '127.0.0.1', no_proxy: '127.0.0.1' },
+    });
+    t.after(() => { if (child.exitCode === null) child.kill(); });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', chunk => { stdout += chunk; });
+    child.stderr.on('data', chunk => { stderr += chunk; });
+    child.once('error', reject);
+    child.once('close', status => resolve({ status, stdout, stderr }));
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(requests, 2, '首次连接重置后应再次请求健康端点');
+  assert.equal(result.stdout, 'ok');
 });
 
 test('缺少 SSH 配置、本地后台、危险参数和无效端口会在连接前失败', () => {

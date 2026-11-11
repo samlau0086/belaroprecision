@@ -80,7 +80,8 @@ jobs:
           docker run -d --name belaro-smoke --platform "$DOCKER_PLATFORM" \
             -p 127.0.0.1:18080:80 "belaroprecision:$RELEASE_ID"
           trap 'docker logs belaro-smoke; docker rm -f belaro-smoke' EXIT
-          curl --fail --retry 15 --retry-delay 2 --retry-connrefused http://127.0.0.1:18080/healthz
+          # 等待 Nginx 就绪，覆盖启动期间的连接重置、连接拒绝等临时错误。
+          curl --fail --show-error --retry 15 --retry-delay 2 --retry-all-errors --retry-max-time 60 --connect-timeout 3 --max-time 5 http://127.0.0.1:18080/healthz
           curl --fail --silent --output /dev/null http://127.0.0.1:18080/
           curl --fail --silent --output /dev/null http://127.0.0.1:18080/contact/
           test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:18080/nonexistent-deploy-check/)" = 404
