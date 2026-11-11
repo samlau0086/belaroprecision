@@ -600,6 +600,106 @@ curl.exe -sS -D - -o NUL "https://belaroprecision.com/cache-check-missing-page-2
 - [Tiered Cache](https://developers.cloudflare.com/cache/how-to/tiered-cache/)与[TTL 和缓存保留的区别](https://developers.cloudflare.com/cache/concepts/retention-vs-freshness/)。
 - [单 URL 清理及限制](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-single-file/)与[缓存响应状态](https://developers.cloudflare.com/cache/concepts/cache-responses/)。
 
+### Cloudflare Security Rules：WordPress 后台与询价入口保护
+
+以下为 **2026 年 11 月 12 日的配置建议，尚未应用到 Cloudflare 或完成真实后台验收**。官网为公共静态页面；`wp.belaroprecision.com` 同时承担后台管理和匿名询价接收。应保护登录与接口，同时保留客户提交表单、跨域预检和附件上传的能力。
+
+#### 基础设置与适用边界
+
+| 设置 | 推荐配置 |
+| --- | --- |
+| Cloudflare 代理 | 官网及后台 DNS 记录启用橙云；DNS only 请求不会经过这些规则 |
+| WAF Managed Rules | 使用套餐提供的规则集和默认动作；付费规则集关注 WordPress 相关规则，不批量强制启用默认关闭的规则 |
+| Under Attack Mode | 平时关闭，受攻击时按受影响范围临时调整，避免全域挑战干扰询价 |
+| 免费 Bot Fight Mode | 当前跨域 API 场景建议先关闭；它可能挑战 API，且不能通过 WAF Skip 规则为 GraphQL 单独排除 |
+| Turnstile | 按第 7.2 节成对配置前端 Site Key 和后台 Secret Key，并验证真实服务端拒绝无效 Token；配置状态以实际部署为准 |
+| 缓存 | 保留前述 WordPress 整域 Bypass cache；缓存绕过不代表跳过 WAF，两个功能分别配置 |
+
+不要对整个 `wp.belaroprecision.com`、`/graphql` 或 `OPTIONS` 添加 Managed Challenge，也不要为接口添加 Skip all。挑战页返回 HTML，不能直接替代 `fetch` 预期的 JSON；当前 RFQ 请求使用 `credentials: 'omit'`，不能假定访问过登录挑战页就能让跨域表单通过。现有服务端 Turnstile 校验不等同于已实现 Turnstile Pre-clearance。
+
+#### 四条 Custom Rules
+
+进入 **Security → Security rules → Create rule → Custom rules**，在表达式编辑器中逐条粘贴。旧版控制台可能位于 **Security → WAF → Custom rules**。按下面顺序排列，前三条动作为 **Block**，第四条为 **Managed Challenge**。自定义安全规则顺序执行，Block 等终止动作会停止后续规则；不要套用 Cache Rules 的“后匹配覆盖”逻辑。Free 当前支持 5 条自定义规则，这里占 4 条；已有规则也占额度，具体以账户为准。
+
+**规则 1：阻止敏感文件探测。** 适用于两个官网主机和后台；源站仍须禁止公开环境文件、Git 目录及配置备份，不能只依赖边缘拦截。
+
+```text
+(http.host in {"belaroprecision.com" "www.belaroprecision.com" "wp.belaroprecision.com"}
+ and (
+  lower(http.request.uri.path) eq "/.env"
+  or starts_with(lower(http.request.uri.path), "/.env.")
+  or lower(http.request.uri.path) eq "/.git"
+  or starts_with(lower(http.request.uri.path), "/.git/")
+  or lower(http.request.uri.path) eq "/wp-config.php"
+  or starts_with(lower(http.request.uri.path), "/wp-config.php.")
+ ))
+```
+
+**规则 2：阻止不使用的 XML-RPC。** 仅在确认未使用依赖 XML-RPC 的 Jetpack 功能、远程发布或旧客户端后启用；后台插件依赖尚未核查。
+
+```text
+(http.host eq "wp.belaroprecision.com"
+ and lower(http.request.uri.path) eq "/xmlrpc.php")
+```
+
+**规则 3：限制 GraphQL 方法。** 当前 RFQ 文本及附件请求使用 POST，跨域预检使用 OPTIONS。若后台还有通过 GET 查询 GraphQL 的客户端，先把 GET 加入允许列表再启用。该规则不验证请求体内容，也不替代后台权限和输入校验。
+
+```text
+(http.host eq "wp.belaroprecision.com"
+ and lower(http.request.uri.path) in {"/graphql" "/graphql/"}
+ and not http.request.method in {"POST" "OPTIONS"})
+```
+
+**规则 4：登录页 GET 挑战。** 动作为 Managed Challenge；只覆盖浏览器打开登录页的请求，登录 POST 的爆破风险另外通过限速控制。不要将挑战范围直接扩大到整个 `/wp-admin/`，以免影响后台 AJAX 操作。
+
+```text
+(http.host eq "wp.belaroprecision.com"
+ and lower(http.request.uri.path) eq "/wp-login.php"
+ and http.request.method eq "GET")
+```
+
+以上路径按当前 `/graphql` 和默认 WordPress 登录入口编写。若启用隐藏登录插件、子目录安装或修改接口路径，应同步调整。后台还需维护 WordPress、PHP、插件更新、管理员强密码及适用的双因素认证；边缘规则不替代这些措施。
+
+#### Rate Limiting Rules
+
+在 **Security rules → Create rule → Rate limiting rules** 单独创建；不占前述 Custom Rules 条数，但有各自的套餐额度。下列是建议起始值，不是已经测量出的业务上限。计数特征选客户端 IP，超限动作选 **Block**，不要对 GraphQL 超限请求返回挑战页。
+
+| 规则 | 起始阈值 | 建议拦截时长 | 匹配范围 |
+| --- | --- | --- | --- |
+| 登录防爆破 | 同一 IP 10 次 / 10 秒 | 10 秒，后续结合事件调整 | `/wp-login.php` |
+| 询价接口防刷 | 同一 IP 20 次 / 10 秒 | 10 秒，后续结合事件调整 | `/graphql` 和 `/graphql/` |
+
+**Free 路径表达式：** 登录规则使用 `(http.request.uri.path eq "/wp-login.php")`；GraphQL 规则使用 `(http.request.uri.path in {"/graphql" "/graphql/"})`。Free 限速表达式不支持 Host 和 Method，因此同一 zone 内其他主机的同路径也会匹配，OPTIONS 也会计数，不要照抄 Custom Rules 的复杂条件到 Free 限速规则。
+
+Pro 支持增加 Host 条件；Business 支持进一步增加 Method 条件。例如，在支持这些字段的套餐中，询价限速可以匹配：
+
+```text
+(http.host eq "wp.belaroprecision.com"
+ and http.request.uri.path in {"/graphql" "/graphql/"}
+ and http.request.method eq "POST")
+```
+
+按实际套餐选择时间窗口、动作和拦截时长，不支持的值不要视为已配置。如果账户仅允许一条限速规则，建议优先保护公开 GraphQL，登录限速由后台补齐；本仓库未实现 WordPress 登录限速。共享出口 IP 下的多个客户会共用额度，应根据真实事件调整阈值；限速计数有延迟且不是全局精确配额，不能作为防止分布式滥用的唯一措施。
+
+#### 应用与验收
+
+1. 先记录已有规则和顺序，逐条启用并检查 Security Events，不一次性叠加全域挑战或国家封禁。XML-RPC 条件不满足时跳过规则 2。
+2. 使用浏览器验证后台登录、编辑、后台 AJAX 和媒体上传；确认登录 GET 可完成挑战，正常后台操作没有反复跳转挑战页。
+3. 从正式官网验证 RFQ 无附件提交、带附件提交、Contact 参数预填及真实 OPTIONS 预检。预检需包含浏览器实际的 Origin、Access-Control-Request-Method 和请求 Header；WordPress 仍须返回正确的 CORS 响应。真实提交使用明确标记的测试询盘并核实条目、附件与通知，不用批量生产提交验证限速。
+4. 确认 `/graphql` 的正常 POST / OPTIONS 不被以上自定义规则拦截或挑战。它们仍受托管 WAF、限速和后台校验，不是无条件允许。若规则 3 启用，非允许方法应命中 Block。
+5. 启用 Turnstile 时验证有效、缺失、无效和过期 Token。关闭人机验证的前后端配置必须一致，不能仅隐藏前端组件。
+6. 发生误拦截时记录时间、路径、HTTP 状态及 Cloudflare Ray ID，在 Security Events 查看 Service 和具体规则 ID。只针对已确认误报的规则及路径设置窄范围例外；不要整体关闭 WAF，或跳过整个后台/GraphQL 的所有检查。若是免费 Bot Fight Mode 误拦截，WAF Skip 无法解决，应单独调整该产品。
+
+本次仅维护操作说明，未更改 Cloudflare、WordPress、源站防火墙或真实 Turnstile 配置。表达式需在账户中保存校验；套餐权限、现有规则冲突、后台插件依赖和真实上传行为仍需上线验收。
+
+官方参考（2026 年 11 月 12 日核对）：
+
+- [Custom Rules、执行顺序与套餐额度](https://developers.cloudflare.com/waf/custom-rules/)。
+- [托管 WAF 的 Cloudflare Managed Ruleset](https://developers.cloudflare.com/waf/managed-rules/reference/cloudflare-managed-ruleset/)。
+- [Rate Limiting Rules 字段权限与计数限制](https://developers.cloudflare.com/waf/rate-limiting-rules/)。
+- [挑战页与 fetch 的兼容限制](https://developers.cloudflare.com/cloudflare-challenges/challenge-types/challenge-pages/)。
+- [Bot Fight Mode 与 Skip 限制](https://developers.cloudflare.com/bots/get-started/bot-fight-mode/)。
+
 ## 12. 常见问题与待确认事项
 
 2026 年 11 月 11 日平台依赖修复验证：锁文件补齐 100 条缺失的平台及其依赖记录，原有包记录保持不变；Docker 安装显式包含可选依赖。`node --test tests/deployment.test.mjs tests/gravity-forms.test.mjs` 的 15 项测试和本地 `npm run build` 通过。实际执行 `docker build --target build --platform linux/amd64 --build-arg PUBLIC_GRAPHQL_URL=https://cms.example.com/graphql --tag belaroprecision:sharp-build-check .`，Alpine 内完成 11 项表单测试、14 页构建及 99 张图片优化，确认 Sharp/libvips 可用。完整运行镜像构建因 Docker Hub 的 Nginx 认证请求超时未完成；未验证 ARM64 实际构建、容器 HTTP 服务或 VPS 部署。
