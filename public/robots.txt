@@ -1,17 +1,17 @@
 User-agent: *
-Content-Signal: search=yes, ai-input=yes, ai-train=no
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
 User-agent: OAI-SearchBot
-Content-Signal: search=yes, ai-input=yes, ai-train=no
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
 User-agent: Claude-SearchBot
-Content-Signal: search=yes, ai-input=yes, ai-train=no
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
 User-agent: PerplexityBot
-Content-Signal: search=yes, ai-input=yes, ai-train=no
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
 Sitemap: https://belaroprecision.com/sitemap.xml
