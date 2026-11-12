@@ -18,6 +18,7 @@
 | 包管理器 | npm，存在 `package-lock.json`，锁文件格式为 3 |
 | 样式 | 原生全局 CSS、组件局部样式、CSS 自定义属性；未使用 UI 框架 |
 | 国旗与电话区号 | `flag-icons`：声明 `^7.6.0`、锁定 `7.6.0`；`libphonenumber-js`：声明 `^1.13.15`、锁定 `1.13.15` |
+| Agent Markdown 构建 | `linkedom` 提取页面正文，`turndown` 将 HTML 转为 Markdown；仅在构建和测试阶段使用 |
 | TypeScript 配置 | 继承 `astro/tsconfigs/strict`，定义 `@/*` 到 `src/*` 的别名；TypeScript `5.9.3` 为间接依赖 |
 | 外部后台 | WordPress、Gravity Forms、WPGraphQL、WPGraphQL for Gravity Forms；附件还需要 WPGraphQL Upload |
 | 测试 | Node.js 内置 `node:test`、`node:assert/strict`；浏览器测试使用 Playwright 和 Chromium |
@@ -96,7 +97,7 @@ RFQ 必填项包括姓名、邮箱、公司、国家/地区和联系同意；同
 
 已实现页面 Title、Meta Description、Canonical、英文 `lang` 和图片 Alt。全站页脚提供隐私、Cookie 与使用条款入口。构建时根据 Astro 生成的页面自动生成 `/sitemap.xml`；`/robots.txt` 允许公开页面抓取并列出 sitemap，明确允许 OAI-SearchBot、Claude-SearchBot 和 PerplexityBot。通配规则和上述搜索爬虫规则均声明 `search=yes, ai-input=yes, ai-train=yes`，允许搜索、AI 回答及模型训练使用内容；默认通配抓取规则允许其他爬虫。Content Signals 是使用偏好声明，仍需核实线上 Cloudflare 配置是否覆盖该声明。容器 Nginx 为页面响应提供指向 sitemap 的 Link 头。当前未实现 Open Graph、Twitter Card、结构化数据、自定义 404、分析统计、广告转化、自动报价、订单管理或站内登录。
 
-Agent 可发现性上线验收：发布后通过正式域名检查 `/robots.txt`、`/sitemap.xml` 和首页 Link 响应头；若 Cloudflare 的 robots 管理或缓存覆盖源站，需要在控制台检查现有规则并清除相关 URL 缓存。Markdown for Agents 是 Cloudflare 侧功能，须在账户中确认支持条件并启用后，用 `Accept: text/markdown` 验证响应类型及缓存隔离，本仓库不声称已启用。DNS-AID 需真实 Agent 服务及 DNS/DNSSEC 配置；OAuth、API catalog、MCP、WebMCP 等仅在实际提供对应服务时发布，不以虚构元数据刷分。检测分数取决于第三方规则和线上配置，不能保证达到特定分数。
+Agent 可发现性上线验收：发布后通过正式域名检查 `/robots.txt`、`/sitemap.xml`、首页 Link 响应头和 `Accept: text/markdown` 内容协商；若 Cloudflare 的 robots 管理或缓存覆盖源站，需要在控制台检查现有规则并清除相关 URL 缓存。本仓库已在 Astro 构建阶段生成 Markdown，并由生产 Nginx 按 `Accept` 返回，无需 Cloudflare Markdown for Agents；实现和验证方式见 [docs/AGENT-MARKDOWN.md](docs/AGENT-MARKDOWN.md)。DNS-AID 需真实 Agent 服务及 DNS/DNSSEC 配置；OAuth、API catalog、MCP、WebMCP 等仅在实际提供对应服务时发布，不以虚构元数据刷分。检测分数取决于第三方规则和线上配置，不能保证达到特定分数。
 
 About 内容展示优化：应用方向改为分类标签，公司身份改为双栏信息卡，自有加工与外协范围采用深浅底色卡片，外协管理采用编号流程（桌面四列、平板两列、手机单列），联系方式采用引导区与信息卡双栏。新增 `src/styles/about.css`，样式限定在 `.about-page` 下，无新增依赖或交互脚本。
 
@@ -469,41 +470,43 @@ node --test tests/legal-pages.test.mjs tests/rfq-submission.test.mjs
 
 在 GitHub 的 `production` Environment 或仓库配置 Secrets：`VPS_HOST`、`VPS_USER`、`VPS_SSH_KEY`；配置必填 Variable `PUBLIC_GRAPHQL_URL`。不需要 `VPS_KNOWN_HOSTS`。SSH 端口默认 `22`，容器默认映射至 VPS 的 `127.0.0.1:8080`，可通过 Variables 调整端口、监听地址、镜像架构和公开 Turnstile Site Key。完整配置表、公钥安装、VPS 前提、首次验收与回滚步骤见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。
 
-Nginx 容器支持目录路由、未知路径 404、HTML 重新验证和哈希资源缓存。域名解析、HTTPS 证书和外层反向代理仍需在 VPS 配置；上线前检查 Canonical、后台 CORS、Turnstile，并按需补齐 sitemap、robots.txt。WordPress 及插件独立安装维护，前端发布不会更新后台或 MU 插件。单容器重建可能短暂中断服务。
+Nginx 容器支持目录路由、未知路径 404、HTML/Markdown 内容协商和哈希资源缓存。页面响应使用 `Cache-Control: no-store` 与 `Vary: Accept`，哈希资源继续长期缓存。域名解析、HTTPS 证书和外层反向代理仍需在 VPS 配置；上线前检查 Canonical、后台 CORS、Turnstile、sitemap、robots.txt 及 Cloudflare 页面缓存绕过规则。WordPress 及插件独立安装维护，前端发布不会更新后台或 MU 插件。单容器重建可能短暂中断服务。
 
 GitHub Runner 的临时测试容器固定使用 `127.0.0.1:18080`，与 VPS 的 `HTTP_PORT` 独立；例如设置 `HTTP_PORT=28080` 只影响 VPS 映射端口，现有反向代理的上游端口也应同步调整。工作流先对临时容器 `/healthz` 执行有限次数重试，覆盖启动期间的连接重置或拒绝，并设置连接和单次请求超时；健康检查通过后才验证页面及打包上传。修复后须推送新提交到 `main` 触发部署，重新运行旧记录不会使用更新后的工作流。
 
 2026 年 11 月 11 日本地检查：`npm run build` 通过，生成 14 页；`node --test tests/deployment.test.mjs tests/gravity-forms.test.mjs` 的 14 项测试通过，覆盖部署参数校验、全部工作流步骤及部署脚本的 Bash 语法和表单映射；`node --test tests/rfq-submission.test.mjs` 的 2 项浏览器回归通过。Compose 配置、工作流 YAML 和公开 GraphQL 构建变量替换检查通过，检查后已恢复默认本地产物。部署测试解析现有 Astro 间接依赖 `js-yaml`，没有新增依赖；浏览器测试仍依赖本机既有 Playwright 环境。构建、Node 测试和 Bash 首次受沙箱权限阻止，获准在沙箱外重试通过。本机 Docker 引擎未启动，尚未执行真实镜像构建、容器运行、GitHub 工作流或 VPS 恢复验证；上线须完成部署指南中的验收步骤。
 
-### Cloudflare Cache Rules：官网高命中率配置
+2026 年 11 月 12 日 Agent Markdown 本地检查：`npm run build` 通过，生成 14 个 HTML 页面及对应 Markdown；`node --test tests/agent-markdown.test.mjs tests/agent-discovery.test.mjs tests/deployment.test.mjs tests/gravity-forms.test.mjs` 共 21 项通过。测试使用 Nginx 1.28.0 验证 HTML/Markdown 协商、`q` 权重、HEAD、404、静态资源隔离、缓存头和 Content Signals。`npm ci --dry-run --include=optional --no-audit --no-fund` 通过。未运行 Docker 镜像、GitHub Actions、Cloudflare 线上规则或正式域名验收。
 
-以下为 **2026 年 11 月 11 日核对的配置建议，尚未在 Cloudflare 账户中应用或线上验收**。官网为 Astro 静态输出，用户已确认独立 WordPress 后台域名为 `wp.belaroprecision.com`。目标是尽量复用官网缓存，同时让询价、上传、登录和后台请求绕过缓存；不能保证所有请求或所有地区均达到 100% 命中。
+### Cloudflare Cache Rules：页面协商与静态资源缓存
+
+以下为 **2026 年 11 月 12 日更新的配置建议，尚未在 Cloudflare 账户中应用或线上验收**。官网页面会按 `Accept` 返回 HTML 或 Markdown，因此页面必须绕过共享缓存；`/images/` 和 `/_astro/` 等不参与内容协商的资源仍可缓存。用户已确认独立 WordPress 后台域名为 `wp.belaroprecision.com`。
 
 #### 配置前提
 
 - 官网 DNS 记录必须启用 Cloudflare 代理（橙云），关闭 Development Mode。后台绕过规则也仅对经过 Cloudflare 代理的请求生效。
 - 生产构建变量应设置 `PUBLIC_GRAPHQL_URL=https://wp.belaroprecision.com/graphql`，确认后台实际 GraphQL 路径后重新构建；本次没有修改环境文件或部署变量。
-- 当前 `deploy/nginx.conf` 对 `/_astro/` 返回 `public, max-age=31536000, immutable`，其他页面和 `/images/` 返回 `no-cache`。下列规则主动覆盖 **Edge TTL**；Browser TTL 单独设置，不能只勾选 Eligible for cache 就认为源站的 `no-cache` 已被覆盖。
-- 只在当前静态官网使用强制缓存。将来增加服务端登录、个性化内容、服务端搜索或动态图片转换时，先调整规则和缓存键。
+- 当前 `deploy/nginx.conf` 对页面返回 `Cache-Control: no-store` 和 `Vary: Accept`，对 `/_astro/` 返回 `public, max-age=31536000, immutable`。Cloudflare 页面规则不得忽略这些协商响应头并强制缓存。
+- 上线新配置前必须删除或停用已有的全站 `Cache Everything` / 固定 Edge TTL 规则，并清除旧页面缓存，否则旧缓存可能覆盖源站的格式协商。
 
 #### 四条规则及顺序
 
-在 Cloudflare 控制台选择 `belaroprecision.com` → **Rules → Cache Rules → Create rule → Custom filter expression → Edit expression**。按下表从上到下创建。Cache Rules 会叠加，同一设置以最后匹配的规则为准，因此绕过规则必须放在最后；已有规则也需检查，不能在其后再放全站强制缓存。
+在 Cloudflare 控制台选择 `belaroprecision.com` → **Rules → Cache Rules → Create rule → Custom filter expression → Edit expression**。按下表从上到下创建。Cache Rules 会叠加，同一设置以最后匹配的规则为准：规则 1 默认绕过官网页面，规则 2 和规则 3 对明确的静态资源重新启用缓存，规则 4 最后保护后台与敏感请求。已有规则也需检查，不能在其后再放全站强制缓存。
 
 | 顺序 / 建议名称 | 范围 | Edge TTL | Browser TTL |
 | --- | --- | --- | --- |
-| 1 / `官网公共静态内容` | 官网全部公共内容，包含 HTML 和 Contact 页面外壳 | 7 天（604800 秒） | Respect existing headers |
+| 1 / `官网页面绕过缓存` | 官网默认内容，包含 HTML、Markdown 和 Contact 页面 | Bypass cache | 不设置覆盖 |
 | 2 / `官网普通图片` | 官网 `/images/` | 30 天（2592000 秒） | Override origin，1 天（86400 秒） |
 | 3 / `Astro 哈希资源` | 官网 `/_astro/` | 1 年（31536000 秒） | Respect existing headers，沿用源站 1 年 |
 | 4 / `后台与敏感请求绕过` | WordPress 整个域名及官网接口、认证请求 | Bypass cache | 不设置覆盖 |
 
-**规则 1：官网公共静态内容**
+**规则 1：官网页面绕过缓存**
 
 ```text
 (http.host in {"belaroprecision.com" "www.belaroprecision.com"})
 ```
 
-设置 **Cache eligibility → Eligible for cache**；**Edge TTL → Ignore cache-control header and use this TTL → 7 days**；**Browser TTL → Respect existing headers**。HTML 在边缘缓存 7 天，浏览器继续按源站 `no-cache` 重新验证，以便发布后通过清理边缘缓存更新页面。这里的 `no-cache` 表示重新验证，不等于 `no-store`。
+只设置 **Cache eligibility → Bypass cache**，不设置 Edge TTL、Browser TTL 或自定义 Cache Key。后续更具体的 `/images/` 和 `/_astro/` 规则可覆盖该设置并缓存静态资源。页面绕过缓存是为了保证 Cloudflare 每次把 `Accept` 传到源站，并分别返回正确的 HTML 或 Markdown。
 
 **规则 2：官网普通图片**
 
@@ -523,15 +526,15 @@ GitHub Runner 的临时测试容器固定使用 `127.0.0.1:18080`，与 VPS 的 
 
 设置 **Eligible for cache**；**Edge TTL → Ignore cache-control header and use this TTL → 1 year**；**Browser TTL → Respect existing headers**。该目录包含构建生成的 CSS、JavaScript 和优化图片，内容变化时由构建产生新的哈希 URL，适合长期缓存。
 
-**前三条规则的共同补充设置：**
+**规则 2 和规则 3 的共同补充设置：**
 
 - 在 **Edge TTL → Status code TTL** 中为 `300–399` 设置 **2 小时**，为 `400–599` 设置 **No cache / No store**（API 对应 `-1`）。成功响应沿用各规则的默认 Edge TTL，避免错误页被缓存数天或一年。若界面要求列出成功范围，再添加 `200–299` 并填写该规则的 Edge TTL。
-- 在 **Cache Key** 中启用 **Ignore query string**，让不同 `utm_*`、`gclid`、`part`、`process` 等参数复用同一路径的静态资源。它只改变缓存键，不会删除浏览器地址栏中的参数；当前 Contact 页的 `part` / `process` 由浏览器脚本读取，仍可预填。不要改用重定向删除参数。
+- 在 **Cache Key** 中启用 **Ignore query string**，让同一静态资源的不同查询参数复用缓存。它只适用于规则 2 和规则 3；页面已经绕过缓存，不要以合并查询参数的方式缓存 Contact 等页面。
 - 官方 Cache keys 可用性表列出 Ignore query string 支持所有套餐；精细选择保留/排除哪些参数是另外的权限。若当前账户界面没有该选项，先保留默认缓存键，参数 URL 会分别缓存，不能将其当成已合并。
 - 不启用 **Cache by device type**，不额外加入 Cookie、User-Agent、国家或语言作为缓存键；官网使用同一份响应式 HTML。其余未列出的高级选项保持默认，不设置缓存读取超时或源站错误回退的特殊覆盖。
 - 忽略查询参数后，`?v=2` 不能用于刷新图片或脚本缓存，应更换文件名。未来若参数会改变源站响应内容，必须恢复相应参数进入缓存键或为该路径绕过缓存。
 
-前三条表达式不限制为 GET：Cloudflare 自身控制可缓存方法，且官方提示仅匹配 GET 的规则可能影响按 URL 清缓存。下面的绕过规则为内部清缓存匹配保留 `PURGE` 方法，这不代表源站支持或允许匿名 PURGE。
+前三条表达式不限制为 GET：Cloudflare 自身控制可缓存方法，且官方提示仅匹配 GET 的规则可能影响按 URL 清缓存。规则 1 负责页面默认绕过，规则 2 和规则 3 仅重新启用明确的静态资源缓存。下面的敏感请求规则为内部清缓存匹配保留 `PURGE` 方法，这不代表源站支持或允许匿名 PURGE。
 
 **规则 4：后台与敏感请求绕过，必须最后执行**
 
@@ -557,11 +560,11 @@ GitHub Runner 的临时测试容器固定使用 `127.0.0.1:18080`，与 VPS 的 
 )
 ```
 
-只设置 **Cache eligibility → Bypass cache**，不设置 Edge TTL 或 Browser TTL。WordPress 的所有页面、GraphQL、预检、上传和登录均绕过 Cloudflare 缓存；已有 WordPress 页面缓存插件或服务器缓存仍须单独排除 GraphQL、登录与上传。官网 `/contact/` 是可缓存的公共静态表单页面，真实提交发往后台，不需要因为有表单就绕过整个联系页。不要增加“存在任何 Cookie 就绕过”的规则，以免普通访问者带安全或统计 Cookie 时丢失命中。
+只设置 **Cache eligibility → Bypass cache**，不设置 Edge TTL 或 Browser TTL。WordPress 的所有页面、GraphQL、预检、上传和登录均绕过 Cloudflare 缓存；已有 WordPress 页面缓存插件或服务器缓存仍须单独排除 GraphQL、登录与上传。官网 `/contact/` 与其他页面一样需要因 HTML/Markdown 内容协商绕过缓存，与表单是否提交无关。不要增加“存在任何 Cookie 就绕过”的规则，以免静态资源因普通安全或统计 Cookie 丢失命中。
 
 #### 进一步提高命中率
 
-- **Cache Key 合并查询参数**与**长 Edge TTL**配合使用，避免广告参数和询价入口参数分散相同内容的缓存。
+- 仅对 `/images/` 和 `/_astro/` 使用 **Cache Key 合并查询参数**与长 Edge TTL；页面不进入 Cloudflare 共享缓存。
 - 在 **Caching → Tiered Cache** 中启用 **Smart Tiered Cache**（以账户实际入口为准），让边缘节点未命中时优先从上层缓存获取，减少回源。它不意味着所有首次访问都一定显示 HIT，也不替代上述规则。
 - 统一访问 `https://belaroprecision.com`：在 Redirect Rules 或现有反向代理中将 HTTP 和 `www` 重定向到该规范地址，保留路径与查询参数。规则仍兼容两个官网域名，但长期分散访问会产生不同主机的缓存副本；不要重定向 `wp` 后台到官网。
 - 静态官网响应应避免无意义的 `Set-Cookie` 和按用户变化的响应；保留后台认证及 CORS 所需设置。Google Fonts 和 Turnstile 使用第三方域名，不在这四条规则的加速范围内。
@@ -569,7 +572,7 @@ GitHub Runner 的临时测试容器固定使用 `127.0.0.1:18080`，与 VPS 的 
 
 #### 每次发布后的操作
 
-1. 先确认新容器健康检查及源站页面正常，再清除发生变化的 HTML URL；公共导航、页脚或样式引用变化时清除全部 14 个页面 URL。当前部署工作流**未实现自动 Cloudflare 清缓存**，必须手动执行，不能假设发布后立刻显示新内容。
+1. 首次切换到内容协商时，先确认新容器健康和源站响应，再停用旧的页面强制缓存规则并清除全部页面缓存。当前部署工作流**未实现自动 Cloudflare 清缓存**，必须手动执行。
 2. 在 **Caching → Configuration → Purge Cache → Custom Purge → URL** 中填写完整 HTTPS URL，路径及末尾斜杠与用户实际访问一致；如仍使用 `www`，其缓存也需处理。不支持用单文件清理中的 `*` 代替整批路径。
 3. 同名替换 `/images/` 文件时清理对应图片 URL；需要即时覆盖浏览器缓存时改文件名并清理引用它的 HTML。新哈希 `/_astro/` 文件通常不用清理；旧 HTML 可能仍引用旧哈希资源，部署时应保留上一版资源至旧页面缓存刷新完成，或安排一致的发布及清缓存流程。当前镜像部署未实现跨版本资源保留。
 4. 默认不要清除所有哈希资源。仅在缓存策略迁移、旧变体无法定向清理或故障恢复时考虑 Purge Everything；它会清空整个 zone，增加冷请求和回源压力。
@@ -590,7 +593,7 @@ curl.exe -sS -D - -o NUL "https://wp.belaroprecision.com/wp-login.php"
 curl.exe -sS -D - -o NUL "https://belaroprecision.com/cache-check-missing-page-20261111/"
 ```
 
-- 官网成功响应：首次可能为 `MISS`，同一节点后续请求期望 `CF-Cache-Status: HIT`，通常伴随 `Age`；启用查询参数忽略后，带追踪参数的同路径应复用缓存。`Cache-Control: no-cache` 仍可能出现在 HTML 响应头中，它描述浏览器侧策略，不能据此单独判断 Edge TTL 未生效。
+- 官网页面成功响应：普通请求应为 `text/html`，带 `Accept: text/markdown` 的请求应为 `text/markdown`；两者均应保留 `Vary: Accept` 和 `Cache-Control: no-store`，Cloudflare 状态应为 `DYNAMIC` 或 `BYPASS`，不得成为共享缓存 `HIT`。`/images/` 与 `/_astro/` 资源的后续请求可以为 `HIT`。
 - 后台登录及 GraphQL：不得命中共享缓存；Cache Rules 绕过时可能显示 `DYNAMIC` 或 `BYPASS`，不要只认其中一种。此处仅 GET 登录页，不执行真实登录或表单提交。
 - 不存在的页面：应返回 404，重复请求不应成为长期 `HIT`。部署健康检查与浏览器中的 GraphQL OPTIONS / POST、附件上传、Turnstile 和表单预填也需逐项验收；真实提交应使用明确标记的测试询盘并核实后台保存。
 - 官网持续 `DYNAMIC` / `BYPASS` 时，检查橙云、Development Mode、规则顺序、实际请求域名、认证 Header / 登录 Cookie、Workers 及其他覆盖配置；用 Rules simulator 核对匹配。浏览器 Network 中的内存/磁盘缓存和 Cloudflare 边缘命中是两层不同缓存。
@@ -718,7 +721,7 @@ Pro 支持增加 Host 条件；Business 支持进一步增加 Method 条件。�
 
 ## 13. 缺失的重要技术文档
 
-当前 README 已补充项目概览、架构、环境、运行、字段和验证说明；已提供 `.env.example` 和 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。以下独立文档尚不存在，需在对应事实确认后补齐：
+当前 README 已补充项目概览、架构、环境、运行、字段和验证说明；已提供 `.env.example`、[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) 和 [docs/AGENT-MARKDOWN.md](docs/AGENT-MARKDOWN.md)。以下独立文档尚不存在，需在对应事实确认后补齐：
 
 | 建议文档 | 需补充的内容 |
 | --- | --- |

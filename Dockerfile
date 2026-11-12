@@ -8,7 +8,8 @@ ARG PUBLIC_TURNSTILE_SITE_KEY
 ENV PUBLIC_GRAPHQL_URL=$PUBLIC_GRAPHQL_URL \
     PUBLIC_TURNSTILE_SITE_KEY=$PUBLIC_TURNSTILE_SITE_KEY \
     ASTRO_TELEMETRY_DISABLED=1
-RUN node --test tests/gravity-forms.test.mjs && npm run build
+RUN node --test tests/gravity-forms.test.mjs && npm run build && \
+    node --test tests/agent-markdown.test.mjs tests/agent-discovery.test.mjs
 
 FROM nginx:stable-alpine AS runtime
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf

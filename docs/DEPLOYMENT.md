@@ -106,13 +106,13 @@ location / {
 
 若代理运行在另一个容器，代理内的 `127.0.0.1` 指向代理自身，需要按现有 Docker 网络调整上游连接方式。临时需要公网 HTTP 访问时可将 `HTTP_BIND_ADDRESS` 改为 `0.0.0.0`，并配置对应网络访问规则；这不会自动生成 HTTPS。不要把其他已使用的 80/443 端口直接改给本容器。
 
-当前站点 Canonical 域名固定为 `https://belaroprecision.com`；更换域名须同步修改 `astro.config.mjs`、`src/config.ts` 和 `public/robots.txt`。容器支持 Astro 目录路由、未知页面 HTTP 404、HTML 重新验证和 `/_astro/` 哈希资源长期缓存；构建生成 sitemap，静态发布 robots.txt，普通页面响应包含 sitemap Link 头。没有自定义 404 页面。
+当前站点 Canonical 域名固定为 `https://belaroprecision.com`；更换域名须同步修改 `astro.config.mjs`、`src/config.ts` 和 `public/robots.txt`。容器支持 Astro 目录路由、未知页面 HTTP 404、HTML/Markdown 内容协商和 `/_astro/` 哈希资源长期缓存；构建生成 sitemap、Markdown 和 Nginx 路由映射，静态发布 robots.txt，页面响应包含 sitemap Link 头。页面使用 `Cache-Control: no-store` 与 `Vary: Accept`，Cloudflare 不得用全站强制缓存覆盖。详细实现与验证命令见 [AGENT-MARKDOWN.md](AGENT-MARKDOWN.md)。没有自定义 404 页面。
 
 ## 首次发布与验收
 
 1. 完成 VPS、公钥和 GitHub 配置，并确认正式 WordPress 后台、字段映射、CORS 及按需启用的 Turnstile。
 2. 将部署文件合并并推送到 `main`；也可以在该分支手动运行工作流。手动选择其他分支会跳过部署。
-3. 检查工作流的构建、容器路由检查和 VPS 健康检查结果。缺少必填配置时会在传输前失败。
+3. 检查工作流的构建、容器路由和 Markdown 内容协商检查，以及 VPS 健康检查结果。缺少必填配置时会在传输前失败。
 4. 登录 VPS 检查：
 
 ```bash
@@ -123,6 +123,8 @@ curl -f http://127.0.0.1:8080/contact/
 ```
 
 端口或监听地址修改后需同步调整检查命令。随后从正式 HTTPS 域名核对首页、询价页、图片、未知路由、Canonical，并提交标记为测试的询盘核对条目、附件、CORS 和通知邮件。容器健康检查只验证首页能返回成功，不能证明询价后台或 HTTPS 正常。
+
+如果正式域名经过 Cloudflare，发布前应将官网页面设为 Bypass cache，只对 `/images/` 与 `/_astro/` 单独缓存，并清除旧页面缓存。随后分别用 `Accept: text/html` 和 `Accept: text/markdown` 验证响应类型；Cloudflare 页面响应不得成为共享缓存 `HIT`。
 
 本次仅完成本地配置开发及部分检查，尚未连接真实 VPS 或运行 GitHub 发布；本地 Docker 引擎未启动，不能据此声称镜像及恢复流程已完成真实验收。
 

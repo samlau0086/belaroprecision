@@ -85,6 +85,7 @@ jobs:
           curl --fail --silent --output /dev/null http://127.0.0.1:18080/
           curl --fail --silent --output /dev/null http://127.0.0.1:18080/contact/
           test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:18080/nonexistent-deploy-check/)" = 404
+          AGENT_BASE_URL=http://127.0.0.1:18080 node --test tests/agent-markdown.test.mjs
           mkdir -p bundle
           docker save --output bundle/image.tar "belaroprecision:$RELEASE_ID"
           cp compose.yaml bundle/compose.yaml
