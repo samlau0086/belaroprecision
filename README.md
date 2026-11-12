@@ -94,7 +94,9 @@ About 页面区分自有 CNC 加工能力和通过东莞、深圳供应商协调
 
 RFQ 必填项包括姓名、邮箱、公司、国家/地区和联系同意；同意框默认勾选，客户可取消，取消后需重新勾选才能提交。电话和图纸上传保留在外层；加工工艺、材料、预计数量、公差 / 关键要求、所需文件和项目详情放在默认收起的「Add details (optional)」区域，全部可选。文件需求可多选 FAI report、CMM / dimensional report、EN 10204 3.1 material cert，可用性和范围须在报价时确认。文件需求通过 `checkboxValues` 独立提交至字段 15，项目详情字段 13 仅保留用户备注；折叠状态不会清空输入，后台字段错误（含文件复选框组）会自动展开对应区域并聚焦。部署前须同步确认 Gravity Forms 字段 7（工艺）、9（数量）和 15（文件需求）均非必填，本次未更改真实后台配置。旁边提供 Privacy Policy 与 Terms of Use 链接，明确询价不订阅营销邮件。表单不收集 Target delivery date，预计交期由 Belaro 评审后提供。国家搜索含国旗，材料可选或自填；电话区号随国家选择更新，也可独立修改。
 
-已实现页面 Title、Meta Description、Canonical、英文 `lang` 和图片 Alt。全站页脚提供隐私、Cookie 与使用条款入口。当前未实现 Open Graph、Twitter Card、结构化数据、sitemap、robots.txt、自定义 404、分析统计、广告转化、自动报价、订单管理或站内登录。
+已实现页面 Title、Meta Description、Canonical、英文 `lang` 和图片 Alt。全站页脚提供隐私、Cookie 与使用条款入口。构建时根据 Astro 生成的页面自动生成 `/sitemap.xml`；`/robots.txt` 允许公开页面抓取并列出 sitemap，明确允许 OAI-SearchBot、Claude-SearchBot 和 PerplexityBot。默认通配规则允许其他爬虫，尚未声明 AI 训练或内容使用偏好；如需限制训练抓取，应先确定企业政策再修改。容器 Nginx 为页面响应提供指向 sitemap 的 Link 头。当前未实现 Open Graph、Twitter Card、结构化数据、自定义 404、分析统计、广告转化、自动报价、订单管理或站内登录。
+
+Agent 可发现性上线验收：发布后通过正式域名检查 `/robots.txt`、`/sitemap.xml` 和首页 Link 响应头；若 Cloudflare 的 robots 管理或缓存覆盖源站，需要在控制台检查现有规则并清除相关 URL 缓存。Markdown for Agents 是 Cloudflare 侧功能，须在账户中确认支持条件并启用后，用 `Accept: text/markdown` 验证响应类型及缓存隔离，本仓库不声称已启用。DNS-AID 需真实 Agent 服务及 DNS/DNSSEC 配置；OAuth、API catalog、MCP、WebMCP 等仅在实际提供对应服务时发布，不以虚构元数据刷分。检测分数取决于第三方规则和线上配置，不能保证达到特定分数。
 
 About 内容展示优化：应用方向改为分类标签，公司身份改为双栏信息卡，自有加工与外协范围采用深浅底色卡片，外协管理采用编号流程（桌面四列、平板两列、手机单列），联系方式采用引导区与信息卡双栏。新增 `src/styles/about.css`，样式限定在 `.about-page` 下，无新增依赖或交互脚本。
 
@@ -141,7 +143,7 @@ npm run preview
 5. **补齐企业信息。** 用户已确认法定名称为深圳市极客码头科技有限公司（Shenzhen GEEKMATE Technology Co., Ltd.），公司地址为 `Shajing, Bao'an District, Shenzhen, China`，并提供 WhatsApp 联系号码 `+86 186 8218 8709`。完整街道地址、普通联系电话、营业时间、交付条款和认证仍须确认后再发布；当前 `site.phone` 仍为空。
 6. **核定法律页面与实际处理流程。** 隐私政策、Cookie 说明和使用条款已实现；上线前须确认完整地址、监控邮箱、实际服务商与数据位置、CAD 文件保留/删除和供应商访问规则，并按适用地区审核文字。页面没有虚构固定保留年限或自动删除机制，不替代 NDA、商业合同或法律审核，也不保证 Google Ads 审核通过。
 7. **按需配置统计与广告。** 当前没有 GA4 或 Google Ads 集成；后续应在确认适用的同意要求后实施，并仅在后台确认收件后记录成功转化。
-8. **完善 SEO。** 已有各页标题和描述；案例、材料专题和行业落地页须有足够真实内容后再添加，另需补齐 sitemap 等缺项。
+8. **完善 SEO。** 已有各页标题、描述和构建生成的 sitemap；案例、材料专题和行业落地页须有足够真实内容后再添加。
 
 ## 7. 环境变量、配置与外部服务
 

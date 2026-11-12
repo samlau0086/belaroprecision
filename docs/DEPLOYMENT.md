@@ -106,7 +106,7 @@ location / {
 
 若代理运行在另一个容器，代理内的 `127.0.0.1` 指向代理自身，需要按现有 Docker 网络调整上游连接方式。临时需要公网 HTTP 访问时可将 `HTTP_BIND_ADDRESS` 改为 `0.0.0.0`，并配置对应网络访问规则；这不会自动生成 HTTPS。不要把其他已使用的 80/443 端口直接改给本容器。
 
-当前站点 Canonical 域名固定为 `https://belaroprecision.com`；更换域名须同步修改 `astro.config.mjs` 和 `src/config.ts`。容器支持 Astro 目录路由、未知页面 HTTP 404、HTML 重新验证和 `/_astro/` 哈希资源长期缓存；没有新增自定义 404 页面、sitemap 或 robots.txt。
+当前站点 Canonical 域名固定为 `https://belaroprecision.com`；更换域名须同步修改 `astro.config.mjs`、`src/config.ts` 和 `public/robots.txt`。容器支持 Astro 目录路由、未知页面 HTTP 404、HTML 重新验证和 `/_astro/` 哈希资源长期缓存；构建生成 sitemap，静态发布 robots.txt，普通页面响应包含 sitemap Link 头。没有自定义 404 页面。
 
 ## 首次发布与验收
 
