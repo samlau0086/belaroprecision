@@ -18,14 +18,11 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
     <link rel="canonical" href={canonicalUrl} />
     <meta name="theme-color" content="#101f35" />
     <script is:inline>window.dataLayer = window.dataLayer || [];</script>
-    {googleTagManagerId && <script is:inline define:vars={{ googleTagManagerId }}>
+    {googleTagManagerId && <script is:inline>
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-      const gtmScript = document.createElement('script');
-      gtmScript.async = true;
-      gtmScript.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(googleTagManagerId)}`;
-      document.head.append(gtmScript);
     </script>}
+    {googleTagManagerId && <script async src={`https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(googleTagManagerId)}`}></script>}
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
@@ -34,6 +31,7 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
+    {googleTagManagerId && <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(googleTagManagerId)}`} height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>}
     <slot />
     <BackToTop />
     <script>

@@ -148,7 +148,7 @@ npm run preview
 
 ### Google Search Console、GA4、GTM 与 Google Ads 接入操作
 
-**当前状态：GTM 接入代码已准备，但尚未启用或验证。** `PUBLIC_GTM_ID` 为空时不会加载 Google GTM；已有代码仅在 WordPress 确认 RFQ 保存成功后推送不含询价内容的 `generate_lead` 事件。GA4、Google Ads 标签及可选统计同意控制均未配置，Cookie Policy 仍说明当前未加载这些标签。以下为账户配置和验收步骤，不表示 Google 账户已连接、标签已发布或广告转化已生效。Site Kit 不是必需组件：官网由 Astro 输出，单在独立 WordPress 后台安装插件不会给 Astro 页面加标签。应由 GTM 管理 Astro 官网页面的 Google 标签，并避免重复安装同一个 Google tag。
+**当前状态：RFQ 的 `generate_lead` 网站端事件已实现；是否已在生产启用取决于 GitHub 中是否配置 `PUBLIC_GTM_ID` 并重新部署。** `PUBLIC_GTM_ID` 为空时不会加载 Google GTM；仅在 WordPress GraphQL 确认保存成功且返回 `entry.id` 后，页面才向 `window.dataLayer` 推送不含询价内容的 `{ event: 'generate_lead' }`。GTM 中的 GA4 事件标签、GA4 关键事件、广告标签及统计同意控制仍需分别配置和验收；Cookie Policy 仍说明当前未加载这些标签。以下为账户配置和验收步骤，不表示 Google 账号配置、标签发布或广告转化已生效。Site Kit 不是必需组件：官网由 Astro 输出，单在独立 WordPress 后台安装插件不会给 Astro 页面加标签。应由 GTM 管理 Astro 官网页面的 Google 标签，并避免重复安装同一个 Google tag。
 
 #### 阶段一：Search Console
 
@@ -162,8 +162,15 @@ npm run preview
 1. 在 Google Tag Manager 创建 Web container，记录 `GTM-XXXXXXX` 容器 ID；在 Google Analytics 创建 GA4 property 和 Web data stream，记录 `G-XXXXXXXXXX` Measurement ID。企业账号应由企业持有，并按职责授予最小所需权限。
 2. 在 GitHub `production` Environment 或仓库 Variables 设置 `PUBLIC_GTM_ID` 为 `GTM-...`，然后按部署流程重新构建发布。代码会在 Astro 公共页面加载该容器；本地可写入 `.env` 后运行 `npm run build` 检查。ID 属公开标识，不得把服务端密钥放进静态站点。只通过 GTM 配置 GA4 Google tag，不再额外在 Astro、WordPress Site Kit 或其他插件重复插入 GA4。启用前先完成下文同意管理与隐私政策工作；若尚未准备好，保持变量为空。
 3. 先在 GTM 建立 GA4 Google tag，触发条件设为所有页面，并使用 GTM Preview / Tag Assistant 检查页面只触发一次、生产域名正确、没有调试配置残留后再发布容器版本。GTM Preview 不是生产标签已发布的证明。
-4. 为 RFQ 建立明确的 `generate_lead` 事件：只在 `src/pages/contact/index.astro` 收到 WordPress GraphQL 成功响应、确认存在已保存的 `entry.id` 并将表单状态设为成功后触发；字段验证错误、网络错误、Turnstile 失败、重复提交和仅点击按钮均不得触发。可通过 `window.dataLayer` 推送不含表单内容的固定事件，再由 GTM 发送至 GA4；不要将姓名、邮箱、电话、公司、项目备注、附件名称/内容或 GraphQL 响应放进事件参数。
-5. 在 GA4 DebugView/实时报告验证页面浏览和一次成功 RFQ 事件，并确认失败/重复提交没有被记为线索。确认事件稳定后，在 GA4 管理中将 `generate_lead` 标为 Key event（关键事件）。测试时使用明确标记的合成询价，不上传真实客户图纸。
+4. **在 GTM 把网站事件转发给 GA4（一次性配置）：** 网站代码已负责产生事件，不要在 GTM 用按钮点击、表单提交或 URL 页面浏览来猜测询价成功。GTM 中打开对应 Web container，按下列步骤建立一个自定义事件触发器和一个 GA4 事件标签：
+   - 选择 **Triggers（触发器）→ New（新建）→ Trigger Configuration（触发器配置）→ Custom Event（自定义事件）**。触发器名称可设为 `CE - generate_lead`；**Event name（事件名称）必须精确填写 `generate_lead`**，大小写一致；选择 **All Custom Events（所有自定义事件）**，不要勾选正则匹配。保存。
+   - 选择 **Tags（代码）→ New（新建）→ Tag Configuration（代码配置）→ Google Analytics: GA4 Event（Google Analytics：GA4 事件）**。若界面提供 Google tag/GA4 配置代码选择器，选用已经验证过、ID 为 `G-...` 的该网站 Google tag；若界面要求直接填 Measurement ID，则填 GA4 Web data stream 的 `G-...` ID。**Event Name（事件名称）填 `generate_lead`**，不要额外添加个人信息、表单内容、附件、GraphQL 返回值或其它未经审核的参数。触发器选择上一步的 `CE - generate_lead`，保存。GTM 的事件标签需要事件名和触发条件；自定义事件触发器根据 dataLayer 的 `event` 值匹配。
+   - 用 GTM **Preview** 连接网站并提交一份明显标记为测试的 RFQ。在 Tag Assistant 的事件时间线上选择 `generate_lead`，确认该 GA4 事件标签在该事件上恰好触发一次；同时确认它没有在 `gtm.js`、页面浏览、点击或表单开始时触发。再用一次验证失败的提交确认不会出现该事件。测试 RFQ 会真实写入 WordPress/Gravity Forms，请在后台标注并按内部流程清理测试条目；不可上传真实客户图纸或资料。
+   - Preview 正常后，检查 GTM **Submit（提交）→ Publish and Create Version（发布并创建版本）** 的变更清单，给版本写清用途后发布。Preview 只验证工作区草稿，不等于普通访客已经使用该版本。发布后从正式域名重新验收。
+5. **在 GA4 验证并标记关键事件：** 打开正确的 GA4 Property，在 **Reports（报告）→ Realtime（实时）** 或 **Admin（管理）→ Data display（数据展示）→ DebugView** 检查测试设备是否收到 `generate_lead`。DebugView 在启用调试模式的设备上显示事件；如果没有事件，依次检查生产页面是否加载正确的 GTM 容器、容器版本是否已发布、事件是否在 Tag Assistant 中触发、GA4 标签 Measurement ID 是否对应正确 Property，以及同意设置是否允许该标签触发。只在确认事件对应一次成功保存的 RFQ 后，前往 **Admin → Data display → Key events（关键事件）** 添加或启用 `generate_lead`；不要把 `form_start`、点击提交按钮或任意 `page_view` 标成询价转化。界面名称可能随 Google 更新变化，以账号当前界面为准。
+6. 验收通过后记录 GTM 容器版本、部署版本和测试时间。GA4 报告处理可能有延迟；先以 Tag Assistant 的触发结果及 DebugView/Realtime 收件作为技术验收，不要因标准报告尚未更新而重复安装标签或重复创建事件。
+
+**Tag Assistant 显示“Google Tag: GTM-... not found”时：** 先确认正式页面源码包含 `gtm.js?id=GTM-...`，浏览器 Network 中该请求返回 `200`，并且 `window.dataLayer` 中出现 `gtm.js`、`gtm.dom`、`gtm.load`。本项目使用标准静态 GTM script 和 body 开头的 `noscript` iframe；如果刚修改了 GitHub Variable 或代码，必须等待新的 GitHub Actions 部署完成，再关闭旧的 Tag Assistant 连接，从 GTM 当前工作区重新点击 **Preview** 打开新会话。检查时暂时关闭广告拦截器、隐私扩展和浏览器严格跟踪保护，允许第三方 Cookie/弹窗，并确认 Preview 打开的域名与实际测试域名完全一致（包括 `www`、协议和路径）。若 Network 中 `gtm.js` 被阻止、返回非 `200`，或页面仍是旧部署，Tag Assistant 可能只能显示源码中找到的 ID，却无法识别已运行的容器。
 
 #### 阶段三：同意管理与隐私政策
 
@@ -178,7 +185,7 @@ npm run preview
 3. 初期可以优化已确认提交的 RFQ；若之后要按“合格线索、报价、成交”优化，需由业务后台/CRM 保存广告点击 ID 和线索阶段，再按 Google Ads 支持的线下转化或增强型转化流程回传。当前项目没有 CRM、线索阶段回传或离线转化集成，这部分不是配置 GA4 事件就会自动获得。
 4. 上线验证至少覆盖：自然访问、带 UTM 访问、带测试点击 ID 的访问、成功提交、验证/网络失败、重复提交、同意前后标签行为、Ads 转化诊断，以及 Gravity Forms 中归因字段是否与对应合成线索匹配。不得以真实客户图纸或个人资料做测试。
 
-**账户配置与代码变更边界：** Search Console DNS、GTM/GA4/Ads 账号、容器发布、Ads 关联和转化设置都需要在 Google 控制台及 DNS 服务商中由有权限的人员操作；本仓库不能代为完成。GTM/GA4 页面注入、同意管理、RFQ 事件、归因字段和离线转化属于后续代码/后台开发，执行前须明确同意方案、目标地区和 WordPress 字段配置。Google 控制台菜单名称可能变化，操作时以对应官方帮助页面和账号界面为准。
+**账户配置与代码变更边界：** Search Console DNS、GTM/GA4/Ads 账号、容器发布、Ads 关联和转化设置都需要在 Google 控制台及 DNS 服务商中由有权限的人员操作；本仓库不能代为完成。GTM 页面加载开关及 RFQ `generate_lead` dataLayer 事件已在代码中实现；GTM/GA4 账号内的标签、触发器和关键事件仍须按上述步骤配置。统计同意管理、广告归因字段捕获/写入 WordPress、离线转化属于后续开发，实施前须明确同意方案、目标地区和 WordPress 字段配置。Google 控制台菜单名称可能变化，操作时以对应官方帮助页面和账号界面为准。
 
 官方操作参考（实施时复核页面要求）：[Search Console 添加网站与验证](https://support.google.com/webmasters/answer/34592)、[提交站点地图](https://support.google.com/webmasters/answer/7451001)、[GTM 安装容器](https://support.google.com/tagmanager/answer/14847097)、[GA4 与 Google Ads 关联](https://support.google.com/analytics/answer/9379420)、[将 GA4 Key events 导入 Google Ads](https://support.google.com/google-ads/answer/2375435)、[Consent Mode 概览](https://support.google.com/analytics/answer/10000067)。
 
