@@ -20,6 +20,8 @@ Content-Signal: search=yes, ai-input=yes, ai-train=yes
 
 `deploy/nginx.conf` 将内部 Markdown 产物设为不可直接访问。只有原页面 URL 匹配且协商结果为 Markdown 时，Nginx 才内部改写到对应文件。
 
+Nginx 使用 `absolute_redirect off`：HTML 目录请求（例如 `/about`）返回相对 `Location: /about/`，查询参数保持不变。这样 Docker 端口映射和外层 HTTPS 代理不会将客户端跳转到容器内部端口或 HTTP 地址。HTTP 集成测试同时检查相对重定向和自动跟随后的页面响应。
+
 ## Accept 规则
 
 - 没有显式 `text/markdown` 时返回 HTML，包括浏览器常见的 `*/*`。

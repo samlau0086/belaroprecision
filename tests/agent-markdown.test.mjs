@@ -67,6 +67,15 @@ test('真实 Nginx 按 Accept 返回格式，隔离缓存并保留静态文件�
       await new Promise(resolve => setTimeout(resolve, 100));
     }
   }
+  for (const route of ['/about', '/contact?process=milling']) {
+    const response = await fetch(`${base}${route}`, {
+      redirect: 'manual', headers: { Accept: 'text/html', Host: 'public.example:18080' },
+    });
+    assert.equal(response.status, 301, route);
+    const expected = route.replace(/([^/?])(?=\?|$)/, '$1/');
+    assert.equal(response.headers.get('location'), expected, '目录重定向必须使用相对地址，保留外部协议、端口和查询参数');
+    await response.arrayBuffer();
+  }
   for (const route of ['/', '/services/cnc-milling/', '/contact/?process=milling', '/about', '/quality/index.html']) {
     for (const [accept, markdown] of [
       ['text/markdown', true], ['TEXT/MARKDOWN', true], ['text/html', false], ['*/*', false],

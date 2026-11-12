@@ -707,6 +707,8 @@ Pro 支持增加 Host 条件；Business 支持进一步增加 Method 条件。�
 
 ## 12. 常见问题与待确认事项
 
+- **GitHub 镜像构建成功，但 Markdown HTTP 检查出现 `fetch failed`：** 如果容器日志最后出现 `/about` 的 301，检查 `Location` 是否错误指向容器内部端口。Nginx 已设置 `absolute_redirect off`，目录补斜杠使用相对地址，保留客户端协议、外部端口和查询参数；测试覆盖相对跳转和自动跟随。提交并推送修复后运行新提交的工作流，旧提交的 Re-run 不会加载新配置。
+
 2026 年 11 月 11 日平台依赖修复验证：锁文件补齐 100 条缺失的平台及其依赖记录，原有包记录保持不变；Docker 安装显式包含可选依赖。`node --test tests/deployment.test.mjs tests/gravity-forms.test.mjs` 的 15 项测试和本地 `npm run build` 通过。实际执行 `docker build --target build --platform linux/amd64 --build-arg PUBLIC_GRAPHQL_URL=https://cms.example.com/graphql --tag belaroprecision:sharp-build-check .`，Alpine 内完成 11 项表单测试、14 页构建及 99 张图片优化，确认 Sharp/libvips 可用。完整运行镜像构建因 Docker Hub 的 Nginx 认证请求超时未完成；未验证 ARM64 实际构建、容器 HTTP 服务或 VPS 部署。
 
 - **Docker 构建提示 MissingSharp 或缺少 Rollup 原生包：** Windows 下生成的不完整 npm 锁文件可能漏掉 Linux 平台依赖。当前锁文件已补齐 Sharp/libvips、Rollup 和 esbuild 的平台包，保留已有依赖版本；Docker 安装显式包含可选依赖。提交并推送更新后的锁文件后运行新提交的工作流，旧运行记录的 Re-run 仍使用原提交。维护锁文件时须保留跨平台记录，并执行 `node --test tests/deployment.test.mjs`；仅在 Windows 构建成功或使用 `--ignore-scripts` 安装成功，不能证明 Linux 图片优化可用。
