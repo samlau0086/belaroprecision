@@ -5,8 +5,10 @@ RUN npm ci --include=optional --no-audit --no-fund
 COPY . .
 ARG PUBLIC_GRAPHQL_URL
 ARG PUBLIC_TURNSTILE_SITE_KEY
+ARG PUBLIC_GTM_ID
 ENV PUBLIC_GRAPHQL_URL=$PUBLIC_GRAPHQL_URL \
     PUBLIC_TURNSTILE_SITE_KEY=$PUBLIC_TURNSTILE_SITE_KEY \
+    PUBLIC_GTM_ID=$PUBLIC_GTM_ID \
     ASTRO_TELEMETRY_DISABLED=1
 RUN node --test tests/gravity-forms.test.mjs && npm run build && \
     node --test tests/agent-markdown.test.mjs tests/agent-discovery.test.mjs

@@ -216,6 +216,7 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
     assert.equal(await submit.isDisabled(), true);
     assert.equal(await page.locator('#material-search').inputValue(), 'Custom alloy');
     assert.match(await status.textContent(), /enquiry has been received/);
+    assert.deepEqual(await page.evaluate(() => window.dataLayer.filter(event => event.event === 'generate_lead')), [{ event: 'generate_lead' }]);
     assert.equal(await page.locator('form').getAttribute('aria-busy'), null);
     await page.locator('[name=details]').fill('Updated project note.');
     if (turnstileEnabled) {
@@ -227,6 +228,7 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
     await submit.click();
     await page.waitForFunction(() => document.querySelector('#form-status').dataset.state === 'success');
     assert.equal(requests, 8);
+    assert.equal(await page.evaluate(() => window.dataLayer.filter(event => event.event === 'generate_lead').length), 2);
     if (process.env.RFQ_SCREENSHOT_PATH) {
       await page.locator('#rfq-form').screenshot({ path: process.env.RFQ_SCREENSHOT_PATH });
       await page.locator('.phone-country-toggle').click();

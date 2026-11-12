@@ -32,6 +32,7 @@ jobs:
       HTTP_PORT: ${{ vars.HTTP_PORT || '8080' }}
       PUBLIC_GRAPHQL_URL: ${{ vars.PUBLIC_GRAPHQL_URL }}
       PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
+      PUBLIC_GTM_ID: ${{ vars.PUBLIC_GTM_ID }}
 
     steps:
       - name: 获取代码
@@ -53,6 +54,7 @@ jobs:
           }
           if (!['127.0.0.1', '0.0.0.0'].includes(env.HTTP_BIND_ADDRESS)) throw new Error('HTTP_BIND_ADDRESS 无效');
           if (!['linux/amd64', 'linux/arm64'].includes(env.DOCKER_PLATFORM)) throw new Error('DOCKER_PLATFORM 无效');
+          if (env.PUBLIC_GTM_ID?.trim() && !/^GTM-[A-Z0-9]+$/.test(env.PUBLIC_GTM_ID.trim())) throw new Error('PUBLIC_GTM_ID 格式无效');
           const url = new URL(env.PUBLIC_GRAPHQL_URL);
           if (url.protocol !== 'https:' || url.username || url.password || url.hostname === 'localhost' || url.hostname.endsWith('.local')) {
             throw new Error('PUBLIC_GRAPHQL_URL 必须是正式 HTTPS 后台地址，且不能包含凭证');
@@ -76,6 +78,7 @@ jobs:
           docker build --platform "$DOCKER_PLATFORM" \
             --build-arg PUBLIC_GRAPHQL_URL \
             --build-arg PUBLIC_TURNSTILE_SITE_KEY \
+            --build-arg PUBLIC_GTM_ID \
             --tag "belaroprecision:$RELEASE_ID" .
           docker run -d --name belaro-smoke --platform "$DOCKER_PLATFORM" \
             -p 127.0.0.1:18080:80 "belaroprecision:$RELEASE_ID"

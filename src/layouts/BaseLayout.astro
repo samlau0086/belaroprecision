@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import 'flag-icons/css/flag-icons.min.css';
-import { site } from '../config';
+import { googleTagManagerId, site } from '../config';
 import BackToTop from '../components/BackToTop.astro';
 const { title = 'Precision CNC Machining for OEM Manufacturers', description = site.description, canonical } = Astro.props;
 const pageTitle = title.includes('Belaro') ? title : `${title} | Belaro Precision`;
@@ -17,6 +17,15 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
     <meta name="theme-color" content="#101f35" />
+    <script is:inline>window.dataLayer = window.dataLayer || [];</script>
+    {googleTagManagerId && <script is:inline define:vars={{ googleTagManagerId }}>
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      const gtmScript = document.createElement('script');
+      gtmScript.async = true;
+      gtmScript.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(googleTagManagerId)}`;
+      document.head.append(gtmScript);
+    </script>}
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />

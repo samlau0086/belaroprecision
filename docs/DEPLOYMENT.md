@@ -78,6 +78,7 @@ Variables：
 | `VPS_SSH_PORT` | `22` | SSH 端口 |
 | `PUBLIC_GRAPHQL_URL` | 无，必须填写 | 正式 WordPress HTTPS GraphQL 地址，如 `https://cms.example.com/graphql`；不能包含用户名或密码，拒绝 `.local` 和 `localhost` |
 | `PUBLIC_TURNSTILE_SITE_KEY` | 空 | 公开 Site Key；启用或停用须与 WordPress 后台同步 |
+| `PUBLIC_GTM_ID` | 空 | 可选的 Google Tag Manager Web 容器 ID（`GTM-...`）；仅在同意管理和隐私政策准备完成后设置，修改后须重新构建发布 |
 | `DOCKER_PLATFORM` | `linux/amd64` | x86_64 VPS 使用默认值，aarch64 VPS 改为 `linux/arm64`；ARM 构建和测试使用 QEMU，可能较慢 |
 | `HTTP_BIND_ADDRESS` | `127.0.0.1` | 支持 `127.0.0.1` 或 `0.0.0.0`；后者允许通过宿主机公网端口访问 |
 | `HTTP_PORT` | `8080` | VPS 映射端口，须避开已有服务 |

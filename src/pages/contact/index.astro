@@ -243,6 +243,7 @@ import { gravityForms } from '../../config';
         firstInvalid?.focus();
       } else if (response.ok && result.is_valid === true) {
         submitted = true;
+        window.dataLayer?.push({ event: 'generate_lead' });
         status.textContent = 'Thank you. Your enquiry has been received. We will contact you about your project.';
         status.dataset.state = 'success';
         submitButton.textContent = 'RFQ submitted ✓';

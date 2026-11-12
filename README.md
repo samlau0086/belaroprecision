@@ -146,6 +146,42 @@ npm run preview
 7. **按需配置统计与广告。** 当前没有 GA4 或 Google Ads 集成；后续应在确认适用的同意要求后实施，并仅在后台确认收件后记录成功转化。
 8. **完善 SEO。** 已有各页标题、描述和构建生成的 sitemap；案例、材料专题和行业落地页须有足够真实内容后再添加。
 
+### Google Search Console、GA4、GTM 与 Google Ads 接入操作
+
+**当前状态：GTM 接入代码已准备，但尚未启用或验证。** `PUBLIC_GTM_ID` 为空时不会加载 Google GTM；已有代码仅在 WordPress 确认 RFQ 保存成功后推送不含询价内容的 `generate_lead` 事件。GA4、Google Ads 标签及可选统计同意控制均未配置，Cookie Policy 仍说明当前未加载这些标签。以下为账户配置和验收步骤，不表示 Google 账户已连接、标签已发布或广告转化已生效。Site Kit 不是必需组件：官网由 Astro 输出，单在独立 WordPress 后台安装插件不会给 Astro 页面加标签。应由 GTM 管理 Astro 官网页面的 Google 标签，并避免重复安装同一个 Google tag。
+
+#### 阶段一：Search Console
+
+1. 使用企业 Google 账号登录 Google Search Console，添加 `belaroprecision.com` 的 **Domain property**（不带协议和路径）。
+2. 按 Search Console 显示的 TXT 记录，在管理 `belaroprecision.com` DNS 的服务商添加验证记录。等待 DNS 生效后回到 Search Console 点击验证；不要删除验证 TXT 记录。若无法管理 DNS，可改用 URL-prefix property，并按控制台提供的 HTML 文件或 Meta tag 方式验证，但 Domain property 更适合覆盖主域名及其子域名。
+3. 验证成功后，在 Search Console 的站点地图页面提交 `https://belaroprecision.com/sitemap.xml`。该 sitemap 由 `npm run build` 根据 Astro 页面生成，部署后可通过浏览器打开该地址检查 XML 是否正常。
+4. 使用 URL Inspection 检查首页及重要服务页是否可抓取；提交 sitemap 不保证 Google 一定收录。发布新页面后，先确认页面可公开访问、Canonical 正确且未被 robots 或 `noindex` 阻止，再在 Search Console 查看索引状态。
+
+#### 阶段二：GTM 与 GA4
+
+1. 在 Google Tag Manager 创建 Web container，记录 `GTM-XXXXXXX` 容器 ID；在 Google Analytics 创建 GA4 property 和 Web data stream，记录 `G-XXXXXXXXXX` Measurement ID。企业账号应由企业持有，并按职责授予最小所需权限。
+2. 在 GitHub `production` Environment 或仓库 Variables 设置 `PUBLIC_GTM_ID` 为 `GTM-...`，然后按部署流程重新构建发布。代码会在 Astro 公共页面加载该容器；本地可写入 `.env` 后运行 `npm run build` 检查。ID 属公开标识，不得把服务端密钥放进静态站点。只通过 GTM 配置 GA4 Google tag，不再额外在 Astro、WordPress Site Kit 或其他插件重复插入 GA4。启用前先完成下文同意管理与隐私政策工作；若尚未准备好，保持变量为空。
+3. 先在 GTM 建立 GA4 Google tag，触发条件设为所有页面，并使用 GTM Preview / Tag Assistant 检查页面只触发一次、生产域名正确、没有调试配置残留后再发布容器版本。GTM Preview 不是生产标签已发布的证明。
+4. 为 RFQ 建立明确的 `generate_lead` 事件：只在 `src/pages/contact/index.astro` 收到 WordPress GraphQL 成功响应、确认存在已保存的 `entry.id` 并将表单状态设为成功后触发；字段验证错误、网络错误、Turnstile 失败、重复提交和仅点击按钮均不得触发。可通过 `window.dataLayer` 推送不含表单内容的固定事件，再由 GTM 发送至 GA4；不要将姓名、邮箱、电话、公司、项目备注、附件名称/内容或 GraphQL 响应放进事件参数。
+5. 在 GA4 DebugView/实时报告验证页面浏览和一次成功 RFQ 事件，并确认失败/重复提交没有被记为线索。确认事件稳定后，在 GA4 管理中将 `generate_lead` 标为 Key event（关键事件）。测试时使用明确标记的合成询价，不上传真实客户图纸。
+
+#### 阶段三：同意管理与隐私政策
+
+在正式发布任何分析或广告标签前，先按目标访客地区和实际数据处理方式确定同意策略。若需同意管理，应实现真实可操作的设置界面，支持拒绝非必要标签、同意、撤回/修改，并将状态传给 Consent Mode；不能只在页面展示 Cookie 弹窗，也不能把 RFQ 联系同意复用为分析或广告同意。按照所选工具及地区规则配置 GTM Consent settings，验证选择前、拒绝后、同意后和撤回后的标签行为；不得把 Consent Mode 当作同意管理平台本身。
+
+同步更新 `src/pages/privacy-policy/` 与 `src/pages/cookie-policy/`，准确披露 GA4、GTM、未来 Google Ads、用途、可能的数据处理/接收方和选择方式。只写已经实际启用的服务；检查浏览器网络请求与 Cookie/存储确认文案真实，不要承诺尚未实现的控制或数据保留期限。生产部署后从正式域名重新验收，再更新本节中的“当前状态”。
+
+#### 阶段四：Google Ads 与线索归因
+
+1. 创建并配置 Google Ads 账户、账单、目标地区及广告前，确认 GA4 `generate_lead` 已稳定且重复率合理。在 Google Ads 与 GA4 中将各自账号关联；在 Ads 的转化设置中导入 GA4 的 `generate_lead` Key event，或在需要 Ads 原生测量时由 GTM 安装 Google Ads conversion tag。二选一作为同一转化的主要计数来源，避免同时把 GA4 导入转化和 Ads 原生标签都设为 Primary 而重复计数。关联/导入后用 Ads 转化诊断和测试点击流程检查状态；报告可能有处理延迟。
+2. 为评估广告来源，Google Ads 可启用 auto-tagging；同时可在落地页读取 `gclid`（以及适用时的 `gbraid` / `wbraid`）和 UTM 参数。当前 Astro RFQ 仅提交现有 Gravity Forms 字段，尚未保存这些归因标识；若要把线索来源带入 WordPress 条目，需新增参数捕获、合理期限的第一方存储、GraphQL 输入映射及 Gravity Forms 后台字段，并在部署前验证跨页面、同意选择、刷新及真实提交。不要把图纸或个人资料放进 URL、UTM 或分析事件。
+3. 初期可以优化已确认提交的 RFQ；若之后要按“合格线索、报价、成交”优化，需由业务后台/CRM 保存广告点击 ID 和线索阶段，再按 Google Ads 支持的线下转化或增强型转化流程回传。当前项目没有 CRM、线索阶段回传或离线转化集成，这部分不是配置 GA4 事件就会自动获得。
+4. 上线验证至少覆盖：自然访问、带 UTM 访问、带测试点击 ID 的访问、成功提交、验证/网络失败、重复提交、同意前后标签行为、Ads 转化诊断，以及 Gravity Forms 中归因字段是否与对应合成线索匹配。不得以真实客户图纸或个人资料做测试。
+
+**账户配置与代码变更边界：** Search Console DNS、GTM/GA4/Ads 账号、容器发布、Ads 关联和转化设置都需要在 Google 控制台及 DNS 服务商中由有权限的人员操作；本仓库不能代为完成。GTM/GA4 页面注入、同意管理、RFQ 事件、归因字段和离线转化属于后续代码/后台开发，执行前须明确同意方案、目标地区和 WordPress 字段配置。Google 控制台菜单名称可能变化，操作时以对应官方帮助页面和账号界面为准。
+
+官方操作参考（实施时复核页面要求）：[Search Console 添加网站与验证](https://support.google.com/webmasters/answer/34592)、[提交站点地图](https://support.google.com/webmasters/answer/7451001)、[GTM 安装容器](https://support.google.com/tagmanager/answer/14847097)、[GA4 与 Google Ads 关联](https://support.google.com/analytics/answer/9379420)、[将 GA4 Key events 导入 Google Ads](https://support.google.com/google-ads/answer/2375435)、[Consent Mode 概览](https://support.google.com/analytics/answer/10000067)。
+
 ## 7. 环境变量、配置与外部服务
 
 ### 7.1 配置位置
@@ -154,6 +190,7 @@ npm run preview
 | --- | --- | --- |
 | `PUBLIC_GRAPHQL_URL` | 静态站点构建环境或根目录 `.env` | 公开 WordPress GraphQL 地址；本地留空时沿用 `.local` 开发地址，GitHub 自动部署必须设置正式 HTTPS 地址 |
 | `PUBLIC_TURNSTILE_SITE_KEY` | 静态站点构建环境或根目录 `.env` | Turnstile 公开 Site Key，会写入产物；为空或仅空白时不启用人机验证，表单仍可提交 |
+| `PUBLIC_GTM_ID` | 静态站点构建环境或根目录 `.env` | 可选 GTM Web 容器 ID（`GTM-...`）；默认空白不加载 GTM；设置前完成同意管理及隐私政策更新 |
 | `BELARO_TURNSTILE_SECRET_KEY` | WordPress `wp-config.php` 中的 PHP 常量 | 未配置或仅空白时停用后台验证；配置后强制校验 Token，仅后台使用，不得放入前端源码或静态站点构建环境 |
 | `BELARO_TURNSTILE_HOSTNAME` | WordPress `wp-config.php` 中的 PHP 常量 | 校验访问者域名，必须与验证返回的 hostname 精确一致，不含协议或路径 |
 | `RFQ_SCREENSHOT_PATH` | 浏览器测试进程环境 | 可选的 RFQ 截图路径；测试还会生成带 `-dropdown.png` 后缀的下拉截图 |
@@ -163,6 +200,7 @@ npm run preview
 ```dotenv
 PUBLIC_GRAPHQL_URL=https://cms.example.com/graphql
 PUBLIC_TURNSTILE_SITE_KEY=
+PUBLIC_GTM_ID=
 ```
 
 `.gitignore` 已忽略 `.env`、`.env.*`（保留 `.env.example`）和常见 `.pem`/`.key` 私钥文件；`.dockerignore` 排除本地依赖、构建产物、Git、环境文件和私钥。真实 SSH 私钥仅保存在 GitHub Secrets，不得写入源码或公开构建变量。

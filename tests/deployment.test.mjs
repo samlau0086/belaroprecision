@@ -53,6 +53,13 @@ test('部署配置允许正式后台、非默认 SSH 端口和 ARM 架构', () =
   assert.equal(validate({ VPS_SSH_PORT: '2222', DOCKER_PLATFORM: 'linux/arm64', HTTP_BIND_ADDRESS: '0.0.0.0', HTTP_PORT: '28080' }).status, 0);
 });
 
+test('GTM 容器 ID 可选，配置时必须使用有效格式', () => {
+  assert.equal(validate({ PUBLIC_GTM_ID: '' }).status, 0);
+  assert.equal(validate({ PUBLIC_GTM_ID: 'GTM-ABC123' }).status, 0);
+  assert.notEqual(validate({ PUBLIC_GTM_ID: 'G-ABC123' }).status, 0);
+  assert.notEqual(validate({ PUBLIC_GTM_ID: 'GTM-abc123' }).status, 0);
+});
+
 test('临时容器健康检查在首次连接重置后重试成功', { timeout: 20000 }, async (t) => {
   const buildStep = workflow.jobs.deploy.steps.find(step => step.name === '构建镜像与验证 HTTP 路由');
   const command = buildStep.run.split('\n').find(line => line.startsWith('curl ') && line.endsWith('/healthz'));

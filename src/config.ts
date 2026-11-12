@@ -12,6 +12,8 @@ export const site = {
   description: 'Precision CNC machining for OEM manufacturers. Drawing-based components for industrial machinery and automation applications.',
 };
 
+export const googleTagManagerId = (import.meta.env.PUBLIC_GTM_ID || '').trim();
+
 // Public settings only: never add WordPress passwords or API secrets here.
 export const gravityForms = {
   graphqlUrl: (import.meta.env.PUBLIC_GRAPHQL_URL || '').trim() || 'https://belaroprecision.local/graphql',
