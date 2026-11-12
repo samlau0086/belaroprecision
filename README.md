@@ -241,6 +241,8 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 ## 9. 开发与内容维护
 
+全站 favicon 沿用页头深蓝底白色字母 B 标识，在 `src/layouts/BaseLayout.astro` 统一引用：`public/favicon.svg` 为矢量源文件，`public/favicon.ico` 包含 16、32、48px 兼容图标，`public/apple-touch-icon.png` 为 180px Apple 触屏图标。更换标识时需同步更新这三个文件；执行 `npm run build` 后可用 `node --test tests/favicon.test.mjs` 检查全站引用与构建资源。浏览器可能缓存旧图标，发布后如未更新可清除站点缓存再验证。
+
 先阅读根目录 `AGENTS.md`，遵循现有 Astro、TypeScript 和原生 CSS 结构。页面位于 `src/pages/`；公共布局、导航和表单控件优先复用；颜色、字体和通用间距优先使用 `src/styles/global.css` 的现有变量与规则。公开联系方式、域名和字段配置位于 `src/config.ts`。后台上传及验证逻辑位于 PHP MU 插件，修改后需单独部署至 WordPress。
 
 全站文字最小字号为 **16px**，桌面、平板和手机端一致；包括导航、页脚、标签、图片说明、表单提示与政策页面。页面及组件局部样式中的 `font-size`、`font` 简写和媒体查询也须遵守此限制；`small`、`sub`、`sup` 在全局样式中设有 16px 下限。新增样式时保留现有较大的标题字号。构建后执行 `node --test tests/site-typography.test.mjs`，检查全部静态页面的计算字号及响应式溢出。
