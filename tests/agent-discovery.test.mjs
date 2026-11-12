@@ -6,9 +6,8 @@ import { join } from 'node:path';
 test('构建产物包含可发现的抓取规则和全部页面的规范地址', () => {
   const robots = readFileSync('dist/robots.txt', 'utf8');
   const sitemap = readFileSync('dist/sitemap.xml', 'utf8');
-  assert.match(robots, /User-agent: \*\s+Allow: \//i);
-  for (const bot of ['OAI-SearchBot', 'Claude-SearchBot', 'PerplexityBot']) {
-    assert.match(robots, new RegExp(`User-agent: ${bot}\\s+Allow: /`, 'i'));
+  for (const bot of ['\\*', 'OAI-SearchBot', 'Claude-SearchBot', 'PerplexityBot']) {
+    assert.match(robots, new RegExp(`User-agent: ${bot}\\s+Content-Signal: search=yes, ai-input=yes, ai-train=no\\s+Allow: /`, 'i'));
   }
   assert.match(robots, /Sitemap: https:\/\/belaroprecision\.com\/sitemap\.xml/i);
   const pages = [];
