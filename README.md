@@ -31,7 +31,7 @@
 .
 ├── AGENTS.md                 # 项目开发规范
 ├── README.md                 # 项目说明与核查记录
-├── package.json              # 依赖与 dev/build/preview 脚本
+├── package.json              # 依赖与 dev/build/build:pages/preview 脚本
 ├── package-lock.json         # npm 依赖锁文件
 ├── astro.config.mjs          # 站点地址及静态输出配置
 ├── tsconfig.json             # TypeScript 严格配置及路径别名
@@ -125,12 +125,13 @@ npm run build
 npm run preview
 ```
 
-`package.json` 只定义以下三个脚本：
+`package.json` 定义以下四个脚本：
 
 | 命令 | 实际脚本 | 用途 |
 | --- | --- | --- |
 | `npm run dev` | `astro dev` | 本地开发与文件监听 |
 | `npm run build` | `astro build` | 生成 `dist/` |
+| `npm run build:pages` | `astro build --config astro.pages.config.mjs` | 生成 Pages 专用 `dist-pages/` |
 | `npm run preview` | `astro preview` | 本地预览构建产物 |
 
 默认端口为 4321；以终端实际输出为准。可用 `npm run dev -- --host 127.0.0.1 --port 4432` 或 `npm run preview -- --host 127.0.0.1 --port 4433` 指定地址。预览前应先构建。没有 `start`、`test`、`lint` 或 `typecheck` npm 脚本。
@@ -524,6 +525,66 @@ GitHub Runner 的临时测试容器固定使用 `127.0.0.1:18080`，与 VPS 的 
 2026 年 11 月 11 日本地检查：`npm run build` 通过，生成 14 页；`node --test tests/deployment.test.mjs tests/gravity-forms.test.mjs` 的 14 项测试通过，覆盖部署参数校验、全部工作流步骤及部署脚本的 Bash 语法和表单映射；`node --test tests/rfq-submission.test.mjs` 的 2 项浏览器回归通过。Compose 配置、工作流 YAML 和公开 GraphQL 构建变量替换检查通过，检查后已恢复默认本地产物。部署测试解析现有 Astro 间接依赖 `js-yaml`，没有新增依赖；浏览器测试仍依赖本机既有 Playwright 环境。构建、Node 测试和 Bash 首次受沙箱权限阻止，获准在沙箱外重试通过。本机 Docker 引擎未启动，尚未执行真实镜像构建、容器运行、GitHub 工作流或 VPS 恢复验证；上线须完成部署指南中的验收步骤。
 
 2026 年 11 月 12 日 Agent Markdown 本地检查：`npm run build` 通过，生成 14 个 HTML 页面及对应 Markdown；`node --test tests/agent-markdown.test.mjs tests/agent-discovery.test.mjs tests/deployment.test.mjs tests/gravity-forms.test.mjs` 共 21 项通过。测试使用 Nginx 1.28.0 验证 HTML/Markdown 协商、`q` 权重、HEAD、404、静态资源隔离、缓存头和 Content Signals。`npm ci --dry-run --include=optional --no-audit --no-fund` 通过。未运行 Docker 镜像、GitHub Actions、Cloudflare 线上规则或正式域名验收。
+
+### Cloudflare Workers + Pages：保留 VPS 的低 CPU 并行部署方案
+
+仓库已增加独立 Pages 构建和轻量 Worker，**尚未创建线上 Pages 项目或切换 DNS**。保留 `.github/workflows/deploy.yml`、Docker 和 Nginx 的 VPS 发布流程，另用 Pages 的 Git 集成连接同一仓库，两条发布流程独立执行。双部署不等于自动故障切换。
+
+#### 部署职责与 CPU 控制
+
+使用 **Pages 静态托管 + Pages Functions 的 Advanced mode**，构建时生成单文件 `_worker.js`。Functions 运行在 Workers 平台上，无需另外创建独立 Worker 项目；这与单独使用 Workers Static Assets 是两种部署方式，不要混用它们的路由配置。
+
+| 部分 | 推荐处理方式 |
+| --- | --- |
+| HTML、CSS、JavaScript、图片 | Astro 继续 `output: 'static'`，由 Pages 托管构建产物，不改为 SSR |
+| 同 URL 的 HTML / Markdown 协商 | 轻量 Worker 解析 `Accept`、查表；HTML 通过 `env.ASSETS` 读取，Markdown 直接返回构建时嵌入的正文 |
+| Markdown 与图片转换 | 保留构建阶段处理，不在访问时运行 `linkedom`、`turndown` 或图片优化 |
+| RFQ、附件与 Turnstile 服务端校验 | 浏览器继续直连独立 WordPress 后台，不经过前端 Worker 中转 |
+| 现有 VPS | 继续构建并部署 Docker 镜像，保留独立访问及恢复能力 |
+
+Pages 不触发 Functions 的静态资源请求目前免费且不限次数；触发 Functions 的请求按 Workers 规则计量。用构建产物中的 `_routes.json` 限定调用范围，让 `/_astro/`、`/images/`、图标、`robots.txt` 和 `sitemap.xml` 等资源直接返回。页面路由及其别名需进入协商逻辑；同 URL 内容协商下，普通 HTML 页面请求也会执行 Function，不能承诺整站零 CPU。实际消耗取决于实现和流量，须部署后测量，不给出未经实测的毫秒数或费用保证。
+
+#### 已实现的文件与行为
+
+1. **隔离发布产物：** `astro.pages.config.mjs` 复用现有静态构建，通过 `npm run build:pages` 生成 `dist-pages/`；保留 `npm run build`、`dist/` 和 Nginx 构建契约，无新增生产依赖。`dist-pages/` 与 `.wrangler/` 不进入 Git 或 Docker 构建上下文。
+2. **复用 Markdown：** 为 Pages 生成页面路径映射，保留现有显式接受 `text/markdown`、比较 `q` 权重和同权重优先 Markdown 的行为。覆盖 GET、HEAD、目录补斜杠、查询参数、`index.html` 别名及未知路径，避免重定向循环。
+3. **保护内部产物：** `scripts/cloudflare-pages.mjs` 将预生成 Markdown 嵌入 Worker 后，移除 Pages 输出中的整个 `_agent-markdown/` 目录（含 Nginx 配置），VPS 产物不变。内部路径及未知路径统一返回 404，未编码与编码路径均有测试，不存在可绕过 Worker 下载的 Markdown 静态文件。
+4. **响应头与缓存：** 静态响应用 `_headers` 配置；经过 Function 的响应不能依赖 `_headers`，须在代码中设置。协商页面保留正确的 `Content-Type`、`Vary: Accept`、`Cache-Control: no-store`、Content Signals 和 sitemap Link；哈希资源继续长期缓存，不用全站强制缓存覆盖协商结果。
+5. **真实 404：** 在 Pages 产物根目录提供 `404.html` 并验证 HTTP 404；缺少顶层 404 时，Pages 默认可能按 SPA 回退到首页。不要把本项目配置成 SPA，也不要将未知 URL 统一返回首页 200。
+6. **独立回归测试：** `tests/cloudflare-pages.test.mjs` 覆盖协商、别名、HEAD、重定向、响应头、404、内部资源保护和构建产物。先分别执行 `npm run build`、`npm run build:pages`，再执行 `node --test tests/cloudflare-pages.test.mjs`。`astro preview` 不加载 Pages Functions；本地运行时可用 `npx wrangler@4 pages dev dist-pages --port 8791` 验证，不需要登录或部署。
+
+本地 HTTP 自动回归：保持上述 Wrangler 服务运行，在另一 PowerShell 终端执行 `$env:PAGES_BASE_URL='http://127.0.0.1:8791'; node --test tests/cloudflare-pages.test.mjs`；未设置该变量时，仅跳过本地运行时 HTTP 测试。首次执行 `npx` 需要网络并下载工具，不会新增项目依赖。Pages 控制台的运行时兼容日期建议固定为已验证的 `2026-11-13`，本地命令也可追加 `--compatibility-date=2026-11-13`。
+
+2026 年 11 月 14 日本地验证：两种构建均生成 14 页；Pages 专项 5 项测试通过，包含 Wrangler 4.162.0 / workerd 的真实本地 HTTP 请求。既有部署、表单和 Agent 回归也已执行；未配置 Nginx 二进制时，其真实 HTTP 用例跳过。未执行线上发布、真实询价或 CPU 压测，不能据此承诺具体 CPU time。
+
+必须发布 `dist-pages/`，不要上传 VPS 的 `dist/`，也不要使用 `astro preview` 的响应代替 Pages 验收。新增静态资源目录时应同步检查 `_routes.json` 的排除规则；目前覆盖 `/_astro/`、`/images/` 和根目录的非 HTML 静态文件。
+
+#### Pages 控制台与构建变量
+
+在 Cloudflare **Workers & Pages → Pages** 创建 Git 集成项目，连接当前 GitHub 仓库。入口名称以控制台实际显示为准。不需要配置独立 Workers 项目的部署命令，也不需要 Astro SSR adapter。
+
+| 配置项 | 建议值及前提 |
+| --- | --- |
+| 生产分支 | `main`；与 VPS 发布同源，但互不依赖发布成功状态 |
+| 根目录 | 仓库根目录 |
+| 构建命令 | `npm run build:pages` |
+| 输出目录 | `dist-pages` |
+| Node.js | 显式选择与项目第 5 节已验证环境一致的 Node 22 版本，构建日志确认实际版本 |
+| 预览部署 | 按需限制分支；不要为所有预览域名放开后台 CORS 或 Turnstile |
+
+Pages 的生产与预览环境分别维护构建变量，不会自动继承 GitHub Actions 的 Variables：`PUBLIC_GRAPHQL_URL` 必须为正式 HTTPS 后台地址；`PUBLIC_TURNSTILE_SITE_KEY`、`PUBLIC_GTM_ID` 为可选，含义及启停要求沿用第 7 节。这些值写入前端产物，禁止放入 WordPress 密码、Turnstile Secret Key 或其他私密凭证；修改后重新构建。沿用 npm 和锁文件，不为此更换框架或增加 SSR 适配器。
+
+#### 域名、验收与切换
+
+1. 正式域名先继续指向 VPS。在 Pages 项目中绑定测试子域名（例如 `edge.belaroprecision.com`，仅为建议，尚未创建），再按平台要求设置 DNS；不要覆盖现有正式域名和 WordPress 后台记录。
+2. Worker 自动为非 `belaroprecision.com` hostname 的页面响应设置 `X-Robots-Tag: noindex`；静态资源不经过该逻辑。Canonical、sitemap 和 Markdown Source 继续指向正式域名，不因验证子域名而更改生产站点地址。
+3. 后台 CORS、Turnstile 组件允许域名及服务端 hostname 校验，仅增加实际使用的测试 hostname；不使用通配放行。核对 OPTIONS 预检、无附件及带附件询价，真实提交使用明确标记的测试询盘，检查后台保存与通知。
+4. 对照 VPS 验证 HTML / Markdown 及不同 `q` 权重、GET / HEAD、目录重定向、查询参数、404、内部文件拒绝、图片加载、移动端布局和 SEO。检查 Functions 指标及日志，确认静态资源未调用函数，并测量页面协商的实际 CPU time。
+5. 两端验收后再决定是否切换正式入口；切换前记录原 DNS、域名绑定、缓存规则和恢复步骤。保留 VPS 容器及原发布流程，出现问题时按记录恢复入口；不能只把 DNS 改回而忽略仍覆盖正式域名的 Worker 路由或绑定。现方案不提供自动探活或故障切换。
+
+下文 Cache Rules 主要面向 **Cloudflare 代理 VPS 源站** 的现有架构，不是 Pages 的路由配置。Pages 部署须分别验证静态托管默认行为、`_headers` 和 Function 响应，不能把 VPS 的 `CF-Cache-Status` 验收结论直接套用；两种部署都不得让 HTML 与 Markdown 变体串缓存。
+
+官方参考（2026 年 11 月 14 日核对，额度与界面以账户实际情况为准）：[Astro Pages 部署](https://developers.cloudflare.com/pages/framework-guides/deploy-an-astro-site/)、[Functions 调用路由](https://developers.cloudflare.com/pages/functions/routing/)、[Functions 计费](https://developers.cloudflare.com/pages/functions/pricing/)、[响应头配置](https://developers.cloudflare.com/pages/configuration/headers/)、[静态路由与 404](https://developers.cloudflare.com/pages/configuration/serving-pages/)。
 
 ### Cloudflare Cache Rules：页面协商与静态资源缓存
 
