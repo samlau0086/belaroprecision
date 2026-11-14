@@ -1,4 +1,7 @@
-<button class="back-to-top" type="button" aria-label="Back to top" title="Back to top" data-back-to-top hidden>
+---
+import { liveChat } from '../config';
+---
+<button class:list={['back-to-top', { 'with-livechat': liveChat.enabled }]} type="button" aria-label="Back to top" title="Back to top" data-back-to-top hidden>
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     <path d="M12 19V5M5 12l7-7 7 7" />
   </svg>
@@ -30,4 +33,5 @@
   .back-to-top:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
   @media(max-width:700px){.back-to-top{right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px))}}
   @media(prefers-reduced-motion:reduce){.back-to-top{transition:none}}
+  .back-to-top.with-livechat{bottom:calc(104px + env(safe-area-inset-bottom,0px))}
 </style>

@@ -3,6 +3,7 @@ import '../styles/global.css';
 import 'flag-icons/css/flag-icons.min.css';
 import { googleTagManagerId, site } from '../config';
 import BackToTop from '../components/BackToTop.astro';
+import LiveChat from '../components/LiveChat.astro';
 const { title = 'Precision CNC Machining for OEM Manufacturers', description = site.description, canonical } = Astro.props;
 const pageTitle = title.includes('Belaro') ? title : `${title} | Belaro Precision`;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toString();
@@ -34,6 +35,7 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
     {googleTagManagerId && <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(googleTagManagerId)}`} height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>}
     <slot />
     <BackToTop />
+    <LiveChat />
     <script>
       const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
       const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');

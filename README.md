@@ -199,6 +199,9 @@ npm run preview
 | `PUBLIC_GRAPHQL_URL` | 静态站点构建环境或根目录 `.env` | 公开 WordPress GraphQL 地址；本地留空时沿用 `.local` 开发地址，GitHub 自动部署必须设置正式 HTTPS 地址 |
 | `PUBLIC_TURNSTILE_SITE_KEY` | 静态站点构建环境或根目录 `.env` | Turnstile 公开 Site Key，会写入产物；为空或仅空白时不启用人机验证，表单仍可提交 |
 | `PUBLIC_GTM_ID` | 静态站点构建环境或根目录 `.env` | 可选 GTM Web 容器 ID（`GTM-...`）；默认空白不加载 GTM；设置前完成同意管理及隐私政策更新 |
+| `PUBLIC_LIVECHAT_ENABLED` | GitHub Variables、Pages 构建变量或根目录 `.env` | 仅支持 `true` / `false`；留空默认启用，停用必须填 `false` |
+| `PUBLIC_LIVECHAT_SCRIPT_URL` | 同上 | 客服 HTTPS 脚本地址，默认 `https://wsdesk.geekmt.com/livechat/embed.js`，禁止包含凭证或片段 |
+| `PUBLIC_LIVECHAT_CHANNEL_ID` | 同上 | 公开 UUID 频道标识，默认 `3c60547b-7bb7-48c3-8f4a-813af839ff13` |
 | `BELARO_TURNSTILE_SECRET_KEY` | WordPress `wp-config.php` 中的 PHP 常量 | 未配置或仅空白时停用后台验证；配置后强制校验 Token，仅后台使用，不得放入前端源码或静态站点构建环境 |
 | `BELARO_TURNSTILE_HOSTNAME` | WordPress `wp-config.php` 中的 PHP 常量 | 校验访问者域名，必须与验证返回的 hostname 精确一致，不含协议或路径 |
 | `RFQ_SCREENSHOT_PATH` | 浏览器测试进程环境 | 可选的 RFQ 截图路径；测试还会生成带 `-dropdown.png` 后缀的下拉截图 |
@@ -335,6 +338,22 @@ About 页面位于 `src/pages/about/index.astro`，以海外 OEM 按图加工需
 Google 官方参考（上线前核对当前要求）：[数据收集和使用政策](https://support.google.com/adspolicy/answer/6020956?hl=en)、[欧盟用户同意政策](https://www.google.com/about/company/user-consent-policy/)。应按所用产品与投放地区核对适用要求，不能将 Terms of Use、Cookie Policy 描述为所有 Google Ads 广告统一强制的独立页面。新增政策页面不代表生产 HTTPS、广告账户、追踪和适用法律已完成审核。
 
 2026 年 11 月 6 日补充 3+2 CNC Milling：铣削页新增 `#three-plus-two` 能力卡与工艺区别 FAQ，桌面和移动导航加入对应入口；首页、Capabilities、About、Industries 和 Machined Parts 同步展示。3+2 表述为旋转轴先定位、切削时保持固定角度的定位五轴加工，与联动五轴分别介绍。具体工艺仍按图纸、装夹和刀具可达性确认；没有新增设备型号、公差或加工尺寸承诺，也没有更改 RFQ 后台工艺值。
+
+### LiveChat 在线客服（2026 年 11 月 14 日）
+
+全站公共布局通过 `src/components/LiveChat.astro` 异步加载客服脚本，使用 `is:inline` 保留原始外部地址和 `data-channel`，不参与 Astro 脚本打包。`src/config.ts` 读取第 7.1 节的三个 `PUBLIC_LIVECHAT_*` 构建变量，`src/lib/livechat-config.mjs` 统一处理默认值及校验，不新增依赖。变量未设置或仅含空白时保留当前已启用客服；删除变量不会停用，必须明确设置 `PUBLIC_LIVECHAT_ENABLED=false`，此时不加载脚本并忽略地址及频道校验。
+
+后续更换同一 `script src + data-channel` 协议的客服，只需修改脚本地址及 UUID 频道变量后重新构建发布，无需改源码。本地使用 `.env`；VPS 发布使用 GitHub `production` Environment 或仓库 Variables；Cloudflare Pages 使用该项目的生产/预览构建变量，二者不会自动同步。具体操作见 [部署说明](docs/DEPLOYMENT.md#在线客服配置与更换)。静态页面不支持通过 VPS 容器或 Pages Functions 的运行时变量即时修改客服。更换完全不同的嵌入协议仍需改组件；更换服务商后必须人工复核隐私政策与 Cookie 文案中的域名和存储行为。
+
+客服启用时返回顶部按钮距离底部 104px，为右下角收起的聊天入口留出空间；停用后恢复原位置。隐私政策和 Cookie 说明已补充客服请求、会话及待发消息本地存储披露。当前脚本在页面加载时直接执行，不提供客服同意或撤回控制；上线前须按目标地区及实际服务配置确认同意要求，如需事先同意应先停用并实现真实控制。不要将客服脚本的存储行为视为 GA4 或广告追踪，也不要承诺未验证的数据位置或保留期限。
+
+验证命令：先运行 `npm run build`，再执行 `node --test tests/livechat.test.mjs tests/site-navigation.test.mjs tests/legal-pages.test.mjs`。自动化回归使用本地产物和模拟客服脚本，不发送真实聊天消息；生产渠道、跨域配置、客服收件和服务端保留策略仍需上线验收。
+
+配置单元及部署链检查：`node --test tests/livechat-config.test.mjs tests/deployment.test.mjs tests/cloudflare-pages.test.mjs`（Pages 产物检查前先构建两套产物）。双平台完整构建矩阵在 PowerShell 执行 `$env:LIVECHAT_BUILD_MATRIX='1'; node --test tests/livechat-build.test.mjs`，覆盖替换、停用和空白默认值共六次构建，并逐页核对脚本和返回顶部位置类；最后恢复默认产物。默认不执行该耗时矩阵。
+
+环境变量改造验证：上述六次构建全部通过，每次检查 14 页；执行 `node --test tests/livechat-config.test.mjs tests/deployment.test.mjs tests/cloudflare-pages.test.mjs tests/livechat.test.mjs tests/site-navigation.test.mjs tests/legal-pages.test.mjs tests/rfq-submission.test.mjs tests/gravity-forms.test.mjs tests/agent-markdown.test.mjs tests/agent-discovery.test.mjs`，37 项通过、0 项失败。未设置真实 Nginx 和 Pages 本地运行时地址，跳过相应的 2 项 HTTP 集成测试。本轮未执行 Docker 镜像构建、云端配置或部署；未新增依赖，也没有独立类型检查及 ESLint 命令。
+
+本次本地验证：`npm run build` 通过，生成 14 页；新增客服测试 3 项、公共导航 1 项、政策页 1 项和 RFQ 提交 2 项均通过，客服桌面与手机截图已复核。`git diff --check` 通过；项目未配置独立类型检查与 ESLint，未执行这两项。未部署或发送真实客服消息。
 
 ## 10. 测试与质量检查
 
@@ -572,7 +591,7 @@ Pages 不触发 Functions 的静态资源请求目前免费且不限次数；触
 | Node.js | 显式选择与项目第 5 节已验证环境一致的 Node 22 版本，构建日志确认实际版本 |
 | 预览部署 | 按需限制分支；不要为所有预览域名放开后台 CORS 或 Turnstile |
 
-Pages 的生产与预览环境分别维护构建变量，不会自动继承 GitHub Actions 的 Variables：`PUBLIC_GRAPHQL_URL` 必须为正式 HTTPS 后台地址；`PUBLIC_TURNSTILE_SITE_KEY`、`PUBLIC_GTM_ID` 为可选，含义及启停要求沿用第 7 节。这些值写入前端产物，禁止放入 WordPress 密码、Turnstile Secret Key 或其他私密凭证；修改后重新构建。沿用 npm 和锁文件，不为此更换框架或增加 SSR 适配器。
+Pages 的生产与预览环境分别维护构建变量，不会自动继承 GitHub Actions 的 Variables：`PUBLIC_GRAPHQL_URL` 必须为正式 HTTPS 后台地址；`PUBLIC_TURNSTILE_SITE_KEY`、`PUBLIC_GTM_ID` 为可选，含义及启停要求沿用第 7 节。客服支持 `PUBLIC_LIVECHAT_ENABLED`、`PUBLIC_LIVECHAT_SCRIPT_URL`、`PUBLIC_LIVECHAT_CHANNEL_ID`，默认使用当前已启用客服，关闭需填 `false`；在 Pages 项目设置中分别维护生产与预览的构建环境变量，修改后触发使用新变量的完整构建发布。这些值写入前端产物，禁止放入 WordPress 密码、Turnstile Secret Key 或其他私密凭证。沿用 npm 和锁文件，不为此更换框架或增加 SSR 适配器。
 
 #### 域名、验收与切换
 

@@ -103,6 +103,14 @@ test('Pages 实际构建产物隔离内部文件，全部页面支持 Markdown',
   await access('dist/_agent-markdown/agent-markdown.conf');
 });
 
+test('Pages 构建校验客服变量，允许独立停用', () => {
+  const base = { PUBLIC_GRAPHQL_URL: 'https://cms.example.com/graphql' };
+  validatePagesEnvironment({ ...base, PUBLIC_LIVECHAT_ENABLED: 'false', PUBLIC_LIVECHAT_SCRIPT_URL: 'invalid' });
+  for (const changes of [{ PUBLIC_LIVECHAT_ENABLED: 'invalid' }, { PUBLIC_LIVECHAT_SCRIPT_URL: 'http://chat.example.com/embed.js' }, { PUBLIC_LIVECHAT_CHANNEL_ID: 'invalid' }]) {
+    assert.throws(() => validatePagesEnvironment({ ...base, ...changes }), /PUBLIC_LIVECHAT_/);
+  }
+});
+
 test('Cloudflare 本地运行时 HTTP 协商、静态绕过与内部路径保护', { skip: !process.env.PAGES_BASE_URL }, async () => {
   const base = process.env.PAGES_BASE_URL;
   for (const path of ['/', '/about/', '/quality/index.html', '/contact/?process=milling']) {

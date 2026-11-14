@@ -100,6 +100,21 @@ test('临时容器健康检查在首次连接重置后重试成功', { timeout: 
   assert.equal(result.stdout, 'ok');
 });
 
+test('客服变量从 GitHub 传到 Docker，并在发布前校验', () => {
+  const dockerfile = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+  const build = workflow.jobs.deploy.steps.find(step => step.name === '构建镜像与验证 HTTP 路由').run;
+  for (const name of ['PUBLIC_LIVECHAT_ENABLED', 'PUBLIC_LIVECHAT_SCRIPT_URL', 'PUBLIC_LIVECHAT_CHANNEL_ID']) {
+    assert.equal(workflow.jobs.deploy.env[name], '${{ vars.' + name + ' }}');
+    assert.ok(build.includes(`--build-arg ${name} \\`));
+    assert.ok(dockerfile.includes(`ARG ${name}\n`));
+    assert.ok(dockerfile.includes(`${name}=$${name}`));
+  }
+  assert.equal(validate({ PUBLIC_LIVECHAT_ENABLED: 'false', PUBLIC_LIVECHAT_SCRIPT_URL: 'invalid' }).status, 0);
+  for (const changes of [{ PUBLIC_LIVECHAT_ENABLED: 'invalid' }, { PUBLIC_LIVECHAT_SCRIPT_URL: 'http://chat.example.com/embed.js' }, { PUBLIC_LIVECHAT_CHANNEL_ID: 'invalid' }]) {
+    assert.notEqual(validate(changes).status, 0);
+  }
+});
+
 test('缺少 SSH 配置、本地后台、危险参数和无效端口会在连接前失败', () => {
   const invalidConfigurations = [
     { VPS_HOST: '' }, { VPS_USER: '' }, { VPS_SSH_KEY: '' },

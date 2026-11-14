@@ -1,8 +1,10 @@
 import { readFile, writeFile, rm, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import { resolveLiveChatConfig } from '../src/lib/livechat-config.mjs';
 
 export function validatePagesEnvironment(env) {
+  resolveLiveChatConfig(env);
   let url;
   try { url = new URL(env.PUBLIC_GRAPHQL_URL); } catch {
     throw new Error('Pages 构建必须配置 PUBLIC_GRAPHQL_URL 为正式 HTTPS 后台地址');

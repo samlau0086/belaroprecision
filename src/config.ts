@@ -1,3 +1,5 @@
+import { resolveLiveChatConfig } from './lib/livechat-config.mjs';
+
 export const site = {
   name: 'Belaro Precision',
   shortName: 'BELARO',
@@ -13,6 +15,13 @@ export const site = {
 };
 
 export const googleTagManagerId = (import.meta.env.PUBLIC_GTM_ID || '').trim();
+
+// 公开配置在构建时读取，修改平台变量后需重新构建部署。
+export const liveChat = resolveLiveChatConfig({
+  PUBLIC_LIVECHAT_ENABLED: import.meta.env.PUBLIC_LIVECHAT_ENABLED,
+  PUBLIC_LIVECHAT_SCRIPT_URL: import.meta.env.PUBLIC_LIVECHAT_SCRIPT_URL,
+  PUBLIC_LIVECHAT_CHANNEL_ID: import.meta.env.PUBLIC_LIVECHAT_CHANNEL_ID,
+});
 
 // Public settings only: never add WordPress passwords or API secrets here.
 export const gravityForms = {

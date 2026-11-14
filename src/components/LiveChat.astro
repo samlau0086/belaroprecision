@@ -1,0 +1,4 @@
+---
+import { liveChat } from '../config';
+---
+{liveChat.enabled && <script is:inline async src={liveChat.scriptUrl} data-channel={liveChat.channelId}></script>}

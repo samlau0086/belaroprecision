@@ -79,6 +79,9 @@ Variables：
 | `PUBLIC_GRAPHQL_URL` | 无，必须填写 | 正式 WordPress HTTPS GraphQL 地址，如 `https://cms.example.com/graphql`；不能包含用户名或密码，拒绝 `.local` 和 `localhost` |
 | `PUBLIC_TURNSTILE_SITE_KEY` | 空 | 公开 Site Key；启用或停用须与 WordPress 后台同步 |
 | `PUBLIC_GTM_ID` | 空 | 可选的 Google Tag Manager Web 容器 ID（`GTM-...`）；仅在同意管理和隐私政策准备完成后设置，修改后须重新构建发布 |
+| `PUBLIC_LIVECHAT_ENABLED` | `true` | 只支持 `true` / `false`；关闭客服必须填 `false`，空白或未配置仍启用默认客服 |
+| `PUBLIC_LIVECHAT_SCRIPT_URL` | `https://wsdesk.geekmt.com/livechat/embed.js` | 客服 HTTPS 脚本地址；不允许凭证或片段，关闭客服时忽略校验 |
+| `PUBLIC_LIVECHAT_CHANNEL_ID` | `3c60547b-7bb7-48c3-8f4a-813af839ff13` | 公开 UUID 频道标识，关闭客服时忽略校验 |
 | `DOCKER_PLATFORM` | `linux/amd64` | x86_64 VPS 使用默认值，aarch64 VPS 改为 `linux/arm64`；ARM 构建和测试使用 QEMU，可能较慢 |
 | `HTTP_BIND_ADDRESS` | `127.0.0.1` | 支持 `127.0.0.1` 或 `0.0.0.0`；后者允许通过宿主机公网端口访问 |
 | `HTTP_PORT` | `8080` | VPS 映射端口，须避开已有服务 |
@@ -88,6 +91,22 @@ Variables：
 `HTTP_PORT` 只控制 VPS 的端口映射。例如设为 `28080` 时，VPS 使用 `127.0.0.1:28080`（默认监听地址），下文反向代理和验收命令中的 `8080` 也要相应替换为 `28080`。GitHub Runner 上的临时测试容器独立使用 `127.0.0.1:18080`，不需要跟随 VPS 修改。
 
 临时容器启动后，工作流先检查 `/healthz`：最多重试 15 次，间隔 2 秒，重试时间窗口为 60 秒，连接超时 3 秒、单次请求超时 5 秒，允许重试连接重置或拒绝等启动错误。只有就绪后才检查首页、询价页和 404。若仍失败，查看步骤末尾的容器日志；更新工作流后须推送新提交到 `main`，旧记录的 Re-run 不会使用修复后的文件。
+
+## 在线客服配置与更换
+
+三个 `PUBLIC_LIVECHAT_*` 变量都是公开构建配置，不是密钥。留空或删除变量会恢复表中默认客服；关闭必须设置 `PUBLIC_LIVECHAT_ENABLED=false`。启用时脚本必须为不含凭证或片段的 HTTPS 地址，频道必须为 UUID。配置错误会使 GitHub 预检或 Pages 构建失败，避免发布错误配置。
+
+### GitHub Actions / VPS
+
+在仓库 `Settings → Environments → production` 中维护 Variables，或使用 `Settings → Secrets and variables → Actions → Variables` 的仓库级变量。同名 `production` 环境变量优先，不要只修改被覆盖的仓库值。更换时设置 `PUBLIC_LIVECHAT_SCRIPT_URL`、`PUBLIC_LIVECHAT_CHANNEL_ID` 并保持 `PUBLIC_LIVECHAT_ENABLED=true`，然后在 `main` 手动运行新版“Docker 部署到 VPS”工作流或正常推送触发发布。工作流经 Docker build arguments 注入配置，无需更改 VPS Compose 运行时环境。首次接入需先让包含这些改动的版本进入 `main`。
+
+### Cloudflare Pages
+
+在 Cloudflare 的 Pages 项目设置中维护构建环境变量（`Variables and Secrets` / 环境变量区域），分别选择 Production 和 Preview；需要两边一致时两边都填写上述三个同名变量。Pages 不继承 GitHub Variables，也不经过 Dockerfile。保持构建命令 `npm run build:pages`、输出目录 `dist-pages`，保存后触发一次使用新变量的完整构建与发布，不要仅重新上传旧产物或只修改 Functions 运行时绑定。
+
+### 配置边界
+
+本地开发可在 `.env` 中配置，修改后重启开发服务或重新构建。相同嵌入协议（异步脚本和 `data-channel` UUID）只改变量即可；不同服务商要求额外属性、初始化代码或其他频道格式时仍需适配组件。现有隐私政策及 Cookie 说明包含当前服务域名与本地存储披露，更换服务商后须人工复核；配置变量本身不会自动改写政策。未在真实 GitHub、Cloudflare 或 VPS 控制台执行配置和部署。
 
 ## 域名、HTTPS 与反向代理
 
@@ -157,7 +176,11 @@ flock -w 300 deploy.lock bash -euo pipefail -c '
 先启动 Docker 引擎，从 `.env.example` 创建本地 `.env` 并填写公开配置，再执行：
 
 ```bash
-docker build --build-arg PUBLIC_GRAPHQL_URL=https://cms.example.com/graphql -t belaroprecision:local .
+docker build --build-arg PUBLIC_GRAPHQL_URL=https://cms.example.com/graphql \
+  --build-arg PUBLIC_LIVECHAT_ENABLED=true \
+  --build-arg PUBLIC_LIVECHAT_SCRIPT_URL=https://wsdesk.geekmt.com/livechat/embed.js \
+  --build-arg PUBLIC_LIVECHAT_CHANNEL_ID=3c60547b-7bb7-48c3-8f4a-813af839ff13 \
+  -t belaroprecision:local .
 docker compose --env-file .env -f compose.yaml up -d --wait --wait-timeout 90
 curl -f http://127.0.0.1:8080/
 ```
