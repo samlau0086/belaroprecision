@@ -1,5 +1,6 @@
 /* About 内容区：全局导入并以页面类限定，避免影响其他页面。 */
 .about-page .mini-label{font-size:16px;font-weight:700;letter-spacing:1.5px;color:#566477}
+.about-page #workshop-team .about-principles{margin-top:38px}
 .about-page .application-strip{margin-top:32px;padding:28px 0 0;border-top:1px solid #ccd5df;display:flex;align-items:center;justify-content:space-between;gap:24px}
 .about-page .application-tags{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:12px 0 0}
 .about-page .application-tags li{padding:6px 12px;background:#fff;border:1px solid #dce3eb;font-size:16px;color:#425269;border-radius:4px}
