@@ -335,6 +335,8 @@ About 页面位于 `src/pages/about/index.astro`，以海外 OEM 按图加工需
 
 企业信息统一在 `src/config.ts` 的 `site.legalName`、`site.legalNameZh`、`site.location` 维护。Belaro Precision 保留为网站品牌，英文运营主体名称用于 About、Contact、隐私政策和使用条款，公共页脚不再展示运营主体说明；地址 `Shajing, Bao'an District, Shenzhen, China` 通过共享配置用于相关页面和页脚；中文法定名称仅在 Terms of Use 正文显示，不在全站页脚或其他页面展示。WhatsApp 显示号码及直达链接分别由 `site.whatsapp` 和 `site.whatsappUrl` 维护，并显示于 Contact 页面及公共页脚；该渠道不等同于 `site.phone` 普通联系电话。公司所在地与东莞及深圳供应商网络分开表述；未提供的街道地址不作补写。本次未新增环境变量、依赖或后端字段。
 
+2026 年 11 月 16 日地址补充：东莞 CNC 加工厂地址由 `site.factoryLocation` 独立维护，英文为 `Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China`。Contact、About 联系区和公共页脚分别标注 `Dongguan CNC Factory` 与 `Shenzhen Office`；深圳办公室继续使用原有 `site.location`，地址内容未改变，法律页面的运营主体所在地也保持不变。来访或送货前仍需确认接待与收货联系人。未新增依赖或环境变量。
+
 Google 官方参考（上线前核对当前要求）：[数据收集和使用政策](https://support.google.com/adspolicy/answer/6020956?hl=en)、[欧盟用户同意政策](https://www.google.com/about/company/user-consent-policy/)。应按所用产品与投放地区核对适用要求，不能将 Terms of Use、Cookie Policy 描述为所有 Google Ads 广告统一强制的独立页面。新增政策页面不代表生产 HTTPS、广告账户、追踪和适用法律已完成审核。
 
 2026 年 11 月 6 日补充 3+2 CNC Milling：铣削页新增 `#three-plus-two` 能力卡与工艺区别 FAQ，桌面和移动导航加入对应入口；首页、Capabilities、About、Industries 和 Machined Parts 同步展示。3+2 表述为旋转轴先定位、切削时保持固定角度的定位五轴加工，与联动五轴分别介绍。具体工艺仍按图纸、装夹和刀具可达性确认；没有新增设备型号、公差或加工尺寸承诺，也没有更改 RFQ 后台工艺值。

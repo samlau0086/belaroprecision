@@ -50,13 +50,24 @@ test('政策页面：SEO、互链、表单披露、全站页脚与响应式', as
       for (const policy of routes) assert.equal(await page.locator(`footer nav a[href="${policy}"]`).count(), 1, `${path} → ${policy}`);
     }
     await page.goto(`${base}/contact/`);
+    const factoryAddress = 'Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China';
+    const officeAddress = "Shajing, Bao'an District, Shenzhen, China";
+    const office = page.locator('.contact-detail').filter({ hasText: 'Shenzhen Office' });
+    const factory = page.locator('.contact-detail').filter({ hasText: 'Dongguan CNC Factory' });
+    assert.equal(await office.locator('p').innerText(), officeAddress);
+    assert.equal(await factory.locator('p').innerText(), factoryAddress);
+    assert.equal(await page.locator('footer span').filter({ hasText: 'Shenzhen Office' }).innerText(), `Shenzhen Office\n${officeAddress}`);
+    assert.equal(await page.locator('footer span').filter({ hasText: 'Dongguan CNC Factory' }).innerText(), `Dongguan CNC Factory\n${factoryAddress}`);
     assert.equal(await page.locator('[name="consent"]').isChecked(), true);
     assert.equal(await page.locator('[name="consent"]').getAttribute('required'), '');
     assert.equal(await page.locator('#enquiry-privacy a[href="/privacy-policy/"]').count(), 1);
     assert.equal(await page.locator('#enquiry-privacy a[href="/terms-of-use/"]').count(), 1);
     assert.match(await page.locator('#enquiry-privacy').innerText(), /does not subscribe/);
-    await page.setViewportSize({ width: 320, height: 900 });
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    for (const width of [320, 390, 700, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `Contact ${width}px 溢出`);
+      if ([390, 1440].includes(width)) await page.screenshot({ path: join(screenshots, `contact-${width}.png`), fullPage: true });
+    }
     const noJs = await browser.newContext({ javaScriptEnabled: false });
     const staticPage = await noJs.newPage();
     await staticPage.route('**/*', route => route.request().url().startsWith(base) ? route.continue() : route.abort());

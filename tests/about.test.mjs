@@ -32,7 +32,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 50);
     assert.match(await page.locator('.company-profile').innerText(), /3-axis, 3\+2 & simultaneous 5-axis/);
     assert.match(await page.locator('main').innerText(), /supplier network/);
-    assert.match(await page.locator('details').nth(1).textContent(), /suppliers in Dongguan and Shenzhen/);
+    assert.match(await page.locator('main details').nth(1).textContent(), /suppliers in Dongguan and Shenzhen/);
     assert.equal(await page.locator('.working-steps li').count(), 4);
     assert.equal(await page.locator('#manufacturing-scope article').count(), 2);
     assert.match(await page.locator('#manufacturing-scope').innerText(), /OWN MACHINING CAPABILITY/);
@@ -54,12 +54,14 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
       return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
     });
     assert.match(await page.locator('#company-contact').innerText(), /Shajing, Bao'an District, Shenzhen, China/);
+    assert.equal(await page.locator('#company-contact dl > div').filter({ hasText: 'Shenzhen Office' }).locator('dd').innerText(), "Shajing, Bao'an District, Shenzhen, China");
+    assert.equal(await page.locator('#company-contact dl > div').filter({ hasText: 'Dongguan CNC Factory' }).locator('dd').innerText(), 'Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China');
     assert.equal(await page.locator('#company-contact a[href="mailto:sales@belaroprecision.com"]').count(), 1);
     assert.equal(await page.locator('#company-contact a[href="https://wa.me/8618682188709"]').count(), 1);
     assert.doesNotMatch(await page.locator('main').innerText(), /深圳市极客码头科技有限公司/);
-    await page.locator('summary').first().focus();
+    await page.locator('main summary').first().focus();
     await page.keyboard.press('Enter');
-    assert.equal(await page.locator('details').first().getAttribute('open'), '');
+    assert.equal(await page.locator('main details').first().getAttribute('open'), '');
     const screenshots = await mkdtemp(join(tmpdir(), 'belaro-about-'));
     for (const width of [320, 390, 700, 701, 900, 1024, 1100, 1101, 1440]) {
       await page.setViewportSize({ width, height: 900 });
@@ -93,8 +95,8 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     await staticPage.route('**/*', route => route.request().url().startsWith(base) ? route.continue() : route.abort());
     await staticPage.goto(`${base}/about/`);
     assert.equal(await staticPage.locator('.about-capabilities article').count(), 3);
-    await staticPage.locator('summary').first().click();
-    assert.equal(await staticPage.locator('details').first().getAttribute('open'), '');
+    await staticPage.locator('main summary').first().click();
+    assert.equal(await staticPage.locator('main details').first().getAttribute('open'), '');
     await noJs.close();
     assert.deepEqual(errors, []);
     console.log(`About 截图：${screenshots}`);
