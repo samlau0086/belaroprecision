@@ -357,6 +357,14 @@ Google 官方参考（上线前核对当前要求）：[数据收集和使用政
 
 本次本地验证：`npm run build` 通过，生成 14 页；新增客服测试 3 项、公共导航 1 项、政策页 1 项和 RFQ 提交 2 项均通过，客服桌面与手机截图已复核。`git diff --check` 通过；项目未配置独立类型检查与 ESLint，未执行这两项。未部署或发送真实客服消息。
 
+### 客服 AI 知识库资料（2026 年 11 月 16 日）
+
+新增[客服知识库使用说明](docs/customer-service/README.md)，包含可导入的中文业务 Markdown、50 条 QA（JSON 主数据及 Markdown）、建议系统指令、内部待确认清单和 28 道人工验收题。内容根据当前网站源码和公开配置整理，覆盖公司与双地址、加工和外协范围、材料与公差边界、询价上传、质量文件、保密和人工处理渠道；保留 No MOQ、24 小时报价目标及所有逐项目确认限制。
+
+`agent-instructions.md` 应配置为系统指令；内部使用说明和审核清单不应导入访客业务知识库。正文及 QA 需业务负责人审核后导入，不表示已接入客服平台、已配置真实转人工/CRM/订单查询，也不代表已核验线上部署或实际业务能力。网站政策与 GTM 条件加载状态存在需线上复核的差异，客服不据此声称完全没有统计追踪。没有新增依赖、环境变量或页面行为。
+
+修改 `docs/customer-service/qa.json` 后，运行 `node scripts/customer-service-qa.mjs` 同步生成问答 Markdown；使用 `node scripts/customer-service-qa.mjs --check` 和 `node --test tests/customer-service-knowledge.test.mjs` 检查结构、来源路径、联系方式、表单常量及文件同步。真实客服模型、多语言召回、人工转接和工具权限需另行验收，详见内部清单。
+
 ## 10. 测试与质量检查
 
 ### 全站最小字号验证

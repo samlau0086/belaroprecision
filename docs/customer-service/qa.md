@@ -1,0 +1,607 @@
+# Belaro Precision 客服常见问答
+
+版本：1.0；整理日期：2026-11-16；共 50 条。
+
+基于当前工作区网站内容整理的客服问答初稿；需业务审核，未核验正式部署或实时业务状态。
+
+本文件由 qa.json 生成，请修改主数据后运行 node scripts/customer-service-qa.mjs。回答以中文维护，客服应跟随访客语言忠实翻译，并保留所有条件与限制。
+
+## QA-001 Belaro Precision 主要做什么？
+
+分类：公司与联系
+
+相似问法：你们提供哪些服务？；What services do you offer?
+
+回答：Belaro Precision 面向工业 OEM 客户提供按图 CNC 铣削、车削及小批量和重复订单支持。磨削、热处理和表面处理等二次工艺可通过东莞、深圳供应商网络协调，具体范围需按图纸和项目确认。
+
+来源：https://belaroprecision.com/about/ 、https://belaroprecision.com/services/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-002 Belaro Precision 的公司主体是什么？
+
+分类：公司与联系
+
+相似问法：法定公司名称是什么？；What is your legal company name?
+
+回答：Belaro Precision 是网站业务品牌，法定英文名称为 Shenzhen GEEKMATE Technology Co., Ltd.，中文名称为深圳市极客码头科技有限公司。
+
+来源：https://belaroprecision.com/about/ 、https://belaroprecision.com/terms-of-use/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-003 你们的办公室和工厂在哪里？
+
+分类：公司与联系
+
+相似问法：公司地址是什么？；Where is your factory?
+
+回答：深圳办公室公开所在地为 Shajing, Bao'an District, Shenzhen, China。东莞 CNC 工厂公开地址为 Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China。来访或送货前，请先确认接待或收货联系人及地址。
+
+来源：https://belaroprecision.com/about/ 、https://belaroprecision.com/contact/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-004 如何联系你们或提交询价？
+
+分类：公司与联系
+
+相似问法：有邮箱和 WhatsApp 吗？；How can I request a quote?
+
+回答：您可以在 https://belaroprecision.com/contact/#rfq-form 提交询价，也可以联系 sales@belaroprecision.com 或 WhatsApp +86 186 8218 8709（https://wa.me/8618682188709）。请提供图纸、材料、数量和关键要求，方便团队评审。
+
+来源：https://belaroprecision.com/contact/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-005 你们的营业时间是什么？
+
+分类：公司与联系
+
+相似问法：现在有人工在线吗？；Are you available 24/7?
+
+回答：目前网站未公布固定营业时间，不能保证人工全天在线。您可以通过 sales@belaroprecision.com 或 WhatsApp +86 186 8218 8709 留下业务问题；具体人工回复安排需团队确认。
+
+来源：https://belaroprecision.com/contact/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-006 可以参观工厂或进行供应商审核吗？
+
+分类：公司与联系
+
+相似问法：能安排验厂吗？；Can we visit your workshop?
+
+回答：现场参观、设备资料和供应商审核安排需要逐项确认。请通过 sales@belaroprecision.com 或 WhatsApp +86 186 8218 8709 提供希望了解的内容和计划时间，先确认接待安排，不要直接到访。
+
+来源：https://belaroprecision.com/about/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-007 支持哪些 CNC 铣削方式？
+
+分类：加工能力
+
+相似问法：有五轴加工吗？；Do you offer 5-axis machining?
+
+回答：网站介绍的铣削能力包括 3-axis CNC machining、3+2 positional milling 和 simultaneous 5-axis machining。具体加工方式及可行性需结合图纸、材料、几何、装夹、刀具可达性和关键尺寸评审。
+
+来源：https://belaroprecision.com/services/cnc-milling/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-008 3+2 铣削和联动五轴有什么区别？
+
+分类：加工能力
+
+相似问法：定位五轴等于联动五轴吗？；How does 3+2 differ from simultaneous 5-axis?
+
+回答：3+2 铣削先用旋转轴将工件或刀具定位到固定角度，三轴切削时旋转轴保持不动；联动五轴则在切削时协调线性轴和旋转轴运动。Belaro 网站介绍支持这两类方式，具体路线按零件评审选择。
+
+来源：https://belaroprecision.com/services/cnc-milling/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-009 可以加工轴、衬套和连接件吗？
+
+分类：加工能力
+
+相似问法：有哪些车削零件？；Can you machine shafts and bushings?
+
+回答：可以提交阶梯轴、轴套、衬套、连接件等回转零件进行车削评审。请提供完整图纸、材料和数量，标出配合直径、轴肩、螺纹、基准、跳动及功能表面要求，具体可行性在报价阶段确认。
+
+来源：https://belaroprecision.com/services/cnc-turning/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-010 零件同时需要铣削和车削怎么办？
+
+分类：加工能力
+
+相似问法：不知道应该选什么工艺；My part needs both milling and turning.
+
+回答：请提交完整图纸并说明关键配合和功能要求，团队会评审组合工艺路线。RFQ 中可选择 Not sure — please review，不需要您先确定加工方式。
+
+来源：https://belaroprecision.com/services/cnc-milling/ 、https://belaroprecision.com/services/cnc-turning/ 、https://belaroprecision.com/contact/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-011 车削螺纹和轴承位需要注明什么？
+
+分类：加工能力
+
+相似问法：螺纹件询价需要哪些参数？；What should I specify for bearing seats and threads?
+
+回答：轴承位请注明直径、公差或配合、粗糙度、基准及跳动或同轴要求。螺纹请注明标准、尺寸、等级或配合、内外螺纹及检验要求，最终加工和测量可行性需按图确认。
+
+来源：https://belaroprecision.com/services/cnc-turning/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-012 能协调磨削、热处理和表面处理吗？
+
+分类：二次工艺
+
+相似问法：能把机加工和后处理一起报价吗？；Can you coordinate secondary processes?
+
+回答：Belaro 可通过东莞、深圳供应商网络评审和协调磨削、热处理、表面处理等二次工艺，也可结合完整图纸一起评审加工路线。具体工序、标准、供应商范围、检测、记录和交付安排需在报价中确认。
+
+来源：https://belaroprecision.com/services/secondary-processes/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-013 所有工序都在你们自己的工厂完成吗？
+
+分类：二次工艺
+
+相似问法：你们会外协吗？；Are all processes in-house?
+
+回答：CNC 加工是网站介绍的核心自有加工范围；磨削、热处理、表面处理等二次工艺可通过合适的供应商协调。具体哪些工序内部完成、哪些需要外协，以及责任和验收要求，需在项目报价时确认。
+
+来源：https://belaroprecision.com/about/ 、https://belaroprecision.com/services/secondary-processes/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-014 询价时如何描述后处理要求？
+
+分类：二次工艺
+
+相似问法：热处理和涂层要提供什么资料？；What finishing details should I provide?
+
+回答：请写明材料牌号与状态、工艺或涂层标准、硬度或表面要求、遮蔽和禁止处理区域，以及处理后的最终尺寸、公差、验收和文件需求。相关可行性、工艺路线和记录在报价时确认。
+
+来源：https://belaroprecision.com/services/secondary-processes/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-015 网站展示的零件有现货或固定价格吗？
+
+分类：零件与行业
+
+相似问法：能直接买图片里的产品吗？；Are the displayed parts in stock?
+
+回答：网站零件图片用于说明按图定制的零件类别，不是现货库存或固定价产品目录，也不代表已完成的客户项目。请提交您自己的图纸、材料、数量和要求，评审后确定报价及交付安排。
+
+来源：https://belaroprecision.com/machined-parts/ 、https://belaroprecision.com/industries/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-016 你们展示了哪些零件类别？
+
+分类：零件与行业
+
+相似问法：典型零件有哪些？；What part families do you cover?
+
+回答：网站展示安装支架（Mounting Brackets）、加工块体（Machined Blocks）、精密轴（Precision Shafts）、衬套与轴套（Bushings & Sleeves）、定制连接件（Custom Connectors）、板件与壳体（Plates & Housings）六类代表性零件。实际零件须按图纸确认适用工艺及承接范围。
+
+来源：https://belaroprecision.com/machined-parts/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-017 主要面向哪些行业？未列出的行业可以询价吗？
+
+分类：零件与行业
+
+相似问法：我的行业不在网站上怎么办？；Which industries do you support?
+
+回答：网站介绍工业自动化、工业机械、液压与气动、实验室与测试设备四类应用方向。未列出的行业也可提交图纸、材料、数量和应用背景评审；行业展示不代表已经取得相应认证或存在特定客户关系。
+
+来源：https://belaroprecision.com/industries/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-018 液压零件默认包含泄漏测试和清洁度认证吗？
+
+分类：零件与行业
+
+相似问法：能保证耐压和无泄漏吗？；Do hydraulic parts include pressure and leak testing?
+
+回答：不能默认包含。压力等级、泄漏测试、清洁度验证及系统合规需要写明标准、验收要求和所需证据，由团队逐项目确认可行性和责任。行业页面本身不构成相关测试或认证承诺。
+
+来源：https://belaroprecision.com/industries/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-019 你们能加工哪些材料？
+
+分类：材料与精度
+
+相似问法：能做铝、不锈钢、钛或 PEEK 吗？；What materials can you machine?
+
+回答：请提供准确材料牌号、标准及状态，以便结合图纸评审。RFQ 提供铝、不锈钢、碳钢、合金钢、铜合金、钛和工程塑料等填写选项，也允许自定义材料；这些选项不是已验证的加工能力或库存清单，具体供应及加工可行性需报价确认。
+
+来源：https://belaroprecision.com/contact/ 、https://belaroprecision.com/services/cnc-milling/ 、https://belaroprecision.com/services/cnc-turning/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-020 能保证某个固定加工公差吗？
+
+分类：材料与精度
+
+相似问法：能达到 ±0.005 mm 吗？；What tolerances can you achieve?
+
+回答：没有适用于所有材料和几何的统一保证公差。请在图纸中标出要求、基准、关键特征及处理前后测量条件；可行性取决于尺寸、几何、材料、装夹和检测条件，需在报价阶段确认。
+
+来源：https://belaroprecision.com/quality/ 、https://belaroprecision.com/services/cnc-milling/ 、https://belaroprecision.com/services/cnc-turning/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-021 最大加工尺寸、设备品牌和数量是多少？
+
+分类：材料与精度
+
+相似问法：你们有多少台机床？；What is your maximum machining envelope?
+
+回答：网站目前未公布经核实的完整设备型号、数量和加工包络。请提供零件尺寸、图纸及关键要求，通过 sales@belaroprecision.com 联系团队确认适用设备、加工及测量能力；不能仅凭网站照片判断设备归属或规格。
+
+来源：https://belaroprecision.com/about/ 、https://belaroprecision.com/quality/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-022 材料不在表单列表中怎么办？
+
+分类：材料与精度
+
+相似问法：可以自定义材料吗？；My material is not listed.
+
+回答：材料字段允许自定义输入。请写明准确牌号、标准和状态，也可说明用途并请求建议；材料替代、可采购性及加工适用性需要团队评审，不能未经您确认直接替换。
+
+来源：https://belaroprecision.com/contact/ 、https://belaroprecision.com/quality/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-023 有最低起订量吗？只做一件可以吗？
+
+分类：数量与报价
+
+相似问法：MOQ 是多少？；Can I order just one part?
+
+回答：网站支持 No MOQ，即不设统一最低起订量。单件或试制需求可以提交评审，是否适合承接、费用及交期仍取决于图纸、材料和要求；这不等于保证任意单件接单或免费打样。
+
+来源：https://belaroprecision.com/ 、https://belaroprecision.com/services/production/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-024 服务页写 20–500 件，是最低或最高订单限制吗？
+
+分类：数量与报价
+
+相似问法：低于 20 件或高于 500 件能询价吗？；Is 20–500 pieces a strict limit?
+
+回答：20–500 件是服务总览给出的示例性批量，不是统一的最低或最高订单限制。您可以提交实际数量，包括单件、较大批量或年度需求，是否承接及生产安排由团队按零件和要求确认。
+
+来源：https://belaroprecision.com/ 、https://belaroprecision.com/services/ 、https://belaroprecision.com/services/production/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-025 多久可以收到报价？
+
+分类：数量与报价
+
+相似问法：一定 24 小时出报价吗？；How fast can I receive a quote?
+
+回答：对于资料完整的图纸询价，网站以 24 小时内报价回复为目标。具体仍取决于资料完整度和项目评审，复杂或待澄清要求可能需要进一步沟通；这不是所有最终报价的无条件时限，也不是交货承诺。
+
+来源：https://belaroprecision.com/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-026 可以直接告诉我价格或生产交期吗？
+
+分类：数量与报价
+
+相似问法：多少钱一个？几天能交货？；What is your price and lead time?
+
+回答：价格和预计生产交期需要团队结合图纸、材料、数量、工艺、检验及交付要求评审，当前不能直接给出确定数值。请在 https://belaroprecision.com/contact/#rfq-form 提交资料，目标交期可以写入项目备注。
+
+来源：https://belaroprecision.com/contact/ 、https://belaroprecision.com/terms-of-use/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-027 可以做重复订单或年度分批交付吗？
+
+分类：数量与报价
+
+相似问法：能做备用供应商或年度订单吗？；Can you support repeat OEM orders?
+
+回答：Belaro 的业务定位包括小批量及重复 OEM 需求。请提供首批数量、预计年度需求、重复频率和交付计划；图纸版本、规格、检验及商业安排需逐项目确认，不能把询价视为自动生效的框架订单。
+
+来源：https://belaroprecision.com/services/production/ 、https://belaroprecision.com/about/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-028 询价需要准备哪些资料？
+
+分类：询价与上传
+
+相似问法：RFQ 要发什么文件？；What should I include in an RFQ?
+
+回答：建议准备带尺寸的 PDF 图纸及可用 3D 模型，注明零件号、版本、材料牌号、数量、关键公差、表面与后处理要求、检验文件、包装和目标交期。可通过 https://belaroprecision.com/contact/#rfq-form 提交，资料越完整越便于评审。
+
+来源：https://belaroprecision.com/contact/ 、https://belaroprecision.com/services/production/ 、https://belaroprecision.com/quality/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-029 只有 3D 模型或照片，没有图纸，可以先咨询吗？
+
+分类：询价与上传
+
+相似问法：没有 2D 图纸能报价吗？；Can I enquire without a dimensioned drawing?
+
+回答：可以先描述零件用途、尺寸、材料和数量并咨询团队。3D 外形或照片通常不足以明确全部公差、材料和验收要求；正式报价及可制造性确认需要进一步澄清，不能仅凭图片直接承诺。
+
+来源：https://belaroprecision.com/services/cnc-milling/ 、https://belaroprecision.com/contact/ 、https://belaroprecision.com/quality/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-030 RFQ 哪些字段必填？
+
+分类：询价与上传
+
+相似问法：电话和图纸一定要提供吗？；Which enquiry fields are required?
+
+回答：网站表单必填姓名、业务邮箱、公司、国家/地区及允许就本询价联系的同意。电话和图纸可选；Add details (optional) 中的工艺、材料、数量、公差、文件需求和备注也可选。但完整技术资料仍有助于正式报价，询价同意不等于订阅营销邮件。
+
+来源：https://belaroprecision.com/contact/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-031 图纸上传支持哪些格式和大小？能传多个文件吗？
+
+分类：询价与上传
+
+相似问法：可以传 STEP 或 ZIP 吗？；What file formats and upload size are allowed?
+
+回答：网站 RFQ 一次接受一个附件，支持 PDF、STEP、STP、IGES、IGS、X_T、DWG、DXF、ZIP，界面标注最大 20 MB。多个相关文件可打包为一个 ZIP，仍需满足大小限制，最终还受服务器和安全校验约束。聊天附件限制需按客服系统另行确认。
+
+来源：https://belaroprecision.com/contact/ 、https://belaroprecision.com/services/cnc-milling/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-032 文件超限或上传失败怎么办？
+
+分类：询价与上传
+
+相似问法：大于 20 MB 的 CAD 怎么发？；My upload failed or exceeds the size limit.
+
+回答：请先检查格式、文件大小、网络和页面错误提示；多个相关文件可以打包为一个 ZIP，但仍受单附件大小限制。如果仍不能提交，请联系 sales@belaroprecision.com 确认合适的文件传输方式，敏感文件先约定保密安排。
+
+来源：https://belaroprecision.com/contact/ 、https://belaroprecision.com/privacy-policy/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-033 表单显示网络错误或没有成功提示，应该重发吗？
+
+分类：询价与上传
+
+相似问法：询价到底收到了没有？；Did you receive my enquiry after a network error?
+
+回答：没有成功提示时，收件状态可能尚不明确，不能直接认定未收到。请保留提交时间和错误信息，通过 sales@belaroprecision.com 或 WhatsApp +86 186 8218 8709 请团队核对，避免反复提交造成重复询价。我无法仅凭聊天确认后台已保存。
+
+来源：https://belaroprecision.com/contact/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-034 在聊天里发出需求，是否已经建立订单并开始生产？
+
+分类：询价与上传
+
+相似问法：提交表单就是下单了吗？；Does an enquiry create a manufacturing order?
+
+回答：不是。在聊天中发送需求不等于已提交 RFQ；表单提交或收件回执也不构成制造订单成立。需要完成评审与报价，并书面确认图纸版本、规格、数量、验收和交付安排后，才按约定开展生产。
+
+来源：https://belaroprecision.com/terms-of-use/ 、https://belaroprecision.com/services/production/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-035 你们有 ISO 或行业认证吗？
+
+分类：质量与文件
+
+相似问法：通过 ISO 9001 或 AS9100 了吗？；Are you ISO certified?
+
+回答：当前网站未声明质量认证、行业特定认证或认可实验室资质。请说明项目所需证书、标准和证据，通过 sales@belaroprecision.com 联系团队核实，不能仅凭行业介绍或设备图片认定已取得认证。
+
+来源：https://belaroprecision.com/quality/ 、https://belaroprecision.com/industries/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-036 可以提供 FAI、CMM 尺寸报告和材料证书吗？
+
+分类：质量与文件
+
+相似问法：EN 10204 3.1 证书默认随货吗？；Can you provide inspection and material documents?
+
+回答：RFQ 可以提出 FAI report、CMM / dimensional report、EN 10204 3.1 material cert 等需求。可用性、内容、覆盖范围、模板、费用和交付时间需在报价及订单中确认，并非默认免费随货；文件选项也不代表已经确认拥有相应设备。
+
+来源：https://belaroprecision.com/contact/ 、https://belaroprecision.com/quality/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-037 能做正式 FAI、PPAP 或特殊实验室测试吗？
+
+分类：质量与文件
+
+相似问法：PPAP 是标准服务吗？；Do you provide formal FAI or PPAP?
+
+回答：正式 FAI、PPAP、认可实验室测试及认证不是网站承诺的标准包含项目。请在报价前提供标准、模板、检验特征、样本和记录要求，由团队明确确认可用性、责任、费用及时间。
+
+来源：https://belaroprecision.com/quality/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-038 你们默认对每件零件的每个尺寸全检吗？
+
+分类：质量与文件
+
+相似问法：100% inspection 包含哪些内容？；Do you inspect every dimension on every part?
+
+回答：不能默认每件每个尺寸全检。首件、抽检或全数检验的特征、数量、方法、频率和记录需在报价或订单中约定；逐件检查部分特征不等于所有尺寸全检，首件批准也不等于整批验收。
+
+来源：https://belaroprecision.com/quality/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-039 网站的检验报告和设备图片是真实交付或资产证明吗？
+
+分类：质量与文件
+
+相似问法：照片能证明你们有 CMM 吗？；Is the sample report an actual inspection record?
+
+回答：网站尺寸报告明确为使用虚构零件和数据的样本，不是真实订单检验记录。设备和检测场景图片也不能替代设备资产、校准或实际检测能力证明；与项目相关的仪器、量程、校准状态及内外部检测安排需单独核实。
+
+来源：https://belaroprecision.com/quality/ 、https://belaroprecision.com/about/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-040 你们如何包装和标识零件？
+
+分类：交付与售后
+
+相似问法：是否有防刮和批次标签？；How are parts packed and identified?
+
+回答：网站描述零件使用单层加厚 EPE 珍珠棉包裹，再装入结实瓦楞纸箱，额外保护按需约定。防锈、清洁度、端盖、独立包装及标签内容等应在报价时提出；零件号、版本、数量和批次信息按订单确认。
+
+来源：https://belaroprecision.com/quality/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-041 收到零件有质量问题怎么办？
+
+分类：交付与售后
+
+相似问法：尺寸不合格可以返工或退款吗？；What if delivered parts do not meet requirements?
+
+回答：请联系 sales@belaroprecision.com，并提供订单参考、零件号、图纸版本、涉及数量和批次、要求值与实测值、测量方式及相关照片或报告。团队会审核问题及适用书面条款，确认返工、更换或其他处置；AI 无法直接批准退款、赔偿或确定责任。
+
+来源：https://belaroprecision.com/quality/ 、https://belaroprecision.com/terms-of-use/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-042 付款、运输、税费、取消和退款条款是什么？
+
+分类：交付与售后
+
+相似问法：支持什么付款方式和 Incoterms？；What are your payment, shipping and refund terms?
+
+回答：网站未提供适用于所有定制项目的统一商业条款。价格、币种、付款、运输、税费、交付、取消、退换及退款需以适用书面报价、订单条款和法律要求为准，请通过业务邮箱联系团队确认。
+
+来源：https://belaroprecision.com/terms-of-use/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-043 能查询订单生产或物流进度吗？
+
+分类：交付与售后
+
+相似问法：我的订单什么时候发货？；Can you track my order?
+
+回答：当前网站没有公开的订单状态查询功能，我不能仅凭聊天查看实时生产或物流。请通过 sales@belaroprecision.com 或 WhatsApp +86 186 8218 8709 提供订单参考及业务联系信息，请团队核对。不要在聊天发送密码或付款认证信息。
+
+来源：https://belaroprecision.com/contact/ 、https://belaroprecision.com/terms-of-use/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-044 我的图纸会保密吗？提交是否自动签署 NDA？
+
+分类：保密与隐私
+
+相似问法：能先签保密协议吗？；Are my drawings confidential and covered by an NDA?
+
+回答：网站政策说明技术文件用于项目评估、报价及订单的生产检验，不用于营销或公开展示。提交询价不会转移图纸所有权，也不自动签署 NDA；如有敏感图纸或特定保密限制，请先通过业务邮箱约定合适的保密和处理安排。
+
+来源：https://belaroprecision.com/privacy-policy/ 、https://belaroprecision.com/terms-of-use/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-045 图纸是否会提供给外协供应商？
+
+分类：保密与隐私
+
+相似问法：能保证图纸永远不共享吗？；Will drawings be shared with suppliers?
+
+回答：政策说明技术文件仅供报价或生产所需人员处理；项目需要供应商参与时，只共享该项工作所需的技术信息，并遵守保密要求。如果您禁止外协共享或有特别限制，请在提交文件前先约定允许的处理范围，不能默认保证绝不向供应商共享。
+
+来源：https://belaroprecision.com/privacy-policy/ 、https://belaroprecision.com/about/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-046 资料保存多久？能删除我的询价、图纸或聊天吗？
+
+分类：保密与隐私
+
+相似问法：清除聊天记录就删掉所有文件了吗？；How can I request deletion of my data?
+
+回答：网站没有统一固定保留年限、自动删除时间表或自助删除工具。请向 sales@belaroprecision.com 发送主题为 Privacy request 的邮件并说明相关询价背景，由团队核实和处理；部分记录可能需按适用要求保留。清除浏览器聊天存储不等于删除服务端消息或已提交文件，我不能直接确认已删除。
+
+来源：https://belaroprecision.com/privacy-policy/ 、https://belaroprecision.com/cookie-policy/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-047 提交询价会订阅营销邮件吗？
+
+分类：保密与隐私
+
+相似问法：询价同意包含广告推送吗？；Does an enquiry subscribe me to marketing emails?
+
+回答：不会因提交询价而订阅营销邮件。表单同意用于就该询价联系您，不等于营销或广告同意；如希望停止进一步询价跟进，可以联系 sales@belaroprecision.com 提出请求。
+
+来源：https://belaroprecision.com/contact/ 、https://belaroprecision.com/privacy-policy/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-048 可以直接发送敏感图纸或出口管制资料吗？
+
+分类：保密与隐私
+
+相似问法：可以传银行卡、证件或受管制 CAD 吗？；Can I submit sensitive or export-controlled data?
+
+回答：请不要通过表单或聊天发送身份证明、银行卡、密码、敏感个人信息或未经约定的出口管制技术资料。敏感图纸应先与团队确认保密要求、授权分享范围和适当的处理方式，再决定如何提交。
+
+来源：https://belaroprecision.com/privacy-policy/ 、https://belaroprecision.com/terms-of-use/ 、https://belaroprecision.com/contact/
+
+需人工确认或执行：否；具体项目承诺仍按评审结果。
+
+## QA-049 你们的聊天和图纸是否用于 AI 训练，保存在哪里？
+
+分类：保密与隐私
+
+相似问法：能保证数据不出境、不训练模型吗？；Is my data used to train AI models?
+
+回答：目前资料不能确认客服平台的模型训练设置或具体数据存储位置。网站政策说明信息可能在中国及服务商所在国家处理；如果您对模型训练、数据位置或保存方式有要求，请在发送资料前联系 sales@belaroprecision.com 核实和约定。公开网页的 AI 使用许可不代表客户私密图纸获准用于训练。
+
+来源：https://belaroprecision.com/privacy-policy/ 、https://belaroprecision.com/cookie-policy/
+
+需人工确认或执行：是；不代表已转接或已执行。
+
+## QA-050 帮我转人工或通知工程师。
+
+分类：人工协助
+
+相似问法：能帮我创建工单吗？；Please connect me to a human agent.
+
+回答：需要团队确认的问题，可以联系 sales@belaroprecision.com 或 WhatsApp +86 186 8218 8709。若当前聊天没有启用真实转人工或工单功能，我无法确认已完成转接、通知或登记；请直接通过这些渠道说明您的需求。
+
+来源：https://belaroprecision.com/contact/
+
+需人工确认或执行：是；不代表已转接或已执行。
