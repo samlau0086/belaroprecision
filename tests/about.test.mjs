@@ -53,8 +53,8 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
       const image = document.querySelector('#workshop-team img');
       return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
     });
-    assert.match(await page.locator('#company-contact').innerText(), /Shajing, Bao'an District, Shenzhen, China/);
-    assert.equal(await page.locator('#company-contact dl > div').filter({ hasText: 'Shenzhen Office' }).locator('dd').innerText(), "Shajing, Bao'an District, Shenzhen, China");
+    assert.match(await page.locator('#company-contact').innerText(), /Shajing, Bao'an District, Shenzhen, Guangdong, China/);
+    assert.equal(await page.locator('#company-contact dl > div').filter({ hasText: 'Shenzhen Office' }).locator('dd').innerText(), "Shajing, Bao'an District, Shenzhen, Guangdong, China");
     assert.equal(await page.locator('#company-contact dl > div').filter({ hasText: 'Dongguan CNC Factory' }).locator('dd').innerText(), 'Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China');
     assert.equal(await page.locator('#company-contact a[href="mailto:sales@belaroprecision.com"]').count(), 1);
     assert.equal(await page.locator('#company-contact a[href="https://wa.me/8618682188709"]').count(), 1);

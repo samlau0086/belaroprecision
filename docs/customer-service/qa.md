@@ -36,7 +36,7 @@
 
 相似问法：公司地址是什么？；Where is your factory?
 
-回答：深圳办公室公开所在地为 Shajing, Bao'an District, Shenzhen, China。东莞 CNC 工厂公开地址为 Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China。来访或送货前，请先确认接待或收货联系人及地址。
+回答：深圳办公室公开所在地为 Shajing, Bao'an District, Shenzhen, Guangdong, China。东莞 CNC 工厂公开地址为 Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China。来访或送货前，请先确认接待或收货联系人及地址。
 
 来源：https://belaroprecision.com/about/ 、https://belaroprecision.com/contact/
 

@@ -142,7 +142,7 @@ npm run preview
 2. **确认联系邮箱。** 核实 `src/config.ts` 中的 `sales@belaroprecision.com` 是否有人接收处理。
 3. **核实图片授权与真实性。** 原有 Unsplash 摄影占位图和 Machined Parts 概念图已替换为本地 WebP 素材。上线前仍须核实素材授权、生成来源及可公开范围，不得仅凭图片暗示图示设备归企业所有或图示零件来自真实客户。Machined Parts 图片仍应标注为代表性视觉参考，取得已授权的真实样件照片和说明后再逐类替换。
 4. **核实能力描述。** ±0.01–0.02 mm 仅为附条件的典型值；上线前确认实际工艺、车削、材料、批量和检验文件能力。材料下拉选项不代表已验证的可加工范围。
-5. **补齐企业信息。** 用户已确认法定名称为深圳市极客码头科技有限公司（Shenzhen GEEKMATE Technology Co., Ltd.），公司地址为 `Shajing, Bao'an District, Shenzhen, China`，并提供 WhatsApp 联系号码 `+86 186 8218 8709`。完整街道地址、普通联系电话、营业时间、交付条款和认证仍须确认后再发布；当前 `site.phone` 仍为空。
+5. **补齐企业信息。** 用户已确认法定名称为深圳市极客码头科技有限公司（Shenzhen GEEKMATE Technology Co., Ltd.），公司地址为 `Shajing, Bao'an District, Shenzhen, Guangdong, China`，并提供 WhatsApp 联系号码 `+86 186 8218 8709`。完整街道地址、普通联系电话、营业时间、交付条款和认证仍须确认后再发布；当前 `site.phone` 仍为空。
 6. **核定法律页面与实际处理流程。** 隐私政策、Cookie 说明和使用条款已实现；上线前须确认完整地址、监控邮箱、实际服务商与数据位置、CAD 文件保留/删除和供应商访问规则，并按适用地区审核文字。页面没有虚构固定保留年限或自动删除机制，不替代 NDA、商业合同或法律审核，也不保证 Google Ads 审核通过。
 7. **按需配置统计与广告。** 当前没有 GA4 或 Google Ads 集成；后续应在确认适用的同意要求后实施，并仅在后台确认收件后记录成功转化。
 8. **完善 SEO。** 已有各页标题、描述和构建生成的 sitemap；案例、材料专题和行业落地页须有足够真实内容后再添加。
@@ -333,7 +333,7 @@ About 页面位于 `src/pages/about/index.astro`，以海外 OEM 按图加工需
 
 政策页共用 `src/layouts/LegalLayout.astro`，正文在 `src/pages/privacy-policy/`、`cookie-policy/`、`terms-of-use/` 维护；日期需随实际内容变化更新。Cookie 页按当前源码披露未接入 GA4、GTM、Google Ads 标签，未添加无实际控制作用的 Cookie 弹窗。未来接入统计、广告、托管注入脚本或新服务时，必须重新核查请求与存储、更新政策，并按投放地区实现真实的同意、撤回和标签控制机制；询价联系同意不等于广告个性化同意。本次没有新增依赖、配置变量或后端字段。
 
-企业信息统一在 `src/config.ts` 的 `site.legalName`、`site.legalNameZh`、`site.location` 维护。Belaro Precision 保留为网站品牌，英文运营主体名称用于 About、Contact、隐私政策和使用条款，公共页脚不再展示运营主体说明；地址 `Shajing, Bao'an District, Shenzhen, China` 通过共享配置用于相关页面和页脚；中文法定名称仅在 Terms of Use 正文显示，不在全站页脚或其他页面展示。WhatsApp 显示号码及直达链接分别由 `site.whatsapp` 和 `site.whatsappUrl` 维护，并显示于 Contact 页面及公共页脚；该渠道不等同于 `site.phone` 普通联系电话。公司所在地与东莞及深圳供应商网络分开表述；未提供的街道地址不作补写。本次未新增环境变量、依赖或后端字段。
+企业信息统一在 `src/config.ts` 的 `site.legalName`、`site.legalNameZh`、`site.location` 维护。Belaro Precision 保留为网站品牌，英文运营主体名称用于 About、Contact、隐私政策和使用条款，公共页脚不再展示运营主体说明；地址 `Shajing, Bao'an District, Shenzhen, Guangdong, China` 通过共享配置用于相关页面和页脚；中文法定名称仅在 Terms of Use 正文显示，不在全站页脚或其他页面展示。WhatsApp 显示号码及直达链接分别由 `site.whatsapp` 和 `site.whatsappUrl` 维护，并显示于 Contact 页面及公共页脚；该渠道不等同于 `site.phone` 普通联系电话。公司所在地与东莞及深圳供应商网络分开表述；未提供的街道地址不作补写。本次未新增环境变量、依赖或后端字段。
 
 2026 年 11 月 16 日地址补充：东莞 CNC 加工厂地址由 `site.factoryLocation` 独立维护，英文为 `Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China`。Contact、About 联系区和公共页脚分别标注 `Dongguan CNC Factory` 与 `Shenzhen Office`；深圳办公室继续使用原有 `site.location`，地址内容未改变，法律页面的运营主体所在地也保持不变。来访或送货前仍需确认接待与收货联系人。未新增依赖或环境变量。
 

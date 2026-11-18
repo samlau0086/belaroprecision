@@ -27,7 +27,7 @@
       "category": "公司与联系",
       "question": "你们的办公室和工厂在哪里？",
       "variants": ["公司地址是什么？", "Where is your factory?"],
-      "answer": "深圳办公室公开所在地为 Shajing, Bao'an District, Shenzhen, China。东莞 CNC 工厂公开地址为 Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China。来访或送货前，请先确认接待或收货联系人及地址。",
+      "answer": "深圳办公室公开所在地为 Shajing, Bao'an District, Shenzhen, Guangdong, China。东莞 CNC 工厂公开地址为 Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China。来访或送货前，请先确认接待或收货联系人及地址。",
       "source_paths": ["/about/", "/contact/"],
       "handoff_required": false
     },

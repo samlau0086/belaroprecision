@@ -51,7 +51,7 @@ test('政策页面：SEO、互链、表单披露、全站页脚与响应式', as
     }
     await page.goto(`${base}/contact/`);
     const factoryAddress = 'Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China';
-    const officeAddress = "Shajing, Bao'an District, Shenzhen, China";
+    const officeAddress = "Shajing, Bao'an District, Shenzhen, Guangdong, China";
     const office = page.locator('.contact-detail').filter({ hasText: 'Shenzhen Office' });
     const factory = page.locator('.contact-detail').filter({ hasText: 'Dongguan CNC Factory' });
     assert.equal(await office.locator('p').innerText(), officeAddress);

@@ -12,7 +12,7 @@ Belaro Precision 是网站使用的业务品牌，英文法定名称为 Shenzhen
 | 业务邮箱 | sales@belaroprecision.com |
 | WhatsApp | +86 186 8218 8709 |
 | WhatsApp 链接 | https://wa.me/8618682188709 |
-| 深圳办公室 | Shajing, Bao'an District, Shenzhen, China |
+| 深圳办公室 | Shajing, Bao'an District, Shenzhen, Guangdong, China |
 | 东莞 CNC 工厂 | Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China |
 | 官网询价入口 | https://belaroprecision.com/contact/#rfq-form |
 
