@@ -19,6 +19,7 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
         const config = { graphqlUrl: `${baseUrl}/graphql`, formId: 42, uploadsEnabled: true, turnstileSiteKey: 'test-site-key', fields: Object.fromEntries(rfqFields.map((field, i) => [field, { id: i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])) };
         if (!turnstileEnabled) config.turnstileSiteKey = '';
         config.fields.documents = { id:15, type:'checkboxes', choices:documentChoices };
+        for (const [field, id] of Object.entries({gclid:16,gbraid:18,wbraid:17})) config.fields[field] = { id, type:'text' };
         if (!configured) config.fields.attachment.id = 0;
         body = Buffer.from(body.toString().replace(/data-gravity-forms="[^"]*"/, `data-gravity-forms="${JSON.stringify(config).replace(/"/g, '&quot;')}"`));
       }

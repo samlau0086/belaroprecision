@@ -4,7 +4,7 @@ import { rfqFields, submissionRequest, submissionResult } from '../src/lib/gravi
 
 const config = () => ({ graphqlUrl: 'https://example.com/graphql', formId: 42, uploadsEnabled: true,
   turnstileSiteKey: 'test-site-key',
-  fields: { ...Object.fromEntries(rfqFields.map((field, i) => [field, { id: i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])), documents: { id:15, type:'checkboxes', choices:[{inputId:15.1,value:'FAI report'},{inputId:15.2,value:'CMM / dimensional report'},{inputId:15.3,value:'EN 10204 3.1 material cert'}] } } });
+  fields: { ...Object.fromEntries(rfqFields.map((field, i) => [field, { id: ({gclid:16,gbraid:18,wbraid:17})[field] || i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])), documents: { id:15, type:'checkboxes', choices:[{inputId:15.1,value:'FAI report'},{inputId:15.2,value:'CMM / dimensional report'},{inputId:15.3,value:'EN 10204 3.1 material cert'}] } } });
 const values = () => {
   const data = new FormData();
   for (const field of rfqFields) if (field !== 'attachment') data.set(field, field);

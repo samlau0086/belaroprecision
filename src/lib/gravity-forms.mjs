@@ -1,4 +1,6 @@
-export const rfqFields = ['name', 'email', 'company', 'country', 'process', 'material', 'quantity', 'tolerance', 'attachment', 'details', 'consent', 'phone', 'documents'];
+import { adClickFields, validClickId } from './ad-attribution.mjs';
+
+export const rfqFields = ['name', 'email', 'company', 'country', 'process', 'material', 'quantity', 'tolerance', 'attachment', 'details', 'consent', 'phone', 'documents', ...adClickFields];
 
 export function submissionRequest(values, config, turnstileToken) {
   const turnstileEnabled = Boolean(config.turnstileSiteKey?.trim());
@@ -21,6 +23,7 @@ export function submissionRequest(values, config, turnstileToken) {
     const mapping = config.fields[field];
     const raw = values.get(field);
     let value = typeof raw === 'string' ? raw : '';
+    if (adClickFields.includes(field) && !validClickId(value)) continue;
     if (field === 'phone') {
       value = value.trim();
       const prefix = String(values.get('phoneCountryCode') || '').trim();

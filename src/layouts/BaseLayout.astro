@@ -4,6 +4,7 @@ import 'flag-icons/css/flag-icons.min.css';
 import { googleTagManagerId, site } from '../config';
 import BackToTop from '../components/BackToTop.astro';
 import LiveChat from '../components/LiveChat.astro';
+import AdAttribution from '../components/AdAttribution.astro';
 const { title = 'Precision CNC Machining for OEM Manufacturers', description = site.description, canonical } = Astro.props;
 const pageTitle = title.includes('Belaro') ? title : `${title} | Belaro Precision`;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toString();
@@ -36,13 +37,14 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
     <slot />
     <BackToTop />
     <LiveChat />
+    <AdAttribution />
     <script>
       const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
       const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
       const overlay = document.querySelector<HTMLButtonElement>('[data-menu-overlay]');
       if (toggle && menu && overlay) {
         const mobileViewport = window.matchMedia('(max-width: 1100px)');
-        const background = [...document.querySelectorAll<HTMLElement>('main, .site-footer, [data-back-to-top]')];
+        const background = [...document.querySelectorAll<HTMLElement>('main, .site-footer, [data-back-to-top], [data-ad-preferences]')];
         const previousInert = new Map<HTMLElement, boolean>();
         const setMenuOpen = (open: boolean, restoreFocus = false) => {
           const expanded = open && mobileViewport.matches;

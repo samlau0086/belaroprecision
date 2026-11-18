@@ -182,11 +182,11 @@ npm run preview
 #### 阶段四：Google Ads 与线索归因
 
 1. 创建并配置 Google Ads 账户、账单、目标地区及广告前，确认 GA4 `generate_lead` 已稳定且重复率合理。在 Google Ads 与 GA4 中将各自账号关联；在 Ads 的转化设置中导入 GA4 的 `generate_lead` Key event，或在需要 Ads 原生测量时由 GTM 安装 Google Ads conversion tag。二选一作为同一转化的主要计数来源，避免同时把 GA4 导入转化和 Ads 原生标签都设为 Primary 而重复计数。关联/导入后用 Ads 转化诊断和测试点击流程检查状态；报告可能有处理延迟。
-2. 为评估广告来源，Google Ads 可启用 auto-tagging；同时可在落地页读取 `gclid`（以及适用时的 `gbraid` / `wbraid`）和 UTM 参数。当前 Astro RFQ 仅提交现有 Gravity Forms 字段，尚未保存这些归因标识；若要把线索来源带入 WordPress 条目，需新增参数捕获、合理期限的第一方存储、GraphQL 输入映射及 Gravity Forms 后台字段，并在部署前验证跨页面、同意选择、刷新及真实提交。不要把图纸或个人资料放进 URL、UTM 或分析事件。
+2. 为评估广告来源，Google Ads 可启用 auto-tagging。网站现已支持全站读取 `gclid`、`gbraid`、`wbraid`，在访客允许归因存储后跨页面保存，并随 RFQ 写入 Gravity Forms，详细规则见下文“广告点击标识”。本次不采集 UTM 参数。不要把图纸或个人资料放进 URL、UTM 或分析事件。
 3. 初期可以优化已确认提交的 RFQ；若之后要按“合格线索、报价、成交”优化，需由业务后台/CRM 保存广告点击 ID 和线索阶段，再按 Google Ads 支持的线下转化或增强型转化流程回传。当前项目没有 CRM、线索阶段回传或离线转化集成，这部分不是配置 GA4 事件就会自动获得。
 4. 上线验证至少覆盖：自然访问、带 UTM 访问、带测试点击 ID 的访问、成功提交、验证/网络失败、重复提交、同意前后标签行为、Ads 转化诊断，以及 Gravity Forms 中归因字段是否与对应合成线索匹配。不得以真实客户图纸或个人资料做测试。
 
-**账户配置与代码变更边界：** Search Console DNS、GTM/GA4/Ads 账号、容器发布、Ads 关联和转化设置都需要在 Google 控制台及 DNS 服务商中由有权限的人员操作；本仓库不能代为完成。GTM 页面加载开关及 RFQ `generate_lead` dataLayer 事件已在代码中实现；GTM/GA4 账号内的标签、触发器和关键事件仍须按上述步骤配置。统计同意管理、广告归因字段捕获/写入 WordPress、离线转化属于后续开发，实施前须明确同意方案、目标地区和 WordPress 字段配置。Google 控制台菜单名称可能变化，操作时以对应官方帮助页面和账号界面为准。
+**账户配置与代码变更边界：** Search Console DNS、GTM/GA4/Ads 账号、容器发布、Ads 关联和转化设置都需要在 Google 控制台及 DNS 服务商中由有权限的人员操作；本仓库不能代为完成。GTM 页面加载开关、RFQ `generate_lead` dataLayer 事件和广告归因字段捕获/提交已在代码中实现。新增同意选择仅控制本站的点击标识存储和 RFQ 提交，不控制 GTM 标签、Consent Mode 或客服；统计/广告标签的同意管理与离线转化仍需独立实施和验收。Google 控制台菜单名称可能变化，操作时以对应官方帮助页面和账号界面为准。
 
 官方操作参考（实施时复核页面要求）：[Search Console 添加网站与验证](https://support.google.com/webmasters/answer/34592)、[提交站点地图](https://support.google.com/webmasters/answer/7451001)、[GTM 安装容器](https://support.google.com/tagmanager/answer/14847097)、[GA4 与 Google Ads 关联](https://support.google.com/analytics/answer/9379420)、[将 GA4 Key events 导入 Google Ads](https://support.google.com/google-ads/answer/2375435)、[Consent Mode 概览](https://support.google.com/analytics/answer/10000067)。
 
@@ -257,6 +257,24 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 | `details` | 13 | `text` |
 | `consent` | 14 | `consent` |
 | `documents` | 15 | `checkboxes` |
+| `gclid` | 16 | `text`（后台为 Hidden） |
+| `gbraid` | 18 | `text`（后台为 Hidden） |
+| `wbraid` | 17 | `text`（后台为 Hidden） |
+
+#### 广告点击标识
+
+2026 年 11 月 19 日按用户确认的后台字段 ID 接入上述三个可选隐藏字段。`src/lib/ad-attribution.mjs` 负责读取、存储与过期控制；公共布局加载 `AdAttribution.astro`，RFQ 提交前再次同步隐藏字段，普通 JSON 与附件 multipart 提交均支持。无需新增依赖或环境变量；不改变已有字段 ID 和 `generate_lead` 事件，也不把点击 ID 加入 dataLayer。
+
+- 默认不保存、不提交点击标识。广告落地 URL 含有效参数且尚无选择时，页面底部显示英文 Advertising preferences，Allow 与 Decline 均可操作；页脚同名按钮可随时修改。RFQ 联系同意不代表归因同意，不做选择或拒绝均不影响正常询价。
+- Allow 后用本站 `localStorage` 的 `belaro.ad-attribution` 保存当前 URL 中的三个标识和时间戳，最长 30 天，跨同源页面、刷新和重新打开浏览器保留。新有效广告点击整组替换旧值，普通无参数访问不清空记录或延长有效期。仅保留三个点击字段，不采集完整 URL、UTM 或表单内容。
+- `belaro.ad-attribution-consent` 记录允许/拒绝及时间，最长 180 天。撤回同意立即清除浏览器归因记录、清空隐藏字段；其他已打开标签页通过 storage 事件同步，提交前再次核验。已送达后台的条目不会被自动删除。到期数据在下次访问或提交时清理，不宣称浏览器关闭期间会自动删除。
+- 同名重复参数、空值、超过 1024 字符或含空白/控制字符的值会忽略，不截断或改变合法标识的大小写。无标识或拒绝时，GraphQL 不发送这三个字段；后台须保持非必填。浏览器禁止存储时不采集，询价功能继续工作。
+- 同源存储不自动跨 `www`/裸域或其他域名共享，浏览器清理数据后无法恢复。未同意前跨页离开广告落地页，不保留该次标识。服务端收到的点击 ID 仍是客户端提供的归因元数据，不能用于认证、权限或证明真实广告点击。
+- 此功能仅将点击标识随 RFQ 保存，不会自动向 Google Ads 回传转化；GTM/GA4/Ads 的标签、转化设置与标签同意控制仍需单独配置。上线前按实际地区及投放方案核定政策文案与同意机制。
+
+验证命令：`node --test tests/ad-attribution.test.mjs tests/gravity-forms.test.mjs`；先执行 `npm run build`，再运行 `node --test tests/ad-attribution-browser.test.mjs tests/rfq-submission.test.mjs tests/legal-pages.test.mjs`。浏览器测试阻断外网并模拟 GraphQL，不创建真实线索。生产验收需从正式域名带合成测试参数进入首页/服务页，允许后转到 Contact 提交，检查后台条目 16/18/17 与输入一致，同时验证拒绝、撤回和自然访问均为空。
+
+2026 年 11 月 19 日验证：`npm run build` 通过，生成 14 页；执行 `node --test tests/ad-attribution.test.mjs tests/ad-attribution-browser.test.mjs tests/gravity-forms.test.mjs tests/rfq-submission.test.mjs tests/legal-pages.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs`，22 项全部通过。覆盖跨页/刷新、最近点击替换、过期、重复同意、拒绝/撤回、跨标签页同步、存储受限、JSON/附件提交与原有询价回归；390px 和 1440px 同意条截图已复核，320–1440px 响应式断言通过。`git diff --check` 通过。未连接真实 WordPress 后台、未部署；项目未配置独立类型检查或 ESLint 脚本，本次未执行这两项。
 
 用户已确认新增文件需求字段 15。当前配置的子项为 `15.1` → `FAI report`、`15.2` → `CMM / dimensional report`、`15.3` → `EN 10204 3.1 material cert`，提交时过滤未知值、去重，未勾选时发送空数组。子项输入编号和存储值必须与后台一致；若后台启用独立 choice value 或修改过选项，应同步修改 `src/config.ts` 的 `documents.choices` 和前端选项。本次本地后台连接被拒绝，尚未核实子项配置，也未创建真实询盘；自动化测试使用模拟后台。
 

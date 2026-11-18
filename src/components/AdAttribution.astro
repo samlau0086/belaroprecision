@@ -1,0 +1,55 @@
+<section class="ad-attribution" data-ad-preferences hidden aria-labelledby="ad-preferences-heading">
+  <div class="ad-attribution-copy">
+    <h2 id="ad-preferences-heading">Advertising preferences</h2>
+    <p>May we save Google Ads click identifiers for up to 30 days and include them with your quote request to measure advertising results? Your enquiry works either way. <a href="/cookie-policy/">Cookie Policy</a></p>
+  </div>
+  <div class="ad-attribution-actions">
+    <button type="button" class="button button-outline" data-ad-deny>Decline</button>
+    <button type="button" class="button button-orange" data-ad-allow>Allow</button>
+  </div>
+</section>
+<script>
+  import { adsConsent, browserAdStorage, captureAttribution, clickIdsFromSearch, consentKey, setAdsConsent, syncAttributionFields } from '../lib/ad-attribution.mjs';
+
+  const panel = document.querySelector<HTMLElement>('[data-ad-preferences]');
+  const opener = document.querySelector<HTMLButtonElement>('[data-ad-preferences-open]');
+  const form = document.querySelector<HTMLFormElement>('#rfq-form');
+  let restoreFocus = false;
+  const refresh = () => {
+    const storage = browserAdStorage();
+    captureAttribution(storage, location.search);
+    syncAttributionFields(form);
+    if (panel) panel.hidden = !(adsConsent(storage) === null && Object.keys(clickIdsFromSearch(location.search)).length);
+  };
+  refresh();
+  if (opener) {
+    opener.hidden = false;
+    opener.addEventListener('click', () => {
+      if (!panel) return;
+      panel.hidden = false;
+      restoreFocus = true;
+      panel.querySelector<HTMLButtonElement>('[data-ad-deny]')?.focus();
+    });
+  }
+  const choose = (allowed: boolean) => {
+    setAdsConsent(browserAdStorage(), allowed, location.search);
+    syncAttributionFields(form);
+    if (panel) panel.hidden = true;
+    if (restoreFocus) opener?.focus();
+    restoreFocus = false;
+  };
+  panel?.querySelector('[data-ad-allow]')?.addEventListener('click', () => choose(true));
+  panel?.querySelector('[data-ad-deny]')?.addEventListener('click', () => choose(false));
+  // 其他标签页撤回同意时立即清空当前表单；不重新采集旧 URL 的标识。
+  window.addEventListener('storage', event => {
+    syncAttributionFields(form);
+    if (panel && (event.key === consentKey || event.key === null)) panel.hidden = true;
+  });
+  window.addEventListener('pageshow', refresh);
+</script>
+<style>
+  .ad-attribution{position:fixed;inset:auto 0 0;z-index:120;background:#fff;border-top:2px solid var(--line);padding:20px 32px max(20px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:24px;box-shadow:0 -4px 20px #00000014;max-height:70dvh;overflow:auto}
+  .ad-attribution[hidden]{display:none}
+  .ad-attribution-copy{flex:1;min-width:0}.ad-attribution h2{font-size:18px;line-height:1.4;margin:0 0 6px}.ad-attribution p{font-size:16px;line-height:1.5;margin:0}.ad-attribution a{text-decoration:underline}.ad-attribution-actions{display:flex;gap:12px;flex-shrink:0}.ad-attribution-actions .button{min-width:100px;justify-content:center;font-size:16px}
+  @media(max-width:700px){.ad-attribution{padding:16px 20px max(16px,env(safe-area-inset-bottom));flex-direction:column;align-items:stretch;gap:14px}.ad-attribution-actions .button{flex:1}}
+</style>
