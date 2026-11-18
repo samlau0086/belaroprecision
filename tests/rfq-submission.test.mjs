@@ -207,6 +207,7 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
     assert.equal(await page.locator('[name=documents]').first().evaluate(element => document.activeElement === element), true);
     assert.equal(await page.locator('[name=documents]').first().getAttribute('aria-invalid'), 'true');
     mode = 'success';
+    await page.evaluate(() => window.dataLayer.push({ event: 'test_livechat_context', livechat_event_id: 'test-chat-event', livechat_channel_id: 'test-chat-channel' }));
     await submit.click();
     await page.waitForFunction(() => document.querySelector('form').getAttribute('aria-busy') === 'true');
     await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
@@ -216,7 +217,12 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
     assert.equal(await submit.isDisabled(), true);
     assert.equal(await page.locator('#material-search').inputValue(), 'Custom alloy');
     assert.match(await status.textContent(), /enquiry has been received/);
-    assert.deepEqual(await page.evaluate(() => window.dataLayer.filter(event => event.event === 'generate_lead')), [{ event: 'generate_lead' }]);
+    assert.deepEqual(await page.evaluate(() => window.dataLayer.filter(event => event.event === 'generate_lead')), [{
+      event: 'generate_lead',
+      lead_source: 'rfq_form',
+      livechat_event_id: '',
+      livechat_channel_id: '',
+    }]);
     assert.equal(await page.locator('form').getAttribute('aria-busy'), null);
     await page.locator('[name=details]').fill('Updated project note.');
     if (turnstileEnabled) {
