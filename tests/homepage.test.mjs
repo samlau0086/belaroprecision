@@ -36,6 +36,14 @@ test('首页九个模块：内容顺序、能力边界、链接、FAQ 与响应�
       'faq-rfq',
     ]);
     assert.equal(await page.locator('h1').count(), 1);
+    assert.deepEqual(await page.locator('.hero-proof strong').allTextContents(), [
+      'Fast Response & Lead Times',
+      'Broad Material Capabilities',
+      'Complex CNC Machining',
+      'Flexible Low-Volume Production',
+      'Precision Inspection & Quality Assurance',
+    ]);
+    assert.equal(await page.locator('.hero-proof small').count(), 5);
     assert.deepEqual(await page.locator('#core-services .cap-card h3').allTextContents(), [
       '3-axis, 3+2 and simultaneous 5-axis machining',
       'Rotational parts and turned features',
@@ -64,6 +72,7 @@ test('首页九个模块：内容顺序、能力边界、链接、FAQ 与响应�
     for (const width of [320, 390, 700, 701, 900, 901, 1024, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 不应横向溢出`);
+      assert.equal(await page.locator('.hero-proof > div').evaluateAll(nodes => nodes.some(node => node.scrollWidth > node.clientWidth)), false, `${width}px 优势文案不应溢出`);
       if (process.env.HOMEPAGE_SCREENSHOT_DIR && [390, 1440].includes(width)) {
         await page.screenshot({ path: `${process.env.HOMEPAGE_SCREENSHOT_DIR}/homepage-${width}.png`, fullPage: true });
       }
