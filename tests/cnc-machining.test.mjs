@@ -40,6 +40,9 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
     assert.equal(await page.locator('.machining-steps li').count(), 4);
     assert.equal(await page.locator('.machining-faq details').count(), 6);
     assert.equal(await page.locator('.hero-photo').getAttribute('fetchpriority'), 'high');
+    const contactLabels = page.locator('.contact-detail > .contact-label');
+    assert.deepEqual(await contactLabels.allTextContents(), ['EMAIL', 'WHATSAPP', 'YOUR MANUFACTURING CONTACT']);
+    assert.equal(await contactLabels.locator('svg[aria-hidden="true"][focusable="false"]').count(), 3);
 
     // 广告访问不应在同意前保存点击标识；页内询价不改变来源参数。
     await page.locator('[data-ad-preferences]').waitFor({ state: 'visible' });
@@ -66,6 +69,14 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
       await page.setViewportSize({ width, height: 900 });
       await page.evaluate(() => window.scrollTo(0, 0));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${width}px 不应横向溢出`);
+      for (const label of await contactLabels.all()) {
+        const iconBox = await label.locator('svg').boundingBox();
+        const labelBox = await label.boundingBox();
+        assert.equal(iconBox.width, 18, `${width}px 联系图标宽度保持一致`);
+        assert.equal(iconBox.height, 18, `${width}px 联系图标高度保持一致`);
+        assert.ok(iconBox.x >= labelBox.x && iconBox.x + iconBox.width <= labelBox.x + labelBox.width, `${width}px 联系图标不应溢出`);
+        assert.equal(await label.evaluate(node => node.scrollWidth <= node.clientWidth), true, `${width}px 联系标签不应溢出`);
+      }
       const heroCta = await page.locator('.machining-hero .button').boundingBox();
       assert.equal(await page.locator('.machining-hero .button').evaluate(node => getComputedStyle(node).color), 'rgb(255, 255, 255)');
       assert.equal(await page.locator('.machining-hero .button span').evaluate(node => getComputedStyle(node).color), 'rgb(255, 255, 255)');
@@ -105,6 +116,7 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
         await page.screenshot({ path: join(screenshots, `machining-hero-${width}.png`) });
         await drawingBand.scrollIntoViewIfNeeded();
         await page.screenshot({ path: join(screenshots, `machining-drawing-quote-${width}.png`) });
+        await page.locator('#request-quote .rfq-intro').screenshot({ path: join(screenshots, `machining-contact-${width}.png`) });
       }
     }
     await page.locator('.machining-faq summary').first().focus();
