@@ -42,6 +42,7 @@ import { gravityForms } from '../config';
   import type { gravityForms as GravityFormsConfig } from '../config';
   import { submissionRequest, submissionResult } from '../lib/gravity-forms.mjs';
   import { syncAttributionFields } from '../lib/ad-attribution.mjs';
+  import { readRfqContact, writeRfqContact } from '../lib/rfq-contact-storage.mjs';
   import { machinedParts } from '../data/machined-parts';
   declare global { interface Window { turnstile?: { render: (target: HTMLElement, options: Record<string, unknown>) => string; reset: () => void } } }
   const form = document.querySelector<HTMLFormElement>('#rfq-form');
@@ -71,6 +72,27 @@ import { gravityForms } from '../config';
   const fileStatus = document.querySelector<HTMLElement>('#drawing-status');
   const fileError = document.querySelector<HTMLElement>('#drawing-error');
   const removeFile = document.querySelector<HTMLButtonElement>('[data-file-remove]');
+
+  const contactInputs = ['name', 'email', 'company', 'country', 'phoneCountryCode', 'phone']
+    .map(name => form?.querySelector<HTMLInputElement>(`[name="${name}"]`))
+    .filter((input): input is HTMLInputElement => Boolean(input));
+  const restoreContactDetails = () => {
+    const saved = readRfqContact(window.localStorage);
+    for (const input of contactInputs) {
+      if (!saved[input.name] || input.value) continue;
+      input.value = saved[input.name];
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    if (saved.phoneCountryCode) {
+      form?.dispatchEvent(new CustomEvent('rfq:restore-phone-country', { detail: saved.phoneCountryCode }));
+    }
+  };
+  const persistContactDetails = () => writeRfqContact(window.localStorage, Object.fromEntries(contactInputs.map(input => [input.name, input.value])));
+  // 子组件脚本也在页面加载阶段初始化，延后一轮确保恢复值不会被其默认值覆盖。
+  window.setTimeout(restoreContactDetails, 0);
+  form?.addEventListener('input', persistContactDetails);
+  form?.addEventListener('change', persistContactDetails);
 
   if (fileInput && dropZone && selection && fileStatus && fileError && removeFile) {
     let dragDepth = 0;

@@ -131,6 +131,11 @@ import { countries } from '../lib/countries';
       search.value = '';
       close();
     });
+    country.form?.addEventListener('rfq:restore-phone-country', event => {
+      const code = event.detail;
+      const match = countries.find(item => item.callingCode === code);
+      if (match) choose(match);
+    });
     syncCallingCode();
   }
 </script>

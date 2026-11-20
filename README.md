@@ -345,6 +345,8 @@ Machined Blocks 卡片的细节图库使用 `machined-block-pocket.webp`（型�
 
 Machined Parts 卡片通过 `/contact/?part=<id>#rfq-form` 进入询价页。联系页只接受 `src/data/machined-parts.ts` 中的分类 ID，并仅在对应字段为空时预填加工工艺和项目详情；该流程没有新增后端字段，也不会把任意 URL 文本写入表单。字体通过 Google Fonts 外部加载，可根据实际需求考虑自托管。当前没有站内数据库初始化、迁移或页面内容 CMS 发布命令。
 
+RFQ 表单会将 Full name、Business email、Company name、Country / Region、Phone / WhatsApp 的国家码和号码保存在浏览器 `localStorage` 的 `belaro.rfq-contact` 项中，并在所有复用 `RfqForm` 的页面恢复。输入变化会自动更新；项目详情、同意状态和图纸不会写入该项。浏览器禁用本地存储时，表单仍可正常填写和提交；清除该站点浏览器数据即可删除已保存的基础信息。相关披露见 [Cookie Policy](/cookie-policy/) 和 [Privacy Policy](/privacy-policy/)。
+
 CNC Milling 页面位于 `src/pages/services/cnc-milling/index.astro`，沿用公共布局、设计变量和零件 SVG 组件；页面明确区分 3-axis、3+2 positional 与 simultaneous 5-axis 铣削配置，三类铣削零件由共享数据按 `CNC Milling` 工艺筛选。首页、Capabilities 铣削区、Machined Parts 的铣削工艺标签和页脚均已连接到独立页面，原 `/services/#milling` 锚点保留。
 
 铣削询价入口为 `/contact/?process=milling#rfq-form`，只将空的加工工艺字段预选为 `CNC Milling`，项目详情保持空白并可自由编辑。`process` 参数仅接受固定值 `milling`；与有效 `part` 参数同时存在时，零件工艺优先。3-axis、3+2 positional 和 simultaneous 5-axis 是用户已确认的 Belaro 铣削能力，具体尺寸、材料、几何、精度和交期仍需按图纸逐项目确认。未新增后端字段、依赖或环境变量，示意图不代表客户案例。
