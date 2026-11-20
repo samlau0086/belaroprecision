@@ -58,7 +58,13 @@ const faqs = [
           <Image src={images[process.image]} alt={process.alt} widths={[400, 640, 800]} sizes="(max-width: 700px) calc(100vw - 36px), (max-width: 1000px) 45vw, 370px" loading="lazy" decoding="async" />
           <div class="process-copy"><span class="process-label">{process.label}</span><h3>{process.title}</h3><p>{process.text}</p><a class="text-link" href={process.href}>Explore {process.title} <span aria-hidden="true">&#8594;</span></a></div>
         </article>)}</div>
-        <div class="inline-quote"><p><strong>Already have a drawing?</strong> Send it with your material and quantity for review.</p><a class="button button-outline" href="#rfq-form">Request a Quote <span aria-hidden="true">&#8599;</span></a></div>
+      </div>
+    </section>
+
+    <section class="drawing-quote-band" aria-label="Send your drawing for review">
+      <div class="container inline-quote">
+        <p><strong>Already have a drawing?</strong><span>Send it with your material and quantity for review.</span></p>
+        <a class="button button-outline" href="#rfq-form">Request a Quote <span aria-hidden="true">&#8599;</span></a>
       </div>
     </section>
 
@@ -131,12 +137,14 @@ const faqs = [
   .machining-processes article{min-width:0;display:flex;flex-direction:column;border:1px solid var(--line);background:#fff}
   .machining-processes img{width:100%;height:auto;aspect-ratio:1.65;object-fit:cover}
   .process-copy{display:flex;flex-direction:column;flex:1;padding:24px}.process-label{font-size:16px;color:#526171}.process-copy h3{margin:10px 0 14px}.process-copy p{color:#526171;margin-bottom:22px}.process-copy a{margin-top:auto}
-  .inline-quote{display:flex;justify-content:space-between;align-items:center;gap:24px;border-top:1px solid var(--line);margin-top:34px;padding-top:24px}.inline-quote p{margin:0;max-width:640px}.inline-quote .button{flex-shrink:0}
+  .drawing-quote-band{background:var(--orange);color:#fff}
+  .inline-quote{display:flex;justify-content:space-between;align-items:center;gap:38px;padding-block:22px}.inline-quote p{display:flex;flex-direction:column;gap:3px;margin:0;max-width:640px;padding-right:38px;border-right:1px solid rgba(255,255,255,.35)}.inline-quote strong{font:700 20px var(--display)}.inline-quote p span{font-size:16px;color:rgba(255,255,255,.86)}.inline-quote .button{flex-shrink:0;color:#fff;border-color:rgba(255,255,255,.9)}.inline-quote .button:hover{background:#fff;color:var(--orange)}.drawing-quote-band a:focus-visible{outline-color:var(--navy)}
   .machining-parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 24px}.machining-parts article{min-width:0}.machining-parts img{width:100%;height:auto;aspect-ratio:1.5;object-fit:cover;background:#e9edef}.machining-parts h3{font-size:21px;margin:16px 0 6px}.machining-parts p{color:#526171;margin:0}
   .assurance-layout,.faq-layout{display:grid;grid-template-columns:1fr 1.2fr;gap:70px}.review-list{margin:0}.review-list>div{border-top:1px solid var(--line);padding:20px 0}.review-list dt{font-weight:700;margin-bottom:8px}.review-list dd{margin:0;color:#526171}
   .machining-steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:26px}.machining-steps li{border-top:3px solid var(--orange);padding-top:20px}.machining-steps span{font-weight:700;color:#a74b19}.machining-steps h3{font-size:21px;margin:16px 0 12px}.machining-steps p{margin:0}
   .machining-faq details{border-top:1px solid var(--line);padding:20px 0}.machining-faq details:last-child{border-bottom:1px solid var(--line)}.machining-faq summary{font-weight:700;cursor:pointer;padding-right:8px}.machining-faq p{color:#526171;margin:14px 0 0}
   .rfq-intro :global(a){overflow-wrap:anywhere}.machining-page :global(.rfq-form){min-width:0;scroll-margin-top:8px}
+  @media(max-width:700px){.inline-quote p{padding:0 0 16px;border-right:0;border-bottom:1px solid rgba(255,255,255,.35)}}
   @media(max-width:1000px){.assurance-layout,.faq-layout{gap:35px}.machining-processes{gap:16px}.process-copy{padding:20px}.machining-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media(max-width:700px){.machining-page .section{padding:58px 0}.machining-hero{min-height:540px}.hero-copy{padding-block:42px}.hero-copy h1{font-size:38px}.hero-copy>p{font-size:16px}.hero-copy .button{width:100%;gap:12px;padding-inline:12px}.offer-grid{grid-template-columns:1fr;gap:18px;padding-block:24px}.offer-grid div{padding-left:14px;gap:0}.offer-grid strong{font-size:17px}h2{font-size:30px}h3{font-size:22px}.machining-processes,.assurance-layout,.faq-layout{grid-template-columns:minmax(0,1fr)}.machining-parts{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 16px}.machining-parts h3{font-size:18px;overflow-wrap:anywhere}.machining-parts p{font-size:16px}.inline-quote{align-items:stretch;flex-direction:column;gap:18px}.machining-steps{grid-template-columns:minmax(0,1fr);gap:26px}.machining-steps h3{margin-top:8px}.faq-layout{gap:14px}.assurance-layout{gap:28px}}
 </style>

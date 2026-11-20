@@ -72,6 +72,18 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
       assert.ok(heroCta.y > 0 && heroCta.y + heroCta.height < 900, `${width}px 首屏应有报价入口`);
       const band = await page.locator('.offer-band').boundingBox();
       assert.ok(band.y < 900, `${width}px 首屏应露出后续内容`);
+      const drawingBand = page.locator('.drawing-quote-band');
+      const drawingBandBox = await drawingBand.boundingBox();
+      assert.equal(drawingBandBox.x, 0, `${width}px 图纸询价横条应从视口左侧开始`);
+      assert.equal(drawingBandBox.width, width, `${width}px 图纸询价横条应通栏显示`);
+      assert.equal(await drawingBand.evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(244, 123, 53)');
+      assert.equal(await drawingBand.locator('strong').evaluate(node => getComputedStyle(node).color), 'rgb(255, 255, 255)');
+      const drawingCta = drawingBand.locator('a');
+      assert.equal(await drawingCta.getAttribute('href'), '#rfq-form');
+      assert.equal(await drawingCta.evaluate(node => getComputedStyle(node).color), 'rgb(255, 255, 255)');
+      const drawingCopyBox = await drawingBand.locator('p').boundingBox();
+      const drawingCtaBox = await drawingCta.boundingBox();
+      assert.ok(width <= 700 ? drawingCtaBox.y >= drawingCopyBox.y + drawingCopyBox.height : drawingCtaBox.x >= drawingCopyBox.x + drawingCopyBox.width, `${width}px 询价文案与按钮不应重叠`);
       for (const selector of ['.machining-processes img', '.machining-parts img']) {
         const ratios = await page.locator(selector).evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().width / node.getBoundingClientRect().height));
         assert.ok(ratios.every(ratio => Math.abs(ratio - (selector.includes('processes') ? 1.65 : 1.5)) < 0.02), `${width}px 图片应保持统一比例`);
@@ -91,6 +103,8 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
         await page.waitForFunction(() => [...document.querySelectorAll('main img')].every(img => img.complete && img.naturalWidth > 0));
         await page.screenshot({ path: join(screenshots, `machining-${width}.png`), fullPage: true });
         await page.screenshot({ path: join(screenshots, `machining-hero-${width}.png`) });
+        await drawingBand.scrollIntoViewIfNeeded();
+        await page.screenshot({ path: join(screenshots, `machining-drawing-quote-${width}.png`) });
       }
     }
     await page.locator('.machining-faq summary').first().focus();
