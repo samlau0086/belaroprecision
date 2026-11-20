@@ -3,6 +3,7 @@ import '../styles/global.css';
 import 'flag-icons/css/flag-icons.min.css';
 import { googleTagManagerId, site } from '../config';
 import BackToTop from '../components/BackToTop.astro';
+import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import LiveChat from '../components/LiveChat.astro';
 import AdAttribution from '../components/AdAttribution.astro';
 const { title = 'Precision CNC Machining for OEM Manufacturers', description = site.description, canonical } = Astro.props;
@@ -36,6 +37,7 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
     {googleTagManagerId && <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(googleTagManagerId)}`} height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>}
     <slot />
     <BackToTop />
+    <WhatsAppFloat />
     <LiveChat />
     <AdAttribution />
     <script>
@@ -44,7 +46,7 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
       const overlay = document.querySelector<HTMLButtonElement>('[data-menu-overlay]');
       if (toggle && menu && overlay) {
         const mobileViewport = window.matchMedia('(max-width: 1100px)');
-        const background = [...document.querySelectorAll<HTMLElement>('main, .site-footer, [data-back-to-top], [data-ad-preferences]')];
+        const background = [...document.querySelectorAll<HTMLElement>('main, .site-footer, [data-back-to-top], [data-whatsapp-float], [data-ad-preferences]')];
         const previousInert = new Map<HTMLElement, boolean>();
         const setMenuOpen = (open: boolean, restoreFocus = false) => {
           const expanded = open && mobileViewport.matches;

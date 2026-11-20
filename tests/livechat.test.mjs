@@ -26,6 +26,12 @@ test('全站只加载一次异步 LiveChat，保留频道及原始外部脚本�
     assert.ok(scripts[0].hasAttribute('async'));
     assert.ok(document.body.contains(scripts[0]));
     assert.ok(document.querySelector('[data-back-to-top]').classList.contains('with-livechat'));
+    const whatsapp = document.querySelectorAll('[data-whatsapp-float]');
+    assert.equal(whatsapp.length, 1, '全站每页只渲染一个 WhatsApp 浮动入口');
+    assert.equal(whatsapp[0].getAttribute('href'), 'https://wa.me/8618682188709');
+    assert.equal(whatsapp[0].getAttribute('target'), '_blank');
+    assert.equal(whatsapp[0].getAttribute('rel'), 'noopener noreferrer');
+    assert.ok(whatsapp[0].classList.contains('with-livechat'));
     pages++;
   }
   assert.ok(pages >= 14, '必须检查全站实际构建页面');
@@ -69,12 +75,19 @@ test('客服入口与返回顶部按钮在桌面和手机不重叠，加载失�
     for (const width of [320, 390, 700, 1440]) {
       await page.setViewportSize({ width, height: 844 });
       await page.goto(base);
+      const whatsapp = page.getByRole('link', { name: 'Chat on WhatsApp', exact: true });
+      assert.equal(await whatsapp.isVisible(), true, 'WhatsApp 在首屏也应可用');
+      await whatsapp.focus();
+      assert.equal(await whatsapp.evaluate(el => el === document.activeElement), true);
       await page.evaluate(() => scrollTo(0, innerHeight + 1));
       const top = page.locator('[data-back-to-top]');
       await top.waitFor({ state: 'visible' });
       const topBox = await top.boundingBox();
       const chatBox = await page.locator('#mock-livechat').boundingBox();
-      assert.ok(topBox.y + topBox.height <= chatBox.y, `${width}px 返回顶部应在客服入口上方`);
+      const whatsappBox = await whatsapp.boundingBox();
+      assert.ok(topBox.y + topBox.height + 16 <= whatsappBox.y, `${width}px 返回顶部与 WhatsApp 间隔至少 16px`);
+      assert.equal(topBox.x, whatsappBox.x, '两个图标应右侧对齐');
+      assert.ok(whatsappBox.y + whatsappBox.height + 16 <= chatBox.y, `${width}px WhatsApp 应为客服入口预留空间`);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
       if ([390, 1440].includes(width)) await page.screenshot({ path: join(screenshots, `livechat-${width}.png`) });
       await top.click();
@@ -86,8 +99,11 @@ test('客服入口与返回顶部按钮在桌面和手机不重叠，加载失�
     assert.equal(await page.locator('#rfq-form').count(), 1);
     await page.locator('[data-menu-toggle]').click();
     assert.equal(await page.locator('[data-mobile-menu]').isVisible(), true);
+    assert.equal(await page.locator('[data-whatsapp-float]').evaluate(el => el.inert), true, '菜单打开时 WhatsApp 不应接收背景交互');
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('[data-menu-overlay]').isVisible(), false);
+    assert.equal(await page.locator('[data-whatsapp-float]').evaluate(el => el.inert), false);
+    assert.equal(await page.locator('[data-whatsapp-float]').isVisible(), true, '客服脚本失败不影响 WhatsApp');
     assert.deepEqual(errors, []);
     console.log(`LiveChat 截图：${screenshots}`);
   } finally {

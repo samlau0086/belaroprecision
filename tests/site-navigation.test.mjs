@@ -162,6 +162,7 @@ test('公共导航：桌面与手机吸顶、首屏阈值、返回顶部、菜�
     assert.equal(await noScript.locator('[data-menu-overlay]').isVisible(), false, '无脚本时遮罩保持隐藏');
     await noScript.evaluate(() => window.scrollTo({ top: 1000, behavior: 'instant' }));
     assert.equal(await noScript.locator('[data-back-to-top]').isVisible(), false, '无脚本时不展示无效按钮');
+    assert.equal(await noScript.getByRole('link', { name: 'Chat on WhatsApp', exact: true }).isVisible(), true, 'WhatsApp 无脚本时仍可使用');
     assert.equal(await noScript.locator('.site-header').evaluate(el => el.getBoundingClientRect().top), 0);
   } finally {
     await browser?.close();

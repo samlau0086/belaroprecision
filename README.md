@@ -116,6 +116,12 @@ Google Ads 的 Final URL 可在正式部署并验收后设置为 `https://belaro
 
 额外执行的 `node --test tests/astro-audit.test.mjs` 未通过：现有首页、工艺详情与 Machined Parts 的公开零件图片，以及新页面复用的六张零件图片，未采用该测试要求的 Astro 优化 URL、`srcset` 和 `sizes`。本次保留既有公开图片路径与加载方式，没有为通过审计而调整全站素材架构；新页面工艺照片和首屏照片已使用 Astro Image。该审计中的图片解码、响应式及可访问性断言通过。尚未部署、提交真实询盘或更改 Google Ads / GTM 配置。
 
+### 右下角浮动联系入口
+
+公共布局通过 `WhatsAppFloat.astro` 在返回顶部按钮下方提供绿色 WhatsApp 图标，复用 `src/config.ts` 的 `site.whatsappUrl`，在新标签页打开。WhatsApp 始终显示，不依赖 JavaScript；返回顶部保留滚动一屏后显示的行为。启用 LiveChat 时，从上到下为返回顶部、WhatsApp、LiveChat，前两者间距为 16px，并为底部客服入口预留 104px 偏移；客服脚本加载失败时仍保留该位置。停用 LiveChat 时两个站内图标下移，手机端适配安全区域。移动菜单展开时 WhatsApp 与其他背景内容一同暂停交互，无新增依赖或环境变量。
+
+可执行 `npm run build` 后运行 `node --test tests/livechat.test.mjs tests/site-navigation.test.mjs` 验证全站入口、链接配置、响应式间距和导航交互；客服位置使用模拟入口验证，不替代真实外部客服服务验收。
+
 ## 5. 环境要求、安装与启动
 
 本次实测环境为 Node.js `22.23.4`、npm `10.9.9`。保留原项目的 Node.js 22.23.4 或更新的 Node 22 版本建议；项目未声明 `engines`、`packageManager` 或固定 Node 版本文件。锁定 Astro 的包声明为 Node.js `18.20.8 || ^20.3.0 || >=22.0.0`、npm `>=9.6.5`，这是依赖兼容声明，不代表所有版本都经过本项目验证。

@@ -27,11 +27,11 @@ import { liveChat } from '../config';
 </script>
 
 <style>
-  .back-to-top{position:fixed;right:calc(24px + env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:19;display:grid;place-items:center;width:48px;height:48px;padding:0;border:1px solid var(--orange);border-radius:50%;background:var(--navy);color:#fff;box-shadow:0 4px 18px rgba(16,31,53,.2);cursor:pointer;transition:background .2s,border-color .2s}
+  .back-to-top{position:fixed;right:calc(24px + env(safe-area-inset-right,0px));bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:19;display:grid;place-items:center;width:48px;height:48px;padding:0;border:1px solid var(--orange);border-radius:50%;background:var(--navy);color:#fff;box-shadow:0 4px 18px rgba(16,31,53,.2);cursor:pointer;transition:background .2s,border-color .2s}
   .back-to-top[hidden]{display:none}
   .back-to-top:hover{background:var(--navy2);border-color:#fff}
   .back-to-top:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
-  @media(max-width:700px){.back-to-top{right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px))}}
+  @media(max-width:700px){.back-to-top{right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(82px + env(safe-area-inset-bottom,0px))}}
   @media(prefers-reduced-motion:reduce){.back-to-top{transition:none}}
-  .back-to-top.with-livechat{bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+  .back-to-top.with-livechat{bottom:calc(168px + env(safe-area-inset-bottom,0px))}
 </style>
