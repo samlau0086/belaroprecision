@@ -2,9 +2,29 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'; import Header from '../../components/Header.astro'; import Footer from '../../components/Footer.astro'; import { site } from '../../config';
 import RfqForm from '../../components/RfqForm.astro';
 import ProcessImage from '../../components/ProcessImage.astro';
+const contactDetails = [
+  { label: 'COMPANY', text: site.legalName, path: 'M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18M6 12H4a2 2 0 0 0-2 2v8h20v-6a2 2 0 0 0-2-2h-2M10 6h4M10 10h4M10 14h4M10 22v-4h4v4' },
+  { label: 'Shenzhen Office', text: site.location, path: 'M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0ZM15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z' },
+  { label: 'Dongguan CNC Factory', text: site.factoryLocation, path: 'M2 22V10l7 4V10l7 4V2h4l2 20H2ZM6 18h1M11 18h1M16 18h1' },
+  { label: 'EMAIL', text: site.email, href: `mailto:${site.email}`, path: 'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2ZM22 6l-10 7L2 6' },
+  { label: 'WHATSAPP', text: site.whatsapp, href: site.whatsappUrl, external: true, path: 'M21 11.5a9 9 0 0 1-13.3 7.9L3 21l1.6-4.7A9 9 0 1 1 21 11.5ZM8 7.5c0 4.7 3.8 8.5 8.5 8.5l1-2.5-3-1-1 1a8 8 0 0 1-3-3l1-1-1-3-2.5 1Z' },
+  { label: 'WHAT TO PREPARE', text: '2D drawing, 3D CAD file, material specification, quantity and critical requirements.', path: 'M9 3H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-3M9 2h6v4H9ZM8 12l2 2 5-5M8 18h8' },
+];
 ---
-<BaseLayout title="Request a CNC Machining Quote" description="Submit your CNC machining drawings, material, quantity and project requirements to Belaro Precision for review."><Header/><main><section class="page-hero page-hero-compact"><div class="container"><span class="eyebrow eyebrow-light">REQUEST FOR QUOTATION</span><h1>Tell us about<br/><em>your project.</em></h1><p>Share your drawing and key requirements. The more detail you provide, the more effectively we can review your enquiry.</p></div></section><section class="section"><div class="container rfq-layout"><div class="rfq-intro"><span class="eyebrow">START AN ENQUIRY</span><h2>Let’s review your<br/><em>machining needs.</em></h2><p>Use the form to tell us what you need manufactured. We may follow up to clarify dimensions, tolerances or material. We will provide an estimated lead time after reviewing your requirements.</p><div class="contact-detail"><span>COMPANY</span><p>{site.legalName}</p></div><div class="contact-detail"><span>Shenzhen Office</span><p>{site.location}</p></div><div class="contact-detail"><span>Dongguan CNC Factory</span><p>{site.factoryLocation}</p></div><div class="contact-detail"><span>EMAIL</span><a href={`mailto:${site.email}`}>{site.email}</a></div><div class="contact-detail"><span>WHATSAPP</span><a href={site.whatsappUrl} target="_blank" rel="noopener noreferrer">{site.whatsapp}</a></div><div class="contact-detail"><span>WHAT TO PREPARE</span><p>2D drawing, 3D CAD file, material specification, quantity and critical requirements.</p></div><div class="rfq-image"><ProcessImage name="contact-rfq" alt="Technical and commercial review of a machining drawing and CAD model" width={1586} height={992} /></div><div class="privacy-note">Your drawings may contain confidential technical information. Avoid uploading sensitive files until suitable confidentiality arrangements have been agreed.</div></div><RfqForm /></div></section></main><Footer/></BaseLayout>
+<BaseLayout title="Request a CNC Machining Quote" description="Submit your CNC machining drawings, material, quantity and project requirements to Belaro Precision for review."><Header/><main><section class="page-hero page-hero-compact"><div class="container"><span class="eyebrow eyebrow-light">REQUEST FOR QUOTATION</span><h1>Tell us about<br/><em>your project.</em></h1><p>Share your drawing and key requirements. The more detail you provide, the more effectively we can review your enquiry.</p></div></section><section class="section"><div class="container rfq-layout"><div class="rfq-intro"><span class="eyebrow">START AN ENQUIRY</span><h2>Let’s review your<br/><em>machining needs.</em></h2><p>Use the form to tell us what you need manufactured. We may follow up to clarify dimensions, tolerances or material. We will provide an estimated lead time after reviewing your requirements.</p>
+{contactDetails.map(detail => (
+  <div class="contact-detail">
+    <span class="contact-label">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d={detail.path} /></svg>
+      {detail.label}
+    </span>
+    {detail.href ? <a href={detail.href} target={detail.external ? '_blank' : undefined} rel={detail.external ? 'noopener noreferrer' : undefined}>{detail.text}</a> : <p>{detail.text}</p>}
+  </div>
+))}
+<div class="rfq-image"><ProcessImage name="contact-rfq" alt="Technical and commercial review of a machining drawing and CAD model" width={1586} height={992} /></div><div class="privacy-note">Your drawings may contain confidential technical information. Avoid uploading sensitive files until suitable confidentiality arrangements have been agreed.</div></div><RfqForm /></div></section></main><Footer/></BaseLayout>
 
 <style>
+  .contact-detail .contact-label{display:flex;align-items:center;gap:9px;letter-spacing:0}
+  .contact-label svg{flex:0 0 18px}
   .rfq-image{margin:20px 0}.rfq-image :global(.process-image){border:1px solid var(--line)}
 </style>

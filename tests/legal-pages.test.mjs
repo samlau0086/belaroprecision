@@ -50,6 +50,9 @@ test('政策页面：SEO、互链、表单披露、全站页脚与响应式', as
       for (const policy of routes) assert.equal(await page.locator(`footer nav a[href="${policy}"]`).count(), 1, `${path} → ${policy}`);
     }
     await page.goto(`${base}/contact/`);
+    const contactLabels = page.locator('.contact-detail > .contact-label');
+    assert.deepEqual(await contactLabels.allTextContents().then(labels => labels.map(label => label.trim())), ['COMPANY', 'Shenzhen Office', 'Dongguan CNC Factory', 'EMAIL', 'WHATSAPP', 'WHAT TO PREPARE']);
+    assert.equal(await contactLabels.locator('svg[aria-hidden="true"][focusable="false"]').count(), 6);
     const factoryAddress = 'Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China';
     const officeAddress = "Shajing, Bao'an District, Shenzhen, Guangdong, China";
     const office = page.locator('.contact-detail').filter({ hasText: 'Shenzhen Office' });
@@ -66,6 +69,13 @@ test('政策页面：SEO、互链、表单披露、全站页脚与响应式', as
     for (const width of [320, 390, 700, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `Contact ${width}px 溢出`);
+      for (const label of await contactLabels.all()) {
+        const iconBox = await label.locator('svg').boundingBox();
+        const labelBox = await label.boundingBox();
+        assert.equal(iconBox.width, 18, `${width}px 图标不应被压缩`);
+        assert.equal(iconBox.height, 18, `${width}px 图标高度保持一致`);
+        assert.ok(iconBox.x >= labelBox.x && iconBox.x + iconBox.width <= labelBox.x + labelBox.width, `${width}px 图标不应溢出标签`);
+      }
       if ([390, 1440].includes(width)) await page.screenshot({ path: join(screenshots, `contact-${width}.png`), fullPage: true });
     }
     const noJs = await browser.newContext({ javaScriptEnabled: false });
