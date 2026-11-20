@@ -1,3 +1,6 @@
+---
+const { quoteHref = '/contact/' } = Astro.props;
+---
 <header class="site-header">
   <div class="container nav-wrap">
     <a class="brand" href="/" aria-label="Belaro Precision home"><span class="brand-mark">B</span><span class="brand-copy"><strong>BELARO</strong><small>PRECISION</small></span></a>
@@ -6,6 +9,7 @@
         <a class="nav-dropdown-trigger" href="/services/" aria-haspopup="true">Capabilities <svg class="nav-chevron" viewBox="0 0 10 6" aria-hidden="true" focusable="false"><path d="M1 1h8L5 5Z" fill="currentColor" stroke="none" /></svg></a>
         <div class="nav-dropdown-menu" aria-label="Capabilities submenu">
           <a href="/services/">All Capabilities</a>
+          <a href="/services/cnc-machining/">CNC Machining</a>
           <a href="/services/cnc-milling/">CNC Milling</a>
           <a href="/services/cnc-milling/#three-axis">3-Axis CNC Machining</a>
           <a href="/services/cnc-milling/#three-plus-two">3+2 CNC Milling</a>
@@ -17,7 +21,7 @@
       </div>
       <a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a>
     </nav>
-    <a class="button button-small button-orange nav-cta" href="/contact/">Request a Quote <span>↗</span></a>
+    <a class="button button-small button-orange nav-cta" href={quoteHref}>Request a Quote <span>↗</span></a>
     <button class="menu-toggle" type="button" data-menu-toggle aria-controls="mobile-navigation" aria-expanded="false" aria-label="Toggle navigation"><i></i><i></i><i></i></button>
   </div>
   <button class="mobile-menu-overlay" type="button" data-menu-overlay aria-label="Close navigation" tabindex="-1" hidden></button>
@@ -26,6 +30,7 @@
       <summary class="mobile-capability-toggle">Capabilities <span aria-hidden="true"></span></summary>
       <div class="mobile-capability-links" id="mobile-capability-links" aria-label="Capabilities submenu">
       <a href="/services/">All Capabilities</a>
+      <a href="/services/cnc-machining/">CNC Machining</a>
       <a href="/services/cnc-milling/">CNC Milling</a>
       <a href="/services/cnc-milling/#three-axis">3-Axis CNC Machining</a>
       <a href="/services/cnc-milling/#three-plus-two">3+2 CNC Milling</a>
@@ -35,7 +40,7 @@
       <a href="/services/production/">OEM &amp; Low-Volume Production</a>
       </div>
     </details>
-    <a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a><a class="button button-small button-orange mobile-nav-cta" href="/contact/">Request a Quote <span aria-hidden="true">↗</span></a>
+    <a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a><a class="button button-small button-orange mobile-nav-cta" href={quoteHref}>Request a Quote <span aria-hidden="true">↗</span></a>
   </nav>
 </header>
 

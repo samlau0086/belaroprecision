@@ -1,0 +1,141 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import RfqForm from '../../../components/RfqForm.astro';
+import { images } from '../../../data/images';
+import { machinedParts } from '../../../data/machined-parts';
+import { site } from '../../../config';
+
+const processes = [
+  { title: 'CNC Milling', label: 'Prismatic & multi-face parts', text: '3-axis, 3+2 positional and simultaneous 5-axis milling for brackets, blocks, plates and housings.', href: '/services/cnc-milling/', image: 'hero-cnc-milling' as const, alt: 'CNC milling operation on a metal component' },
+  { title: 'CNC Turning', label: 'Rotational components', text: 'Drawing-based shafts, sleeves, bushings and connectors, reviewed around fits, threads and mating features.', href: '/services/cnc-turning/', image: 'hero-cnc-turning' as const, alt: 'CNC turning machine and operator' },
+  { title: 'Secondary Processes', label: 'Coordinated project support', text: 'Grinding, heat treatment and surface finishing coordinated through suppliers in Dongguan and Shenzhen. Scope confirmed per project.', href: '/services/secondary-processes/', image: 'secondary-processes' as const, alt: 'Examples of secondary processing and finishing for machined components' },
+];
+const steps = [
+  ['Send your requirements', 'Share a drawing or CAD file, material grade and quantity. Not sure about the process? Ask us to review it.'],
+  ['Review & quotation', 'We clarify critical features, material, machining route, inspection scope, price and estimated lead time.'],
+  ['Approve for production', 'Confirm the drawing revision, specifications and commercial terms before machining begins.'],
+  ['Inspect & deliver', 'Inspection, documentation, packaging and delivery follow the scope agreed for your order.'],
+];
+const faqs = [
+  ['Is there a minimum order quantity?', 'There is no fixed minimum order quantity. Send your required quantity for review, from an initial part to low-volume batches and repeat orders. Feasibility, setup costs and pricing depend on the component.'],
+  ['How quickly will I receive a quotation?', 'We aim to respond to complete drawing-based enquiries within 24 hours. Complex geometry, material availability or additional process requirements may need clarification before a quotation can be completed. This is a quotation response target, not a production or delivery promise.'],
+  ['Which materials and tolerances can you review?', 'Include the exact material grade, condition, datums and critical tolerances on your drawing. Material availability and achievable tolerances are confirmed per feature and project; there is no universal tolerance or material guarantee.'],
+  ['Can one component require both milling and turning?', 'Yes, send the complete drawing so the process route and critical interfaces can be reviewed together. You do not need to choose a machining process to submit an enquiry.'],
+  ['What files can I upload?', 'Upload one PDF, STEP, STP, IGES, IGS, X_T, DWG, DXF or ZIP file up to 20 MB. Use a ZIP for related drawings and models. A dimensioned drawing, material and quantity help us prepare a useful quotation. You can also start without an attachment.'],
+  ['Can I request an NDA or inspection documents?', 'Contact us before sharing sensitive files if you need an NDA or specific handling arrangements. Tell us whether you require an FAI report, a CMM / dimensional report or an EN 10204 3.1 material certificate. Availability, scope and any additional cost must be agreed during quotation; these documents are not automatically included.'],
+];
+---
+
+<BaseLayout title="Custom CNC Machining Services | Milling & Turning" description="Custom CNC machining for drawing-based OEM parts. 3-axis and 5-axis milling, CNC turning and coordinated finishing. No fixed MOQ. Send your drawing for a quote.">
+  <Header quoteHref="#rfq-form" />
+  <main class="machining-page">
+    <section class="machining-hero" aria-labelledby="machining-title">
+      <Image class="hero-photo" src={images['hero-cnc-milling']} alt="CNC machining a metal component with a milling tool" widths={[640, 1024, 1600, 1920]} sizes="100vw" loading="eager" fetchpriority="high" decoding="async" />
+      <div class="container hero-copy">
+        <span class="eyebrow eyebrow-light">BELARO PRECISION / CUSTOM OEM PARTS</span>
+        <h1 id="machining-title">CNC Machining<br/>Services</h1>
+        <p>Custom parts made to your engineering drawings. CNC milling, turning and coordinated finishing for industrial OEM components.</p>
+        <a class="button button-orange" href="#rfq-form">Get a CNC Machining Quote <span aria-hidden="true">&#8599;</span></a>
+        <p class="hero-note">Send your drawing. We review the requirements before quoting.</p>
+      </div>
+    </section>
+
+    <section class="offer-band" aria-label="Quotation and production approach">
+      <div class="container offer-grid">
+        <div><strong>No fixed MOQ</strong><span>Initial parts, batches &amp; repeat orders</span></div>
+        <div><strong>24-hour response target</strong><span>For complete enquiries; subject to review</span></div>
+        <div><strong>Drawing-led production</strong><span>Material, tolerances &amp; scope agreed first</span></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="capabilities-title">
+      <div class="container">
+        <div class="section-intro"><span class="eyebrow">THE PROCESS YOUR PART NEEDS</span><h2 id="capabilities-title">From a single feature<br/>to a complete component.</h2><p>Start with your part requirements, not a machine selection. We review geometry, material, critical dimensions and quantity to confirm a practical manufacturing route.</p></div>
+        <div class="machining-processes">{processes.map(process => <article>
+          <Image src={images[process.image]} alt={process.alt} widths={[400, 640, 800]} sizes="(max-width: 700px) calc(100vw - 36px), (max-width: 1000px) 45vw, 370px" loading="lazy" decoding="async" />
+          <div class="process-copy"><span class="process-label">{process.label}</span><h3>{process.title}</h3><p>{process.text}</p><a class="text-link" href={process.href}>Explore {process.title} <span aria-hidden="true">&#8594;</span></a></div>
+        </article>)}</div>
+        <div class="inline-quote"><p><strong>Already have a drawing?</strong> Send it with your material and quantity for review.</p><a class="button button-outline" href="#rfq-form">Request a Quote <span aria-hidden="true">&#8599;</span></a></div>
+      </div>
+    </section>
+
+    <section class="section section-soft" aria-labelledby="parts-title">
+      <div class="container">
+        <div class="section-intro"><span class="eyebrow">PARTS FOR INDUSTRIAL ASSEMBLIES</span><h2 id="parts-title">Does your part look familiar?</h2><p>Brackets, housings, shafts and more for automation, machinery, fluid systems and test equipment. These are representative visual references, not customer cases or stocked products.</p></div>
+        <div class="machining-parts">{machinedParts.map(part => <article><img src={`/images/machined-parts/${part.image}`} alt={`Representative ${part.title.toLowerCase()} for drawing-based CNC machining`} width="600" height="400" loading="lazy" decoding="async"/><h3>{part.title}</h3><p>{part.application}</p></article>)}</div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="quality-title">
+      <div class="container assurance-layout">
+        <div><span class="eyebrow">REQUIREMENTS BEFORE PROMISES</span><h2 id="quality-title">Built around what<br/>your drawing controls.</h2><p>Fit, function and inspection start with a shared understanding of the requirements. We confirm the details that matter before production.</p><a class="text-link" href="/quality/">Our quality approach <span aria-hidden="true">&#8594;</span></a></div>
+        <dl class="review-list">
+          <div><dt>Material &amp; surface requirements</dt><dd>Specify the grade, condition, finish and any treatment. Material availability and secondary process scope are confirmed in the quote.</dd></div>
+          <div><dt>Critical dimensions &amp; tolerances</dt><dd>Identify datums, fits and functional faces. Feasibility is reviewed against the geometry, setup and inspection requirements.</dd></div>
+          <div><dt>Inspection &amp; documentation</dt><dd>Agree measurement criteria, inspection coverage and requested reports or certificates before placing the order.</dd></div>
+          <div><dt>Quantity &amp; repeatability</dt><dd>Share your first-order quantity and repeat demand. Drawing revisions, batch requirements and lead time are agreed per project.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="section section-soft" aria-labelledby="steps-title"><div class="container">
+      <div class="section-intro"><span class="eyebrow">FROM DRAWING TO DELIVERY</span><h2 id="steps-title">Know what happens next.</h2></div>
+      <ol class="machining-steps">{steps.map(([title, text], index) => <li><span>0{index + 1}</span><h3>{title}</h3><p>{text}</p></li>)}</ol>
+    </div></section>
+
+    <section class="section" aria-labelledby="faq-title"><div class="container faq-layout">
+      <div><span class="eyebrow">BEFORE YOU SEND</span><h2 id="faq-title">Your CNC machining<br/>questions, answered.</h2></div>
+      <div class="machining-faq">{faqs.map(([question, answer]) => <details><summary>{question}</summary><p>{answer}</p></details>)}</div>
+    </div></section>
+
+    <section class="section section-soft" id="request-quote" aria-labelledby="quote-title"><div class="container rfq-layout">
+      <div class="rfq-intro">
+        <span class="eyebrow">YOUR NEXT MACHINED COMPONENT</span><h2 id="quote-title">Get a CNC<br/>Machining Quote</h2>
+        <p>Tell us who you are and share your drawing if available. Material, quantity and technical details can be added now or clarified with our team.</p>
+        <p><strong>What happens after you submit?</strong><br/>We review your requirements and contact you about feasibility, pricing and estimated lead time. Submitting an enquiry does not place an order.</p>
+        <div class="contact-detail"><span>EMAIL</span><a href={`mailto:${site.email}`}>{site.email}</a></div>
+        <div class="contact-detail"><span>WHATSAPP</span><a href={site.whatsappUrl} target="_blank" rel="noopener noreferrer">{site.whatsapp}</a></div>
+        <div class="contact-detail"><span>YOUR MANUFACTURING CONTACT</span><p>{site.legalName}<br/>Shenzhen office &amp; Dongguan CNC factory</p><a class="text-link" href="/about/">About Belaro <span aria-hidden="true">&#8594;</span></a></div>
+        <p class="privacy-note">Need an NDA first? Contact us before uploading sensitive technical files so suitable handling arrangements can be agreed.</p>
+      </div>
+      <RfqForm />
+    </div></section>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .machining-page{--cta-ink:#172338}
+  .machining-page :global(h1),.machining-page :global(h2),.machining-page :global(h3),.machining-page :global(.eyebrow),.machining-page :global(.button){letter-spacing:0}
+  .machining-page :global(.button-orange){color:var(--cta-ink)}
+  .machining-page :global(a:focus-visible),.machining-page :global(summary:focus-visible){outline:3px solid var(--orange);outline-offset:4px}
+  .machining-page .section{padding:80px 0}
+  .machining-hero{position:relative;isolation:isolate;color:#fff;min-height:570px;display:flex;align-items:center;background:#18282c}
+  .hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:-2}
+  .machining-hero::before{content:'';position:absolute;inset:0;background:rgba(5,16,21,.68);z-index:-1}
+  .hero-copy{padding-block:58px;position:relative}
+  .hero-copy h1{font-size:56px;line-height:1.12;margin:18px 0 22px;max-width:650px}
+  .hero-copy>p{max-width:570px;font-size:18px;line-height:1.65;color:#f0f3f5;margin-bottom:26px}
+  .hero-copy .hero-note{font-size:16px;margin:16px 0 0;max-width:540px}
+  .offer-band{border-bottom:1px solid var(--line);background:#fff}
+  .offer-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;padding-block:28px}
+  .offer-grid div{display:flex;flex-direction:column;border-left:3px solid var(--orange);padding-left:18px;gap:5px}
+  .offer-grid strong{font-size:18px}.offer-grid span{color:#526171;font-size:16px}
+  h2{font-size:36px;line-height:1.25;margin:14px 0 20px}h3{font-size:23px;line-height:1.35}
+  .section-intro{max-width:760px;margin-bottom:34px}.section-intro p,.assurance-layout p,.machining-steps p{color:#526171}
+  .machining-processes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+  .machining-processes article{min-width:0;display:flex;flex-direction:column;border:1px solid var(--line);background:#fff}
+  .machining-processes img{width:100%;height:auto;aspect-ratio:1.65;object-fit:cover}
+  .process-copy{display:flex;flex-direction:column;flex:1;padding:24px}.process-label{font-size:16px;color:#526171}.process-copy h3{margin:10px 0 14px}.process-copy p{color:#526171;margin-bottom:22px}.process-copy a{margin-top:auto}
+  .inline-quote{display:flex;justify-content:space-between;align-items:center;gap:24px;border-top:1px solid var(--line);margin-top:34px;padding-top:24px}.inline-quote p{margin:0;max-width:640px}.inline-quote .button{flex-shrink:0}
+  .machining-parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 24px}.machining-parts article{min-width:0}.machining-parts img{width:100%;height:auto;aspect-ratio:1.5;object-fit:cover;background:#e9edef}.machining-parts h3{font-size:21px;margin:16px 0 6px}.machining-parts p{color:#526171;margin:0}
+  .assurance-layout,.faq-layout{display:grid;grid-template-columns:1fr 1.2fr;gap:70px}.review-list{margin:0}.review-list>div{border-top:1px solid var(--line);padding:20px 0}.review-list dt{font-weight:700;margin-bottom:8px}.review-list dd{margin:0;color:#526171}
+  .machining-steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:26px}.machining-steps li{border-top:3px solid var(--orange);padding-top:20px}.machining-steps span{font-weight:700;color:#a74b19}.machining-steps h3{font-size:21px;margin:16px 0 12px}.machining-steps p{margin:0}
+  .machining-faq details{border-top:1px solid var(--line);padding:20px 0}.machining-faq details:last-child{border-bottom:1px solid var(--line)}.machining-faq summary{font-weight:700;cursor:pointer;padding-right:8px}.machining-faq p{color:#526171;margin:14px 0 0}
+  .rfq-intro :global(a){overflow-wrap:anywhere}.machining-page :global(.rfq-form){min-width:0;scroll-margin-top:8px}
+  @media(max-width:1000px){.assurance-layout,.faq-layout{gap:35px}.machining-processes{gap:16px}.process-copy{padding:20px}.machining-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:700px){.machining-page .section{padding:58px 0}.machining-hero{min-height:540px}.hero-copy{padding-block:42px}.hero-copy h1{font-size:38px}.hero-copy>p{font-size:16px}.hero-copy .button{width:100%;gap:12px;padding-inline:12px}.offer-grid{grid-template-columns:1fr;gap:18px;padding-block:24px}.offer-grid div{padding-left:14px;gap:0}.offer-grid strong{font-size:17px}h2{font-size:30px}h3{font-size:22px}.machining-processes,.assurance-layout,.faq-layout{grid-template-columns:minmax(0,1fr)}.machining-parts{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 16px}.machining-parts h3{font-size:18px;overflow-wrap:anywhere}.machining-parts p{font-size:16px}.inline-quote{align-items:stretch;flex-direction:column;gap:18px}.machining-steps{grid-template-columns:minmax(0,1fr);gap:26px}.machining-steps h3{margin-top:8px}.faq-layout{gap:14px}.assurance-layout{gap:28px}}
+</style>

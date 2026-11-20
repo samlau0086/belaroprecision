@@ -50,7 +50,7 @@ test('企业联系方式和地址与公开配置一致', async () => {
 });
 
 test('询价文件扩展名及限制与源码一致', async () => {
-  const contact = await read('src/pages/contact/index.astro');
+  const contact = await read('src/components/RfqForm.astro');
   const answer = data.items.find(item => item.id === 'QA-031').answer;
   const extensions = contact.match(/accept="([^"]+)"/)?.[1].split(',');
   assert.ok(extensions?.length);

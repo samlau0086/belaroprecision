@@ -7,15 +7,16 @@ import { rfqFields } from '../src/lib/gravity-forms.mjs';
 
 const documentChoices = [{inputId:15.1,value:'FAI report'},{inputId:15.2,value:'CMM / dimensional report'},{inputId:15.3,value:'EN 10204 3.1 material cert'}];
 
+for (const rfqPath of ['/contact/', '/services/cnc-machining/']) {
 for (const turnstileEnabled of [true, false]) {
-test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附件、异常和防重复`, async () => {
+test(`RFQ ${rfqPath} 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附件、异常和防重复`, async () => {
   let configured = false;
   let baseUrl;
   const server = createServer(async (req, res) => {
     try {
       const path = new URL(req.url, 'http://localhost').pathname;
       let body = await readFile(new URL(`../dist${path.endsWith('/') ? `${path}index.html` : path}`, import.meta.url));
-      if (path === '/contact/') {
+      if (path === rfqPath) {
         const config = { graphqlUrl: `${baseUrl}/graphql`, formId: 42, uploadsEnabled: true, turnstileSiteKey: 'test-site-key', fields: Object.fromEntries(rfqFields.map((field, i) => [field, { id: i + 1, type: ({name:'name',email:'email',attachment:'file',consent:'consent'})[field] || 'text' }])) };
         if (!turnstileEnabled) config.turnstileSiteKey = '';
         config.fields.documents = { id:15, type:'checkboxes', choices:documentChoices };
@@ -126,7 +127,7 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
     };
     const status = page.locator('#form-status');
     const submit = page.locator('button[type=submit]');
-    await page.goto(`${baseUrl}/contact/`);
+    await page.goto(`${baseUrl}${rfqPath}`);
     assert.equal(await page.locator('.rfq-optional').evaluate(element => element.open), false);
     for (const name of ['process', 'quantity', 'tolerance', 'details']) {
       assert.equal(await page.locator(`[name="${name}"]`).isVisible(), false);
@@ -252,4 +253,5 @@ test(`RFQ 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附�
     await new Promise(resolve => server.close(resolve));
   }
 });
+}
 }

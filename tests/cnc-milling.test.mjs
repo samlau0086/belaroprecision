@@ -39,9 +39,9 @@ test('铣削页：站内入口、响应式、SEO、FAQ 与工艺询价', async (
     assert.equal(await page.locator('.mobile-nav a[href="/services/cnc-milling/#three-plus-two"]').count(), 1);
     await page.getByRole('link', { name: 'Explore milled parts' }).click();
     assert.equal(new URL(page.url()).hash, '#milled-parts');
-    await page.locator('summary').first().focus();
+    await page.locator('main summary').first().focus();
     await page.keyboard.press('Enter');
-    assert.equal(await page.locator('details').first().getAttribute('open'), '');
+    assert.equal(await page.locator('main details').first().getAttribute('open'), '');
     const screenshots = await mkdtemp(join(tmpdir(), 'belaro-milling-'));
     for (const width of [320, 390, 700, 701, 768, 1024, 1100, 1101, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -99,8 +99,8 @@ test('铣削页：站内入口、响应式、SEO、FAQ 与工艺询价', async (
     const staticPage = await noJs.newPage();
     await staticPage.goto(`${baseUrl}/services/cnc-milling/`);
     assert.equal(await staticPage.locator('.milled-part').count(), 3);
-    await staticPage.locator('summary').first().click();
-    assert.equal(await staticPage.locator('details').first().getAttribute('open'), '');
+    await staticPage.locator('main summary').first().click();
+    assert.equal(await staticPage.locator('main details').first().getAttribute('open'), '');
     await noJs.close();
     assert.deepEqual(errors, []);
     console.log(`铣削页截图：${screenshots}`);

@@ -60,6 +60,7 @@
 | `/` | 首页，按首屏定位、采购需求匹配、核心服务、代表性零件、能力概览、质量检验、目标应用、合作流程、FAQ 与询价入口组织 |
 | `/machined-parts/` | 六类按图加工零件展示、应用方向、工艺归类、图纸评审要点、询价准备资料和 FAQ；零件图片为代表性视觉参考，不代表客户案例或库存产品 |
 | `/services/` | CNC 铣削、车削及小批量生产介绍；锚点为 `milling`、`turning`、`production` |
+| `/services/cnc-machining/` | CNC 综合加工服务与 Google Ads 落地页：首屏报价入口、无固定 MOQ 与附条件的 24 小时回复目标、工艺与零件示例、质量评审、四步合作流程、FAQ 和页内 RFQ |
 | `/services/production/` | OEM 与小批量生产专页，包含需求对齐、生产流程、重复订单、检验要求和项目讨论入口 |
 | `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、3+2 CNC Milling、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
 | `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口 |
@@ -100,6 +101,20 @@ RFQ 必填项包括姓名、邮箱、公司、国家/地区和联系同意；同
 Agent 可发现性上线验收：发布后通过正式域名检查 `/robots.txt`、`/sitemap.xml`、首页 Link 响应头和 `Accept: text/markdown` 内容协商；若 Cloudflare 的 robots 管理或缓存覆盖源站，需要在控制台检查现有规则并清除相关 URL 缓存。本仓库已在 Astro 构建阶段生成 Markdown，并由生产 Nginx 按 `Accept` 返回，无需 Cloudflare Markdown for Agents；实现和验证方式见 [docs/AGENT-MARKDOWN.md](docs/AGENT-MARKDOWN.md)。DNS-AID 需真实 Agent 服务及 DNS/DNSSEC 配置；OAuth、API catalog、MCP、WebMCP 等仅在实际提供对应服务时发布，不以虚构元数据刷分。检测分数取决于第三方规则和线上配置，不能保证达到特定分数。
 
 About 内容展示优化：应用方向改为分类标签，公司身份改为双栏信息卡，自有加工与外协范围采用深浅底色卡片，外协管理采用编号流程（桌面四列、平板两列、手机单列），联系方式采用引导区与信息卡双栏。新增 `src/styles/about.css`，样式限定在 `.about-page` 下，无新增依赖或交互脚本。
+
+### CNC Machining 广告落地页
+
+`/services/cnc-machining/` 面向综合 CNC 加工询价，页头、首屏及中段主要报价按钮均指向本页 `#rfq-form`，无需跳转 Contact。页面使用现有本地图片、公开公司信息及代表性零件，不添加未经核实的认证、客户评价、固定公差或交期承诺。页头桌面/移动菜单、页脚和 Capabilities 总览提供该页面入口。
+
+`src/components/RfqForm.astro` 由新页面与 Contact 共同使用，包含原有字段、折叠选填信息、单附件（最大 20 MB）、Turnstile、异常处理及防重复提交逻辑。所有必填项和后台字段映射保持不变，没有新增依赖、环境变量或后台字段。广告归因继续遵守现有广告偏好，仅在获准后保存并提交 `gclid` / `gbraid` / `wbraid`；`generate_lead` 仅在后台确认保存条目后发送，不将 CTA 点击、表单展开、提交按钮点击或验证失败计为询价成功。
+
+Google Ads 的 Final URL 可在正式部署并验收后设置为 `https://belaroprecision.com/services/cnc-machining/`。广告文案应与综合加工服务匹配；仅投放铣削或车削时仍可使用对应详情页。网站代码不会自动创建或修改广告系列、预算、GTM 标签或 Google Ads 转化操作，也不保证广告审核或转化率。投放前需在正式域名验收 GraphQL、附件、Turnstile、广告偏好与后台收件，并通过 GTM / GA4 / Google Ads 核对成功事件及去重；不要同时把按钮点击或另一套相同成功事件设为主要转化。
+
+新页面浏览器回归：`node --test tests/cnc-machining.test.mjs`；共享询价流程：`node --test tests/rfq-submission.test.mjs tests/ad-attribution-browser.test.mjs`。这些测试使用模拟后台，不替代生产收件、真实转化入账和广告效果验证。
+
+2026 年 11 月 20 日本地验证：`npm run build` 通过，生成 15 页。执行 `node --test tests/cnc-machining.test.mjs tests/rfq-submission.test.mjs tests/ad-attribution-browser.test.mjs tests/customer-service-knowledge.test.mjs tests/gravity-forms.test.mjs tests/ad-attribution.test.mjs tests/agent-discovery.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs tests/agent-markdown.test.mjs`，34 项通过、1 项真实 Nginx HTTP 测试因未配置二进制而跳过；另执行 `node --test tests/cnc-milling.test.mjs`，1 项通过。新页面覆盖 320–1920px 的 10 种宽度、图片比例、页内报价定位、SEO、归因同意及撤回、FAQ 和无脚本回退；390px 与 1440px 全页截图已人工复核。本地开发路由返回 HTTP 200，`git diff --check` 通过。项目未配置独立类型检查或 ESLint 脚本，本次未执行这两项。
+
+额外执行的 `node --test tests/astro-audit.test.mjs` 未通过：现有首页、工艺详情与 Machined Parts 的公开零件图片，以及新页面复用的六张零件图片，未采用该测试要求的 Astro 优化 URL、`srcset` 和 `sizes`。本次保留既有公开图片路径与加载方式，没有为通过审计而调整全站素材架构；新页面工艺照片和首屏照片已使用 Astro Image。该审计中的图片解码、响应式及可访问性断言通过。尚未部署、提交真实询盘或更改 Google Ads / GTM 配置。
 
 ## 5. 环境要求、安装与启动
 
