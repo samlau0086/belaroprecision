@@ -45,6 +45,8 @@
 .about-page .contact-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:0}
 .about-page .contact-details>div{border:0;padding:0;min-width:0}
 .about-page .contact-details dt{font-size:16px;text-transform:uppercase;letter-spacing:1px;color:#687586;margin-bottom:9px}
+.about-page .contact-details .contact-label{display:flex;align-items:center;gap:9px}
+.about-page .contact-details .contact-label svg{flex:0 0 18px;color:var(--orange)}
 .about-page .contact-details dd{margin:0;font-size:16px;font-weight:600;line-height:1.6;overflow-wrap:anywhere}
 .about-page .contact-details a{color:var(--ink);text-decoration:underline;text-decoration-color:#d9a17b;text-underline-offset:5px}
 .about-page .contact-details a:hover{color:#a74b19}

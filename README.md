@@ -55,6 +55,8 @@
 
 ## 4. 已有页面与功能边界
 
+页眉和页脚品牌图标统一使用 `public/belaroprecision-logo.webp`，桌面端以 80×56px、700px 及以下以 64×48px 显示；使用 `object-fit: cover` 等比放大并裁去原图上下留白，保留完整图案和右侧 BELARO / PRECISION 文字。页脚图标使用白底承托，以保持深色背景下的辨识度。
+
 | 路由 | 当前实现 |
 | --- | --- |
 | `/` | 首页，按首屏定位、采购需求匹配、核心服务、代表性零件、能力概览、质量检验、目标应用、合作流程、FAQ 与询价入口组织 |
@@ -329,7 +331,7 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 ## 9. 开发与内容维护
 
-全站 favicon 沿用页头深蓝底白色字母 B 标识，在 `src/layouts/BaseLayout.astro` 统一引用：`public/favicon.svg` 为矢量源文件，`public/favicon.ico` 包含 16、32、48px 兼容图标，`public/apple-touch-icon.png` 为 180px Apple 触屏图标。更换标识时需同步更新这三个文件；执行 `npm run build` 后可用 `node --test tests/favicon.test.mjs` 检查全站引用与构建资源。浏览器可能缓存旧图标，发布后如未更新可清除站点缓存再验证。
+全站 favicon 使用 `public/belaroprecision-logo-favicon.webp`（444×444px），在 `src/layouts/BaseLayout.astro` 统一引用，同时提供 `public/belaroprecision-favicon.ico`（16、32、48px）和 `public/belaroprecision-apple-touch-icon.png`（180px，白底）。更换源图后执行 `node scripts/generate-favicons.mjs` 同步生成 ICO 和 Apple 图标；执行 `npm run build` 后可用 `node --test tests/favicon.test.mjs` 检查全站引用、构建资源及生成图像与源图的一致性。旧版图标文件保留但不再通过页面引用。浏览器可能缓存旧图标，发布后如未更新可清除站点缓存再验证。
 
 先阅读根目录 `AGENTS.md`，遵循现有 Astro、TypeScript 和原生 CSS 结构。页面位于 `src/pages/`；公共布局、导航和表单控件优先复用；颜色、字体和通用间距优先使用 `src/styles/global.css` 的现有变量与规则。公开联系方式、域名和字段配置位于 `src/config.ts`。后台上传及验证逻辑位于 PHP MU 插件，修改后需单独部署至 WordPress。
 

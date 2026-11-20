@@ -26,6 +26,23 @@ test('公共导航：桌面与手机吸顶、首屏阈值、返回顶部、菜�
     for (const width of [320, 390, 700, 701, 1024, 1100, 1101, 1440]) {
       await page.setViewportSize({ width, height: 844 });
       await page.goto(baseUrl);
+      const logo = page.locator('.site-header .brand-logo');
+      assert.equal(await logo.getAttribute('src'), '/belaroprecision-logo.webp');
+      await logo.evaluate(image => image.decode());
+      const logoBox = await logo.boundingBox();
+      assert.equal(logoBox.width, width <= 700 ? 64 : 80, `${width}px 页眉图标宽度应适配设备`);
+      assert.equal(logoBox.height, width <= 700 ? 48 : 56, `${width}px 页眉图标高度应适配设备`);
+      const brandBox = await page.locator('.site-header .brand').boundingBox();
+      const nextControlBox = await page.locator(width <= 1100 ? '[data-menu-toggle]' : '.desktop-nav').boundingBox();
+      assert.ok(brandBox.x + brandBox.width <= nextControlBox.x, '放大后的品牌区域不应挤压导航');
+      assert.equal(await page.locator('.site-header .brand-copy').innerText(), 'BELARO\nPRECISION');
+      const footerLogo = page.locator('.site-footer .brand-logo');
+      assert.equal(await footerLogo.getAttribute('src'), '/belaroprecision-logo.webp');
+      await footerLogo.evaluate(image => image.decode());
+      const footerLogoBox = await footerLogo.boundingBox();
+      assert.equal(footerLogoBox.width, logoBox.width, '页脚图标宽度应与页眉一致');
+      assert.equal(footerLogoBox.height, logoBox.height, '页脚图标高度应与页眉一致');
+      assert.equal(await page.locator('.site-footer .brand-copy').innerText(), 'BELARO\nPRECISION');
       const button = page.getByRole('button', { name: 'Back to top', exact: true });
       assert.equal(await button.isVisible(), false, `${width}px 首屏应隐藏按钮`);
       const headerHeight = width <= 700 ? 72 : 86;

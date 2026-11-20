@@ -3,13 +3,15 @@ import { site } from '../config';
 ---
 <footer class="site-footer">
   <div class="container footer-grid">
-    <div class="footer-brand"><a class="brand brand-light" href="/"><span class="brand-mark">B</span><span class="brand-copy"><strong>BELARO</strong><small>PRECISION</small></span></a><p>Precision Parts. Reliable Production.</p><p class="muted">CNC-machined components for industrial OEM manufacturers.</p></div>
+    <div class="footer-brand"><a class="brand brand-light" href="/" aria-label="Belaro Precision home"><img class="brand-logo" src="/belaroprecision-logo.webp" width="80" height="56" alt="" /><span class="brand-copy"><strong>BELARO</strong><small>PRECISION</small></span></a><p>Precision Parts. Reliable Production.</p><p class="muted">CNC-machined components for industrial OEM manufacturers.</p></div>
     <div><h4>Explore</h4><a href="/services/">CNC Capabilities</a><a href="/services/cnc-machining/">CNC Machining</a><a href="/services/cnc-milling/">CNC Milling</a><a href="/services/cnc-turning/">CNC Turning</a><a href="/services/secondary-processes/">Secondary Processes</a><a href="/services/production/">OEM Production</a><a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About Belaro</a></div>
     <div><h4>Start a Project</h4><a href="/contact/">Request a Quote</a><a href={`mailto:${site.email}`}>{site.email}</a><a href={site.whatsappUrl} target="_blank" rel="noopener noreferrer">WhatsApp: {site.whatsapp}</a><span class="muted"><strong>Shenzhen Office</strong><br/>{site.location}</span><span class="muted"><strong>Dongguan CNC Factory</strong><br/>{site.factoryLocation}</span><span class="muted">Drawing-based enquiries welcome</span></div>
   </div>
   <div class="container footer-bottom"><span>© <span data-year></span> Belaro Precision. All rights reserved.</span><nav class="footer-policies" aria-label="Website policies"><a href="/privacy-policy/">Privacy Policy</a><a href="/cookie-policy/">Cookie Policy</a><a href="/terms-of-use/">Terms of Use</a><button type="button" data-ad-preferences-open hidden>Advertising preferences</button></nav></div>
 </footer>
 <style>
+  .brand-logo{width:80px;height:56px;object-fit:cover;flex-shrink:0;background:#fff;border-radius:3px}
+  @media(max-width:700px){.brand-logo{width:64px;height:48px}}
   .footer-bottom{flex-wrap:wrap;gap:18px}.footer-policies{display:flex;flex-wrap:wrap;gap:12px 22px}.footer-policies a{color:#aeb9c7;font-size:16px}.footer-policies a:hover{color:var(--orange)}.footer-policies a:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
   .footer-policies :global(button){border:0;background:none;padding:0;color:#aeb9c7;font:inherit;font-size:16px;cursor:pointer}.footer-policies :global(button:hover){color:var(--orange)}.footer-policies :global(button:focus-visible){outline:2px solid var(--orange);outline-offset:4px}
 </style>

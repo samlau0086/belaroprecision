@@ -58,6 +58,10 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.equal(await page.locator('#company-contact dl > div').filter({ hasText: 'Dongguan CNC Factory' }).locator('dd').innerText(), 'Mingsheng Machinery Factory, Building A, Yonglida Smart Industrial Park, No. 115 Xinhua South Road, Xinhe Community, Wanjiang Subdistrict, Dongguan, Guangdong, China');
     assert.equal(await page.locator('#company-contact a[href="mailto:sales@belaroprecision.com"]').count(), 1);
     assert.equal(await page.locator('#company-contact a[href="https://wa.me/8618682188709"]').count(), 1);
+    const contactLabels = page.locator('#company-contact .contact-label');
+    assert.equal(await contactLabels.count(), 5);
+    assert.deepEqual(await contactLabels.allInnerTexts(), ['LEGAL COMPANY NAME', 'SHENZHEN OFFICE', 'DONGGUAN CNC FACTORY', 'EMAIL', 'WHATSAPP']);
+    assert.equal(await contactLabels.locator('svg[aria-hidden="true"][focusable="false"] path').count(), 5);
     assert.doesNotMatch(await page.locator('main').innerText(), /深圳市极客码头科技有限公司/);
     await page.locator('main summary').first().focus();
     await page.keyboard.press('Enter');
@@ -72,6 +76,8 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
       }
       const stepColumns = await page.locator('.supplier-steps').evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
       assert.equal(stepColumns, width <= 480 ? 1 : width <= 1000 ? 2 : 4, `${width}px 外协流程列数`);
+      const contactIconSizes = await contactLabels.locator('svg').evaluateAll(nodes => nodes.map(node => { const { width, height } = node.getBoundingClientRect(); return { width, height }; }));
+      assert.ok(contactIconSizes.every(size => size.width === 18 && size.height === 18), `${width}px 联系标签图标尺寸`);
       assert.notEqual(await page.locator('.scope-card').first().evaluate(node => getComputedStyle(node).backgroundColor), 'rgba(0, 0, 0, 0)');
       const positions = await page.locator('.about-hero-grid > *').evaluateAll(nodes => nodes.map(node => { const { x, y } = node.getBoundingClientRect(); return { x, y }; }));
       assert.ok(width <= 700 ? positions[0].x === positions[1].x && positions[1].y > positions[0].y : positions[1].x > positions[0].x, `${width}px 首屏列数`);
