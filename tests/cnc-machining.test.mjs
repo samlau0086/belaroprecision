@@ -67,6 +67,8 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
       await page.evaluate(() => window.scrollTo(0, 0));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${width}px 不应横向溢出`);
       const heroCta = await page.locator('.machining-hero .button').boundingBox();
+      assert.equal(await page.locator('.machining-hero .button').evaluate(node => getComputedStyle(node).color), 'rgb(255, 255, 255)');
+      assert.equal(await page.locator('.machining-hero .button span').evaluate(node => getComputedStyle(node).color), 'rgb(255, 255, 255)');
       assert.ok(heroCta.y > 0 && heroCta.y + heroCta.height < 900, `${width}px 首屏应有报价入口`);
       const band = await page.locator('.offer-band').boundingBox();
       assert.ok(band.y < 900, `${width}px 首屏应露出后续内容`);
