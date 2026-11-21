@@ -65,7 +65,7 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
           }
           if (!expanded) {
             previousInert.clear();
-            menu.querySelector('.mobile-capability-group')?.removeAttribute('open');
+            menu.querySelectorAll('details').forEach(group => group.removeAttribute('open'));
             if (restoreFocus) toggle.focus({ preventScroll: true });
           }
         };

@@ -66,6 +66,12 @@
 | `/services/production/` | OEM 与小批量生产专页，包含需求对齐、生产流程、重复订单、检验要求和项目讨论入口 |
 | `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、3+2 CNC Milling、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
 | `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口 |
+| `/materials/aluminum-cnc-machining/` | 铝合金 CNC 加工页，包含加工能力、牌号、典型零件、加工工艺、公差与质检、表面处理、订单生产、FAQ 和页内图纸 RFQ；桌面与移动端 Materials 下拉菜单及页脚提供入口 |
+| `/materials/stainless-steel-cnc-machining/` | 不锈钢 CNC 加工页，包含加工能力、303/304/316/316L/17-4 PH 询价牌号、典型零件、加工工艺、公差与质检、表面处理、订单生产、FAQ 和页内图纸 RFQ |
+| `/materials/brass-cnc-machining/` | 黄铜独立页，重点说明 C360 含铅要求、螺纹与密封接口、毛刺、镀层与最终尺寸 |
+| `/materials/carbon-alloy-steel-cnc-machining/` | 碳钢与合金钢独立页，重点说明 1018/1045/4140、材料状态、热处理顺序、硬度与防锈 |
+| `/materials/titanium-cnc-machining/` | 钛材独立页，重点说明 Grade 2/5、追溯、薄壁与刀具可达性、表面验收和资质边界 |
+| `/materials/engineering-plastics-cnc-machining/` | 工程塑料独立页，重点说明使用环境、具体牌号与填充、尺寸稳定性、功能配合和清洁包装 |
 | `/services/secondary-processes/` | 配套工艺专页，说明通过东莞及深圳供应商网络协调磨削、热处理、表面处理及其他二次工艺的方式、询价资料和能力边界 |
 | `/industries/` | 自动化、工业机械、液压/气动、实验室与测试设备四个目标领域的应用说明、应用场景示意图、零件分类链接、图纸评审重点、加工与配套工艺入口、RFQ 清单及 FAQ；不代表已有客户关系或行业认证 |
 | `/quality/` | 图纸与材料确认、公差可行性、检测方法与环节、文件范围、首件/抽检/全检约定、偏差处理、包装标识七项质量说明；设备与文件能力按项目核实，没有在线检验管理功能 |
@@ -103,6 +109,32 @@ RFQ 必填项包括姓名、邮箱、公司、国家/地区和联系同意；同
 Agent 可发现性上线验收：发布后通过正式域名检查 `/robots.txt`、`/sitemap.xml`、首页 Link 响应头和 `Accept: text/markdown` 内容协商；若 Cloudflare 的 robots 管理或缓存覆盖源站，需要在控制台检查现有规则并清除相关 URL 缓存。本仓库已在 Astro 构建阶段生成 Markdown，并由生产 Nginx 按 `Accept` 返回，无需 Cloudflare Markdown for Agents；实现和验证方式见 [docs/AGENT-MARKDOWN.md](docs/AGENT-MARKDOWN.md)。DNS-AID 需真实 Agent 服务及 DNS/DNSSEC 配置；OAuth、API catalog、MCP、WebMCP 等仅在实际提供对应服务时发布，不以虚构元数据刷分。检测分数取决于第三方规则和线上配置，不能保证达到特定分数。
 
 About 内容展示优化：应用方向改为分类标签，公司身份改为双栏信息卡，自有加工与外协范围采用深浅底色卡片，外协管理采用编号流程（桌面四列、平板两列、手机单列），联系方式采用引导区与信息卡双栏。新增 `src/styles/about.css`，样式限定在 `.about-page` 下，无新增依赖或交互脚本。
+
+### Aluminum CNC Machining 材料页
+
+`/materials/aluminum-cnc-machining/` 按九个章节组织英文内容，使用现有本地图片、Astro Image 优化、共享导航及 `RfqForm.astro`，报价按钮指向页内 `#rfq-form`。Materials 导航分组现提供 Aluminum、Stainless Steel、Brass、Carbon & Alloy Steel、Titanium 与 Engineering Plastics 六个子项，分组链接仍直接进入铝合金页；未新增空的材料总览页。新路由由既有构建流程自动纳入 sitemap 与 Agent Markdown。
+
+6061、6082、7075 沿用现有询价选项，仅作为待评审牌号，不宣称实时库存或保证可采购。材料状态、加工适用性、公差、检验文件与交期按项目确认；Anodizing、bead blasting、polishing 作为外协评审请求，不承诺默认供应或自有设备。代表性零件图片不证明具体材质或客户案例。上传字段、20 MB 单文件限制和后台映射沿用现有询价流程，没有新增依赖、环境变量或后台配置。浏览器回归命令为 `node --test tests/aluminum-cnc-machining.test.mjs`，须先执行 `npm run build`；浏览器运行环境仍遵循第 10 节现有说明。
+
+2026 年 11 月 21 日本地验证：`npm run build` 通过，生成 16 页。执行 `node --test tests/aluminum-cnc-machining.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs tests/rfq-submission.test.mjs tests/cnc-milling.test.mjs tests/agent-discovery.test.mjs tests/agent-markdown.test.mjs`，14 项通过、0 项失败，1 项真实 Nginx HTTP 测试因未配置测试二进制而跳过。覆盖新页 320–1920px 的十种宽度、图片解码、桌面键盘菜单、移动菜单重置、九章节、FAQ、页内 RFQ 定位、正文链接与锚点、SEO 和无脚本回退；模拟后台覆盖新页启用/停用 Turnstile 的附件、异常和防重复提交。现有本地开发服务中新路由返回 HTTP 200，390px 与 1440px 截图已复核。未配置独立类型检查或 ESLint 脚本，未执行这两项；未部署或提交真实询盘。
+
+### Stainless Steel CNC Machining 材料页
+
+`/materials/stainless-steel-cnc-machining/` 沿用材料页九章节结构与共享 RFQ，页面内容针对不锈钢铣削、车削、典型零件、质量控制、生产订单和表面处理进行说明。303、304、316、316L、17-4 PH 沿用现有询价表单选项，仅代表可提交技术评审，不代表实时库存、牌号可互换或保证适合具体应用；17-4 PH 的材料状态、热处理和硬度要求须由图纸指定并在报价阶段确认。
+
+Passivation、bead blasting、polishing 作为供应商网络协调的项目评审请求，不宣称无条件供应或自有处理设备。代表性零件图片仅展示几何类型，不证明具体材质、客户案例或库存。页面没有新增依赖、环境变量或后台字段；浏览器回归命令为 `node --test tests/stainless-steel-cnc-machining.test.mjs`，并由 `tests/rfq-submission.test.mjs` 覆盖启用及停用 Turnstile 时的模拟提交流程。
+
+2026 年 11 月 21 日本地验证：`npm run build` 通过，生成 17 页。执行 `node --test tests/stainless-steel-cnc-machining.test.mjs tests/site-typography.test.mjs tests/site-navigation.test.mjs tests/rfq-submission.test.mjs`，11 项全部通过；另一次相关回归中的 Agent Markdown、sitemap、铝合金页和 CNC Milling 页测试通过，真实 Nginx HTTP 测试因未配置测试二进制而跳过。新页覆盖 320–1920px 十种宽度、正文链接与锚点、桌面和移动 Materials 双入口、图片解码、SEO、FAQ、无脚本回退及页内 RFQ 定位；390px 与 1440px 截图已人工复核。未配置独立 TypeScript 检查或 ESLint 脚本，未执行这两项；未部署或提交真实询盘。
+
+### 黄铜、钢材、钛材与工程塑料材料页
+
+四种材料分别生成独立静态页面。`src/data/material-pages.ts` 定义类型化英文内容与六个材料导航入口，`src/components/MaterialPage.astro` 复用页面布局、章节导航、FAQ 和现有 RFQ，`src/pages/materials/[material]/index.astro` 通过 `getStaticPaths()` 生成四条独立路由。原铝合金与不锈钢页面保持独立，不做无关重构。
+
+章节根据材料调整：黄铜先确认含铅与接口要求；钢材单列热处理顺序与硬度；钛材强调追溯、关键几何与资质边界；塑料先评审使用环境，再说明具体牌号、调湿与尺寸稳定性，不套用金属镀层章节。所有材料、外协、检测与证书要求须按项目确认，不宣称库存、固定精度、交期或特殊行业资质。图片沿用现有设备与检测语境图，不作为具体材料实物或客户案例的证据。
+
+未新增依赖、后台字段或环境变量。运行 `npm run build` 后，可执行 `node --test tests/material-pages.test.mjs tests/rfq-submission.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs`，覆盖四页内容差异、SEO、内链、响应式、材料菜单、FAQ、询价定位与模拟后台提交。浏览器和后台验证边界仍遵循第 10 节，不替代生产收件或实际制造能力核验。
+
+2026 年 11 月 21 日本地验证：`npm run build` 通过，生成 21 页；执行 `node --test tests/material-pages.test.mjs tests/rfq-submission.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs tests/aluminum-cnc-machining.test.mjs tests/stainless-steel-cnc-machining.test.mjs tests/agent-discovery.test.mjs tests/agent-markdown.test.mjs`，25 项通过、0 项失败，1 项真实 Nginx 测试因未配置二进制而跳过。四个新页覆盖 320–1920px 十种宽度、图片解码、独立内容、内链与锚点、SEO、六项材料菜单、FAQ、无脚本回退与页内 RFQ；模拟提交覆盖启用及停用 Turnstile、附件、异常和防重复。已复核桌面与手机截图，四条本地开发路由均返回 HTTP 200，`git diff --check` 通过。项目未配置独立类型检查或 ESLint 脚本，因此未执行；未部署、提交真实询盘或核验制造资质。
 
 ### CNC Machining 广告落地页
 

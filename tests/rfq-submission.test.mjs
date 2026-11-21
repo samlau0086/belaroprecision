@@ -7,7 +7,7 @@ import { rfqFields } from '../src/lib/gravity-forms.mjs';
 
 const documentChoices = [{inputId:15.1,value:'FAI report'},{inputId:15.2,value:'CMM / dimensional report'},{inputId:15.3,value:'EN 10204 3.1 material cert'}];
 
-for (const rfqPath of ['/contact/', '/services/cnc-machining/']) {
+for (const rfqPath of ['/contact/', '/services/cnc-machining/', '/materials/aluminum-cnc-machining/', '/materials/stainless-steel-cnc-machining/', '/materials/brass-cnc-machining/', '/materials/carbon-alloy-steel-cnc-machining/', '/materials/titanium-cnc-machining/', '/materials/engineering-plastics-cnc-machining/']) {
 for (const turnstileEnabled of [true, false]) {
 test(`RFQ ${rfqPath} 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附件、异常和防重复`, async () => {
   let configured = false;

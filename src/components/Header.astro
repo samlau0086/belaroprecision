@@ -1,4 +1,5 @@
 ---
+import { materialLinks } from '../data/material-pages';
 const { quoteHref = '/contact/' } = Astro.props;
 ---
 <header class="site-header">
@@ -18,6 +19,10 @@ const { quoteHref = '/contact/' } = Astro.props;
           <a href="/services/secondary-processes/">Secondary Processes</a>
           <a href="/services/production/">OEM &amp; Low-Volume Production</a>
         </div>
+      </div>
+      <div class="nav-dropdown materials-dropdown">
+        <a class="nav-material-trigger" href="/materials/aluminum-cnc-machining/" aria-haspopup="true">Materials <svg class="nav-chevron" viewBox="0 0 10 6" aria-hidden="true" focusable="false"><path d="M1 1h8L5 5Z" fill="currentColor" stroke="none" /></svg></a>
+        <div class="nav-dropdown-menu" aria-label="Materials submenu">{materialLinks.map(item => <a href={item.href}>{item.label}</a>)}</div>
       </div>
       <a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a>
     </nav>
@@ -40,6 +45,10 @@ const { quoteHref = '/contact/' } = Astro.props;
       <a href="/services/production/">OEM &amp; Low-Volume Production</a>
       </div>
     </details>
+    <details class="mobile-material-group">
+      <summary class="mobile-material-toggle">Materials <span aria-hidden="true"></span></summary>
+      <div class="mobile-capability-links" aria-label="Materials submenu">{materialLinks.map(item => <a href={item.href}>{item.label}</a>)}</div>
+    </details>
     <a href="/machined-parts/">Machined Parts</a><a href="/industries/">Industries</a><a href="/quality/">Quality</a><a href="/about/">About</a><a class="button button-small button-orange mobile-nav-cta" href={quoteHref}>Request a Quote <span aria-hidden="true">↗</span></a>
   </nav>
 </header>
@@ -57,9 +66,10 @@ const { quoteHref = '/contact/' } = Astro.props;
   :global(html.mobile-menu-open){overflow:hidden}
   @media(min-width:1101px){.mobile-menu-overlay{display:none}}
   /* 增加导航项后提前切换移动菜单，避免平板宽度下挤压。 */
-  .desktop-nav{gap:24px;margin-right:24px}
+  .desktop-nav{gap:18px;margin-right:18px}
   .nav-dropdown{position:relative;display:block;flex:0 0 auto}
-  .nav-dropdown-trigger{display:inline-flex;align-items:center;gap:6px}
+  .nav-dropdown-trigger,.nav-material-trigger{display:inline-flex;align-items:center;gap:6px}
+  @media(max-width:1100px){.mobile-material-group{border-bottom:1px solid var(--line)}.mobile-material-toggle{display:flex;justify-content:space-between;align-items:center;padding:12px 0;list-style:none;cursor:pointer;font-weight:600}.mobile-material-toggle::-webkit-details-marker{display:none}.mobile-material-toggle span{width:7px;height:7px;margin-right:3px;border-right:1.5px solid var(--orange);border-bottom:1.5px solid var(--orange);transform:rotate(45deg) translateY(-2px)}.mobile-material-group[open] .mobile-material-toggle span{transform:rotate(225deg) translate(-1px,-1px)}}
   .nav-chevron{display:block;width:10px;height:6px;flex:0 0 auto;color:var(--orange);overflow:visible;transform:none;transition:transform .2s}
   .nav-dropdown-menu{position:absolute;top:calc(100% + 16px);left:-18px;z-index:30;display:none;min-width:245px;flex-direction:column;padding:8px 0;background:#fff;border:1px solid var(--line);box-shadow:0 14px 30px rgba(16,31,53,.12);opacity:0;visibility:hidden;transform:translateY(-5px);transition:opacity .2s,transform .2s,visibility .2s}
   /* 填充触发项与菜单之间的视觉间距，避免鼠标移动到选项时 hover 中断。 */
