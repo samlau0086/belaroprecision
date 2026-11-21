@@ -257,6 +257,8 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 启用时，将 Site Key 配置为前端构建变量，将 Secret Key 和精确前端 hostname 配置为上述 WordPress 常量。停用时，清空前端 Site Key 并重新构建，同时移除或清空后台 Secret Key。服务端独立依据 Secret Key 决定是否验证，不接受客户端传参关闭验证；若后台仍配置 Secret Key，前端无 Site Key 的请求仍会被后台拒绝。复制当前 `wordpress/mu-plugins/belaro-graphql-upload.php` 到后台的 `wp-content/mu-plugins/`。插件仅在服务端 Secret Key 非空时，对查询文本匹配到的 `mutation` 和 `submitGfForm` 请求调用 Turnstile Siteverify，核对 `success`、hostname 和 `rfq` action；启用后缺 hostname、缺失/无效/过期 Token 或验证失败时，将请求替换为 `query { __typename }`，避免执行原提交。该实现依赖查询文本匹配，不能据此认定后台所有调用路径都已完成安全审计。WordPress 需能向 Cloudflare 发起 HTTPS 请求；CORS 需允许 `X-Turnstile-Token`。上线前验证有效、缺失、无效和过期 Token 的真实行为。
 
+移动端 RFQ 搜索下拉根据浏览器可视区域调整位置和列表高度，以适应软键盘；国家同步电话区号时不转移输入焦点。真实 iPhone Safari 的软键盘行为仍需设备验收。
+
 ## 8. RFQ 架构与后台对接
 
 ### 8.1 请求流程与字段映射

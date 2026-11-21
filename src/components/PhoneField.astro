@@ -43,10 +43,35 @@ import { countries } from '../lib/countries';
     let active = -1;
     const close = () => {
       popup.hidden = true;
+      popup.style.removeProperty('top');
+      popup.style.removeProperty('left');
+      popup.style.removeProperty('width');
+      popup.style.removeProperty('max-height');
+      list.style.removeProperty('max-height');
+      popup.classList.remove('is-fixed');
       toggle.setAttribute('aria-expanded', 'false');
       search.setAttribute('aria-expanded', 'false');
       search.removeAttribute('aria-activedescendant');
       active = -1;
+    };
+    const positionForViewport = () => {
+      if (popup.hidden || window.innerWidth > 700) return;
+      const rect = toggle.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const viewportTop = viewport?.offsetTop ?? 0;
+      const viewportBottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+      const gap = 5;
+      const below = Math.max(0, viewportBottom - rect.bottom - gap);
+      const above = Math.max(0, rect.top - viewportTop - gap);
+      const showBelow = below >= above;
+      const maxHeight = Math.max(100, Math.min(250, showBelow ? below : above));
+      const width = Math.min(365, window.innerWidth - 36);
+      popup.classList.add('is-fixed');
+      popup.style.left = String(Math.max(18, Math.min(rect.left, window.innerWidth - width - 18))) + 'px';
+      popup.style.width = String(width) + 'px';
+      popup.style.top = String(showBelow ? rect.bottom + gap : Math.max(viewportTop, rect.top - gap - Math.min(250, above))) + 'px';
+      popup.style.maxHeight = String(maxHeight) + 'px';
+      list.style.maxHeight = String(Math.max(70, maxHeight - 61)) + 'px';
     };
     const highlight = index => {
       active = index;
@@ -57,14 +82,14 @@ import { countries } from '../lib/countries';
         option.scrollIntoView({ block: 'nearest' });
       } else search.removeAttribute('aria-activedescendant');
     };
-    const choose = item => {
+    const choose = (item, focusNumber = true) => {
       selected = item;
       callingCode.value = item.callingCode || '';
       currentFlag.className = `phone-current-flag fi fi-${item.code.toLowerCase()}`;
       toggle.setAttribute('aria-label', `${item.name} ${item.callingCode}`);
       search.value = '';
       close();
-      numberInput.focus();
+      if (focusNumber) numberInput.focus();
     };
     const render = query => {
       const term = normalize(query);
@@ -93,13 +118,14 @@ import { countries } from '../lib/countries';
       toggle.setAttribute('aria-expanded', 'true');
       search.setAttribute('aria-expanded', 'true');
       highlight(-1);
+      positionForViewport();
     };
     const syncCallingCode = () => {
       const value = country.disabled ? fallbackCountry.value : country.value.trim();
       const match = countries.find(item => normalize(item.name) === normalize(value));
       if (!match || match.name === previousCountry) return;
       previousCountry = match.name;
-      choose(match);
+      choose(match, false);
     };
     toggle.addEventListener('click', () => popup.hidden ? (render(''), search.focus()) : close());
     search.addEventListener('input', () => render(search.value));
@@ -117,8 +143,11 @@ import { countries } from '../lib/countries';
         toggle.focus();
       }
     });
-    list.addEventListener('pointerdown', event => event.preventDefault());
+    list.addEventListener('pointerdown', event => { if (event.pointerType === 'mouse') event.preventDefault(); });
     document.addEventListener('pointerdown', event => { if (!field.contains(event.target)) close(); });
+    window.visualViewport?.addEventListener('resize', positionForViewport);
+    window.visualViewport?.addEventListener('scroll', positionForViewport);
+    window.addEventListener('scroll', positionForViewport, { passive: true });
     country.addEventListener('input', syncCallingCode);
     country.addEventListener('change', syncCallingCode);
     fallbackCountry.addEventListener('change', syncCallingCode);
@@ -134,7 +163,7 @@ import { countries } from '../lib/countries';
     country.form?.addEventListener('rfq:restore-phone-country', event => {
       const code = event.detail;
       const match = countries.find(item => item.callingCode === code);
-      if (match) choose(match);
+      if (match) choose(match, false);
     });
     syncCallingCode();
   }
@@ -151,6 +180,7 @@ import { countries } from '../lib/countries';
   .phone-current-flag:not(.fi){background:linear-gradient(135deg,#e7ebef 0 48%,#cfd6de 48% 52%,#e7ebef 52%)}
   .phone-field :global(#phone-number){min-width:0;border-left-color:#c9d0d8}
   .phone-country-popup{position:absolute;top:calc(100% + 5px);left:0;z-index:12;width:min(365px,calc(100vw - 70px));border:1px solid var(--line);background:#fff;box-shadow:0 10px 25px rgba(16,31,53,.14);font-size:16px;font-weight:400}
+  .phone-country-popup.is-fixed{position:fixed;z-index:1000}
   .phone-country-search-wrap{position:relative;padding:9px;border-bottom:1px solid var(--line)}
   .phone-country-search-wrap>svg{position:absolute;left:21px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
   .phone-field :global(.phone-country-search){padding:9px 10px 9px 38px;width:100%;height:42px}

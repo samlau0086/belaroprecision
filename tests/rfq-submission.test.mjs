@@ -248,6 +248,17 @@ test(`RFQ ${rfqPath} 提交：${turnstileEnabled ? '启用' : '停用'}人机验
     await page.locator('.rfq-optional summary').click();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
     assert.ok((await page.locator('#phone-number').boundingBox()).width > 100);
+    await page.locator('#country-search').fill('United Stat');
+    await page.getByRole('option', { name: 'United States', exact: true }).click();
+    assert.equal(await page.locator('#country-search').inputValue(), 'United States');
+    assert.equal(await page.locator('#phone-country-code').inputValue(), '+1');
+    assert.equal(await page.locator('#country-search').evaluate(element => document.activeElement === element), true);
+    assert.equal(await page.locator('.country-popup').first().isVisible(), false);
+    await page.locator('.phone-country-toggle').click();
+    assert.equal(await page.locator('.phone-country-popup').evaluate(element => getComputedStyle(element).position), 'fixed');
+    await page.getByLabel('Search phone country or code').fill('United Kingdom');
+    await page.getByRole('option', { name: /United Kingdom \+44/ }).click();
+    assert.equal(await page.locator('#phone-country-code').inputValue(), '+44');
   } finally {
     await browser?.close();
     await new Promise(resolve => server.close(resolve));

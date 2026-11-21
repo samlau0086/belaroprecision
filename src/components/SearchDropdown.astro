@@ -60,6 +60,12 @@ const { name, label, placeholder, options, required = false, allowCustom = false
     };
     const close = () => {
       popup.hidden = true;
+      popup.style.removeProperty('top');
+      popup.style.removeProperty('left');
+      popup.style.removeProperty('width');
+      popup.style.removeProperty('max-height');
+      list.style.removeProperty('max-height');
+      popup.classList.remove('is-fixed');
       input.setAttribute('aria-expanded', 'false');
       toggle.setAttribute('aria-expanded', 'false');
       input.removeAttribute('aria-activedescendant');
@@ -79,9 +85,27 @@ const { name, label, placeholder, options, required = false, allowCustom = false
     const choose = (name: string) => {
       input.value = name;
       validate();
-      close();
       input.focus();
+      close();
       input.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    const positionForViewport = () => {
+      if (popup.hidden || window.innerWidth > 700) return;
+      const rect = combo.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const viewportTop = viewport?.offsetTop ?? 0;
+      const viewportBottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+      const gap = 5;
+      const below = Math.max(0, viewportBottom - rect.bottom - gap);
+      const above = Math.max(0, rect.top - viewportTop - gap);
+      const showBelow = below >= above;
+      const maxHeight = Math.max(100, Math.min(250, showBelow ? below : above));
+      popup.classList.add('is-fixed');
+      popup.style.left = String(rect.left) + 'px';
+      popup.style.width = String(rect.width) + 'px';
+      popup.style.top = String(showBelow ? rect.bottom + gap : Math.max(viewportTop, rect.top - gap - Math.min(250, above))) + 'px';
+      popup.style.maxHeight = String(maxHeight) + 'px';
+      list.style.maxHeight = String(Math.max(70, maxHeight - 2)) + 'px';
     };
     const open = (query = '') => {
       const term = normalize(query);
@@ -108,6 +132,7 @@ const { name, label, placeholder, options, required = false, allowCustom = false
       input.setAttribute('aria-expanded', 'true');
       toggle.setAttribute('aria-expanded', 'true');
       highlight(-1);
+      positionForViewport();
     };
     if (!allowCustom) input.value = select.value;
     select.hidden = true;
@@ -127,7 +152,7 @@ const { name, label, placeholder, options, required = false, allowCustom = false
       if (match) input.value = match.name;
     });
     // Keep focus on the combobox until an option's click has selected its value.
-    list.addEventListener('pointerdown', event => event.preventDefault());
+    list.addEventListener('pointerdown', event => { if (event.pointerType === 'mouse') event.preventDefault(); });
     toggle.addEventListener('pointerdown', event => event.preventDefault());
     toggle.addEventListener('click', () => {
       if (popup.hidden) { input.focus(); open(); } else close();
@@ -149,11 +174,16 @@ const { name, label, placeholder, options, required = false, allowCustom = false
       } else if (event.key === 'Tab') close();
     });
     field.addEventListener('focusout', event => {
-      if (!field.contains(event.relatedTarget as Node | null)) close();
+      if (!field.contains(event.relatedTarget as Node | null)) window.setTimeout(() => {
+        if (!field.contains(document.activeElement)) close();
+      }, 150);
     });
     document.addEventListener('pointerdown', event => {
       if (!field.contains(event.target as Node)) close();
     });
+    window.visualViewport?.addEventListener('resize', positionForViewport);
+    window.visualViewport?.addEventListener('scroll', positionForViewport);
+    window.addEventListener('scroll', positionForViewport, { passive: true });
     input.form?.addEventListener('reset', () => { input.value = ''; validate(); close(); });
   });
 </script>
@@ -167,6 +197,7 @@ const { name, label, placeholder, options, required = false, allowCustom = false
   .country-selected-flag{position:absolute;left:13px;top:50%;z-index:1;transform:translateY(-50%);width:20px;box-shadow:0 0 0 1px rgba(16,31,53,.12)}
   .country-toggle{position:absolute;right:1px;top:1px;bottom:1px;display:grid;place-items:center;width:38px;border:0;background:transparent;color:var(--muted);cursor:pointer}
   .country-popup{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:10;border:1px solid var(--line);background:#fff;box-shadow:0 10px 25px rgba(16,31,53,.12);font-size:16px;font-weight:400}
+  .country-popup.is-fixed{position:fixed;right:auto;z-index:1000}
   .country-popup :global(ul){list-style:none;margin:0;padding:5px 0;max-height:250px;overflow-y:auto;overscroll-behavior:contain}
   .country-popup :global(li){display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;overflow-wrap:anywhere}
   .country-popup :global(li .fi){width:20px;flex:0 0 20px;box-shadow:0 0 0 1px rgba(16,31,53,.12)}
