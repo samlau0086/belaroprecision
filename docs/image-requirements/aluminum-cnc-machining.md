@@ -3,7 +3,7 @@
 ## 使用位置与交付状态
 
 - 页面：`/materials/aluminum-cnc-machining/`。
-- 范围：Hero 与 01–09 全页面配图规划；仅 06 — Surface Finishing 的五张图片已接入，其余新增需求均为待生成、待审核、待接入，不代表页面已新增图位。
+- 范围：Hero 与 01–09 全页面配图规划；18 张图片均已接入，其中 13 张来自本次 `Aluminum/Webp` 交付，另保留原有 5 张表面处理图。牌号、FAQ 与 RFQ 不单独配图。
 - 用户提供的五张 AI 图片已接入页面，统一存放于 `src/assets/images/aluminum-finishes/`，由 Astro 生成响应式图片；页面已添加 AI 外观示意说明，并按实际工件更新 Alt。
 - 页面采用显式导入；替换图片保留下列文件名，修改文件名时同步修改页面导入。原图片仅移动并重命名，内容未重新压缩或修改。
 
@@ -19,6 +19,30 @@
 
 蓝色护盖的原文件名含 Anodized，与喷粉要求不一致。当前使用中性 blue-coated 命名及 Alt，仅展示蓝色覆盖外观，不从图片确认工艺；后续优先替换为更明确的哑光喷粉示意。下列提示词保留为重做或替换图片的目标要求，不代表现有图片的工艺已获验证。
 
+### 本次全页图片交付映射
+
+以下 13 张原图已从 `Aluminum/Webp` 移至 `src/assets/images/materials/aluminum/`，不改变图片内容。除能力图原文件名的双句点修正外，其余保留交付文件名。
+
+| 资源文件名 | 页面位置 |
+| --- | --- |
+| aluminum-cnc-machining-oem-housing-hero.webp | Hero |
+| aluminum-milled-equipment-bracket-features.webp | 01 加工能力；原文件名为 features..webp |
+| aluminum-cnc-mounting-bracket.webp | 03 Mounting brackets |
+| aluminum-cnc-locating-block.webp | 03 Machined blocks |
+| aluminum-cnc-instrument-housing.webp | 03 Plates & housings |
+| aluminum-cnc-stepped-shaft.webp | 03 Shafts & turned parts |
+| aluminum-cnc-milling-housing-pocket.webp | 04.1 CNC Milling |
+| aluminum-cnc-turning-flange-adapter.webp | 04.2 CNC Turning |
+| aluminum-three-axis-milling-mounting-plate.webp | 04.3 3-Axis Machining |
+| aluminum-indexed-milling-angled-bracket.webp | 04.4 3+2-Axis Milling |
+| aluminum-five-axis-contoured-mount.webp | 04.5 Simultaneous 5-Axis |
+| aluminum-housing-cmm-hole-inspection.webp | 05 质检 |
+| aluminum-oem-brackets-batch-packing.webp | 07 生产与订单 |
+
+实际画面优先于文件名及生成目标：车削图展示卡盘、同轴工件与外圆车刀；质检图为机内测头场景，页面 Alt 使用 `machine-mounted dimensional probe`，不宣称 CMM；包装图展示六件框形壳体，Alt 使用 `housing frames`，不标为支架。3+2 图不能明确识别锁定转台，五轴图不能证明联动，分别以斜面加工与倾斜刀具可达性描述。为保持用户文件映射，这些文件名不再改动；将来替换时应同时核对内容和命名。
+
+页面使用 Astro `Image` 输出响应式 `srcset`、`sizes` 及明确尺寸；Hero 优先加载，其余懒加载。各展示区域说明 AI 示意属性，图片不能作为设备、订单或检验记录证明。以下提示词保留作重做目标，不是现有图片的事实描述。
+
 ## 统一视觉要求
 
 - Surface Finishing 共 5 张独立图片，每项一张；以具有明确装配用途、可加工结构的 OEM 铝合金工件为主体，不使用矩形材料块、测试样块或色板。下述工件是 AI 生图的设计方向，不代表已生产的客户产品。
@@ -32,7 +56,7 @@
 
 矩形材料样块，表面处理色板，金属原料，纯装饰雕塑，科幻机械，无法加工的封闭内腔，悬空结构，相互穿透的实体，变形孔洞，歪斜孔轴，随机密集孔，刀锋薄壁，无意义齿轮，熔化边缘，铸造砂眼，塑料质感，锈蚀，油污，手持，机床背景，工具道具，爆炸图，拼图，多件堆叠，尺寸线，文字，商标，水印，过曝，高反射遮盖纹理，重度景深模糊，裁断主体。
 
-## 全页新增图片计划（待生成）
+## 全页图片生成参考（已接入，保留替换目标）
 
 以下各项使用“本项提示词 + 本节拍摄规则 + 对应负面要求”作为完整生图输入。产品图沿用上方背景与照明；加工、质检、包装图允许对应设备、量具及托盘，不使用上方的“机床背景、工具道具、多件堆叠”禁用项。所有场景仍禁止文字、Logo、水印、虚构证书、尺寸读数和客户标识。
 
@@ -40,7 +64,7 @@
 - 其余：4:3，1600×1200px；工艺图看清夹具、工件与刀具关系，局部刀具背景可虚化，关键结构不可虚化。WebP 建议单图不超过 250 KB，Hero 不超过 400 KB，以保留纹理为先。
 - 所有机加工图：工件牢固夹持，刀柄避开夹具，刀具真实接近可达特征；不出现手伸入加工区、火花、熔化金属或悬浮工件。静态图仅示意装夹和刀具姿态，不能证明加工精度、轴数联动或企业设备所有权。
 - 优先级：Hero、典型零件和工艺图优先生成，其次能力、质检与生产图。各图独立生成，不拼图；场景不伪装成实拍车间或客户项目。
-- 规划资源目录：`src/assets/images/materials/aluminum/`，尚未创建；不得移动已有 `aluminum-finishes/` 资源。下列英文 Alt 接入时须按画面复核，并配套明确的 AI 示意说明。
+- 资源目录：`src/assets/images/materials/aluminum/`，已创建并接入 13 张图片；已有 `aluminum-finishes/` 资源保持原位。下列英文 Alt 为生成目标参考，页面已按实际画面复核调整，并配套明确的 AI 示意说明。
 
 ### Hero — 铝合金 OEM 工件主图
 

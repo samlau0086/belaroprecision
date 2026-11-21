@@ -39,6 +39,29 @@ test('铝合金页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
     assert.equal(await page.locator('.grade-grid article').count(), 3);
     assert.equal(await page.locator('#rfq-form').count(), 1);
     assert.equal(await page.locator('#drawing-file').getAttribute('type'), 'file');
+    const imageMapping = [
+      ['.aluminum-hero', ['aluminum-cnc-machining-oem-housing-hero']],
+      ['#capabilities', ['aluminum-milled-equipment-bracket-features']],
+      ['#components', ['aluminum-cnc-mounting-bracket', 'aluminum-cnc-locating-block', 'aluminum-cnc-instrument-housing', 'aluminum-cnc-stepped-shaft']],
+      ['#processes', ['aluminum-cnc-milling-housing-pocket', 'aluminum-cnc-turning-flange-adapter', 'aluminum-three-axis-milling-mounting-plate', 'aluminum-indexed-milling-angled-bracket', 'aluminum-five-axis-contoured-mount']],
+      ['#quality', ['aluminum-housing-cmm-hole-inspection']],
+      ['#production', ['aluminum-oem-brackets-batch-packing']],
+    ];
+    for (const [selector, filenames] of imageMapping) {
+      assert.equal(await page.locator(`${selector} img`).count(), filenames.length);
+      for (const [index, filename] of filenames.entries()) {
+        const img = page.locator(`${selector} img`).nth(index);
+        assert.ok((await img.getAttribute('src')).includes(filename), filename);
+        assert.match(await img.getAttribute('alt'), /^AI illustration/);
+        assert.ok(await img.getAttribute('srcset'));
+        assert.ok(await img.getAttribute('sizes'));
+        assert.equal(await img.getAttribute('loading'), selector === '.aluminum-hero' ? 'eager' : 'lazy');
+      }
+    }
+    assert.match(await page.locator('#processes article').nth(1).innerText(), /CNC Turning/);
+    assert.match(await page.locator('#processes article').nth(1).locator('img').getAttribute('alt'), /lathe chuck.*turning tool/);
+    assert.match(await page.locator('#quality img').getAttribute('alt'), /machine-mounted dimensional probe/);
+    assert.match(await page.locator('#production img').getAttribute('alt'), /housing frames/);
     assert.match(await page.locator('#finishing').innerText(), /supplier availability/);
     assert.deepEqual(await page.locator('.finish-grid h3').allTextContents(), ['As-Machined', 'Bead Blasting', 'Clear Anodizing', 'Hard Anodizing', 'Powder Coating']);
     assert.equal(await page.locator('.finish-grid article').count(), 5);
@@ -65,7 +88,13 @@ test('铝合金页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
       await page.goto(`${base}${path}`);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 横向溢出`);
       await page.locator('main img').evaluateAll(nodes => Promise.all(nodes.map(node => { node.loading = 'eager'; return node.decode(); })));
-      assert.equal(await page.locator('main img:not(.finish-grid img)').count(), 6);
+      assert.equal(await page.locator('main img:not(.finish-grid img)').count(), 13);
+      assert.equal(await page.locator('main img').count(), 18);
+      assert.equal(await page.locator('main img:not(.hero-photo)').evaluateAll(nodes => nodes.every(node => {
+        const rect = node.getBoundingClientRect();
+        const parent = node.parentElement.getBoundingClientRect();
+        return rect.width > 0 && rect.left >= parent.left - 1 && rect.right <= parent.right + 1;
+      })), true, `${width}px 图片不应超出容器`);
       if (width > 1100) {
         const brand = await page.locator('.site-header .brand').boundingBox();
         const nav = await page.locator('.desktop-nav').boundingBox();
@@ -96,6 +125,8 @@ test('铝合金页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
         await page.locator('main img').evaluateAll(nodes => Promise.all(nodes.map(node => { node.loading = 'eager'; return node.decode(); })));
         await page.screenshot({ path: join(screenshots, `aluminum-${width}.png`), fullPage: true });
         await page.locator('#finishing').screenshot({ path: join(screenshots, `finishing-${width}.png`) });
+        await page.locator('#processes').screenshot({ path: join(screenshots, `processes-${width}.png`) });
+        await page.locator('.aluminum-hero').screenshot({ path: join(screenshots, `hero-${width}.png`) });
       }
     }
     const staticPage = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 390, height: 900 } });

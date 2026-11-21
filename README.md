@@ -150,14 +150,18 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 
 | 材料页 | 图片需求文档 | 图位数 |
 | --- | --- | --- |
-| Aluminum | [aluminum-cnc-machining.md](docs/image-requirements/aluminum-cnc-machining.md) | 18（含已接入的 5 张表面处理图） |
+| Aluminum | [aluminum-cnc-machining.md](docs/image-requirements/aluminum-cnc-machining.md) | 18（全部已接入） |
 | Stainless Steel | [stainless-steel-cnc-machining.md](docs/image-requirements/stainless-steel-cnc-machining.md) | 16 |
 | Brass | [brass-cnc-machining.md](docs/image-requirements/brass-cnc-machining.md) | 14 |
 | Carbon & Alloy Steel | [carbon-alloy-steel-cnc-machining.md](docs/image-requirements/carbon-alloy-steel-cnc-machining.md) | 15 |
 | Titanium | [titanium-cnc-machining.md](docs/image-requirements/titanium-cnc-machining.md) | 13 |
 | Engineering Plastics | [engineering-plastics-cnc-machining.md](docs/image-requirements/engineering-plastics-cnc-machining.md) | 16 |
 
-共 92 个图位，其中 87 项为待生成、待审核、待接入需求。本次未生成新图片、未创建规划中的资源目录，也未更改页面模板或新增页面图位；铝材已有五图及其文件映射保持不变。文档覆盖 Hero、加工能力、典型零件、各 CNC 工艺、质检、相关表面处理和生产包装，提供具体工件提示词、英文 SEO 文件名、Alt、比例与验收要求。材料牌号不通过外观区分，FAQ 与 RFQ 默认不增加装饰图。
+共 92 个图位，其中铝材 18 张已接入，其余材料 74 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 13 张 WebP 从 `Aluminum/Webp` 移至 `src/assets/images/materials/aluminum/`，用于铝材 Hero、能力、四种典型零件、五种加工工艺、质检及生产包装；已有五张表面处理图保持原位。本次未生成图片，仅调整铝材页及其测试。能力图文件名的 `features..webp` 修正为 `features.webp`，其余保留原名；图片内容不变，Astro 输出响应式图片，Hero 优先加载、正文懒加载。车削图对应卡盘与车刀；质检和包装 Alt 按实际画面标注机内测头及框形壳体，不因原文件名宣称 CMM 或支架。
+
+文档覆盖 Hero、加工能力、典型零件、各 CNC 工艺、质检、相关表面处理和生产包装，提供具体工件提示词、英文 SEO 文件名、Alt、比例与验收要求。铝材文档记录交付映射与实际画面偏差，原提示词保留用于后续替换。材料牌号不通过外观区分，FAQ 与 RFQ 默认不增加装饰图。
+
+本次图片接入验证：`npm run build` 通过，生成 21 页；`node --test tests/aluminum-cnc-machining.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs` 三项全部通过，覆盖 18 张图片映射、响应式属性、解码、320–1920px 十种宽度、菜单、SEO、FAQ 及询价定位。新增图注字号已按全站标准修正为 16px。已复核 390px 与 1440px 截图，本地开发路由返回 HTTP 200；未部署、未提交真实询盘。项目无独立类型检查或 ESLint 脚本，本次未执行这两项。
 
 内容按材料差异编写：黄铜强调螺纹与密封边，钢材增加热处理工序与硬度检验语境，钛材强调可达性、支承和资质边界，塑料区分夹持、调湿与光学验收。所有生成图仅作明确标注的 AI 示意；不能证明实际产能、设备资产、牌号、精度、认证或处理性能。候选镀层及指定表面处理须按订单确认后才能采用相应描述。
 
