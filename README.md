@@ -130,7 +130,9 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 
 四种材料分别生成独立静态页面。`src/data/material-pages.ts` 定义类型化英文内容与六个材料导航入口，`src/components/MaterialPage.astro` 复用页面布局、章节导航、FAQ 和现有 RFQ，`src/pages/materials/[material]/index.astro` 通过 `getStaticPaths()` 生成四条独立路由。原铝合金与不锈钢页面保持独立，不做无关重构。
 
-章节根据材料调整：黄铜先确认含铅与接口要求；钢材单列热处理顺序与硬度；钛材强调追溯、关键几何与资质边界；塑料先评审使用环境，再说明具体牌号、调湿与尺寸稳定性，不套用金属镀层章节。所有材料、外协、检测与证书要求须按项目确认，不宣称库存、固定精度、交期或特殊行业资质。图片沿用现有设备与检测语境图，不作为具体材料实物或客户案例的证据。
+四页统一采用 Hero 与 01–09 章节：加工能力、材料牌号、典型零件、CNC 加工工艺、公差与质量控制、表面处理、生产与订单、FAQ、图纸 RFQ。章节顺序一致，内容按材料区分：黄铜强调含铅、螺纹密封与镀层后尺寸；钢材在加工工艺中说明热处理顺序，在质检中说明硬度；钛材强调追溯、薄壁与资质边界；塑料在加工能力中评审使用环境，在质检中说明调湿、尺寸稳定性与功能配合，表面处理不套用金属镀层要求。所有材料、外协、检测与证书要求须按项目确认，不宣称库存、固定精度、交期或特殊行业资质。图片沿用现有设备与检测语境图，不作为具体材料实物或客户案例的证据。
+
+2026 年 11 月 21 日统一结构调整验证：`npm run build` 通过，生成 21 页；执行 `node --test tests/material-pages.test.mjs tests/rfq-submission.test.mjs tests/aluminum-cnc-machining.test.mjs tests/stainless-steel-cnc-machining.test.mjs tests/site-typography.test.mjs`，20 项全部通过。新增四页九章节顺序、标题与 01–09 编号断言，覆盖 320–1920px 响应式、材料菜单、FAQ、SEO、内链和页内询价；复核四种材料的桌面或手机截图，并验证共享 RFQ 的模拟提交。未部署、未提交真实询盘；没有新增依赖、环境变量或后台配置。
 
 未新增依赖、后台字段或环境变量。运行 `npm run build` 后，可执行 `node --test tests/material-pages.test.mjs tests/rfq-submission.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs`，覆盖四页内容差异、SEO、内链、响应式、材料菜单、FAQ、询价定位与模拟后台提交。浏览器和后台验证边界仍遵循第 10 节，不替代生产收件或实际制造能力核验。
 

@@ -7,10 +7,10 @@ import { join } from 'node:path';
 import { chromium } from 'playwright';
 
 const materials = [
-  ['brass', 'Brass', /leaded free-cutting brass/, /Plating, Appearance/],
-  ['carbon-alloy-steel', 'Carbon & Alloy Steel', /1018/, /Plan Machining Around Heat Treatment/],
+  ['brass', 'Brass', /leaded free-cutting brass/, /Burrs & sealing edges/],
+  ['carbon-alloy-steel', 'Carbon & Alloy Steel', /1018/, /Heat-treatment sequence/],
   ['titanium', 'Titanium', /Grade 5/, /does not claim aerospace certification/],
-  ['engineering-plastics', 'Engineering Plastics', /POM/, /Dimensional Stability & Functional Tolerances/],
+  ['engineering-plastics', 'Engineering Plastics', /POM/, /conditioning state/],
 ];
 
 test('四种材料独立页面：差异内容、SEO、菜单、响应式、FAQ 与 RFQ', async () => {
@@ -44,7 +44,21 @@ test('四种材料独立页面：差异内容、SEO、菜单、响应式、FAQ �
       assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 80);
       assert.match(await page.locator('main').innerText(), grade);
       assert.match(await page.locator('main').innerText(), difference);
-      assert.equal(await page.locator('main h2').count(), 8);
+      assert.deepEqual(await page.locator('main h2').allTextContents(), [
+        `${name} Machining Capabilities`, `${name} Grades`, `Typical ${name} Components`,
+        'CNC Machining Processes', 'Tolerances & Quality Control', 'Surface Finishing',
+        'Production & Orders', 'Frequently Asked Questions', 'Your drawing.Our technical review.',
+      ]);
+      const sections = page.locator('main > section:not(.material-hero)');
+      assert.deepEqual(await sections.evaluateAll(nodes => nodes.map(node => node.id)), [
+        'capabilities', 'grades', 'components', 'processes', 'quality', 'finishing', 'production', 'faq', 'quote',
+      ]);
+      assert.deepEqual(await sections.locator('.eyebrow').evaluateAll(nodes => nodes.map(node => node.textContent.slice(0, 2))),
+        ['01', '02', '03', '04', '05', '06', '07', '08', '09']);
+      assert.match(await page.locator('#processes').innerText(), /3-Axis/);
+      assert.match(await page.locator('#processes').innerText(), /3\+2-Axis/);
+      assert.match(await page.locator('#processes').innerText(), /Simultaneous 5-Axis/);
+      assert.match(await page.locator('#faq').innerText(), /surface finishing, price and lead time/);
       assert.equal(await page.locator('#rfq-form').count(), 1);
       assert.equal(await page.locator('#drawing-file').getAttribute('type'), 'file');
       assert.ok((await readFile('dist/sitemap.xml', 'utf8')).includes(path));
