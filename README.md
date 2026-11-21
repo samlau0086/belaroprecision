@@ -114,7 +114,7 @@ About 内容展示优化：应用方向改为分类标签，公司身份改为�
 
 2026 年 11 月 22 日表面处理调整：Surface Finishing 分为 As-Machined、Bead Blasting、Clear Anodizing、Hard Anodizing、Powder Coating 五项，描述包含外观、用途及需按订单确认的条件。配图需求和原文件映射见 [aluminum-cnc-machining.md](docs/image-requirements/aluminum-cnc-machining.md)。用户提供的五张 AI 工件图片已从 `Aluminum/Webp/` 重命名并移动至 `src/assets/images/aluminum-finishes/`，页面显式导入，通过 Astro Image 生成响应式 WebP 并懒加载；图片缺失会使构建报错，避免静默漏图。
 
-配图为安装支架、传感器壳体、法兰转接件、导向滑座及设备护盖，不使用材料样块。Alt 已按实际工件更新，页面明确标注 AI 外观示意，不作为实物或工艺验证。蓝色护盖原名含 Anodized，与 Powder Coating 不一致，故使用中性 `blue-coated-aluminum-equipment-cover.webp` 命名；当前仅示意蓝色覆盖外观，不能证明喷粉工艺，后续可替换为更明确的哑光喷粉图。
+配图为安装支架、传感器壳体、法兰转接件、导向滑座及设备护盖，不使用材料样块。Alt 按实际工件描述，不作为实物或工艺验证。2026 年 11 月 22 日按要求移除页面图注和 Alt 中的 AI 来源标注，保留按订单确认实际纹理、颜色及工艺条件的说明；图片来源记录仍保留在内部文档中。蓝色护盖原名含 Anodized，与 Powder Coating 不一致，故使用中性 `blue-coated-aluminum-equipment-cover.webp` 命名；当前仅示意蓝色覆盖外观，不能证明喷粉工艺，后续可替换为更明确的哑光喷粉图。
 
 页面回归测试覆盖五项标题顺序、图片文件名映射、Alt、响应式图片属性、320–1920px 十种宽度、图片解码、SEO、菜单、FAQ 和询价定位，并输出 390px 与 1440px 截图；使用 `npm run build` 和 `node --test tests/aluminum-cnc-machining.test.mjs` 验证。未部署。
 
@@ -163,7 +163,7 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 
 本次图片接入验证：`npm run build` 通过，生成 21 页；`node --test tests/aluminum-cnc-machining.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs` 三项全部通过，覆盖 18 张图片映射、响应式属性、解码、320–1920px 十种宽度、菜单、SEO、FAQ 及询价定位。新增图注字号已按全站标准修正为 16px。已复核 390px 与 1440px 截图，本地开发路由返回 HTTP 200；未部署、未提交真实询盘。项目无独立类型检查或 ESLint 脚本，本次未执行这两项。
 
-内容按材料差异编写：黄铜强调螺纹与密封边，钢材增加热处理工序与硬度检验语境，钛材强调可达性、支承和资质边界，塑料区分夹持、调湿与光学验收。所有生成图仅作明确标注的 AI 示意；不能证明实际产能、设备资产、牌号、精度、认证或处理性能。候选镀层及指定表面处理须按订单确认后才能采用相应描述。
+内容按材料差异编写：黄铜强调螺纹与密封边，钢材增加热处理工序与硬度检验语境，钛材强调可达性、支承和资质边界，塑料区分夹持、调湿与光学验收。所有生成图仅作视觉参考，来源在内部文档中记录，页面不再展示 AI 来源说明；不能证明实际产能、设备资产、牌号、精度、认证或处理性能。候选镀层及指定表面处理须按订单确认后才能采用相应描述。
 
 ### CNC Machining 广告落地页
 

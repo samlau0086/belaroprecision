@@ -52,7 +52,7 @@ test('铝合金页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
       for (const [index, filename] of filenames.entries()) {
         const img = page.locator(`${selector} img`).nth(index);
         assert.ok((await img.getAttribute('src')).includes(filename), filename);
-        assert.match(await img.getAttribute('alt'), /^AI illustration/);
+        assert.ok((await img.getAttribute('alt')).length > 20);
         assert.ok(await img.getAttribute('srcset'));
         assert.ok(await img.getAttribute('sizes'));
         assert.equal(await img.getAttribute('loading'), selector === '.aluminum-hero' ? 'eager' : 'lazy');
@@ -60,18 +60,19 @@ test('铝合金页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
     }
     assert.match(await page.locator('#processes article').nth(1).innerText(), /CNC Turning/);
     assert.match(await page.locator('#processes article').nth(1).locator('img').getAttribute('alt'), /lathe chuck.*turning tool/);
-    assert.match(await page.locator('#quality img').getAttribute('alt'), /machine-mounted dimensional probe/);
+    assert.match(await page.locator('#quality img').getAttribute('alt'), /machine-mounted dimensional probe/i);
     assert.match(await page.locator('#production img').getAttribute('alt'), /housing frames/);
     assert.match(await page.locator('#finishing').innerText(), /supplier availability/);
     assert.deepEqual(await page.locator('.finish-grid h3').allTextContents(), ['As-Machined', 'Bead Blasting', 'Clear Anodizing', 'Hard Anodizing', 'Powder Coating']);
     assert.equal(await page.locator('.finish-grid article').count(), 5);
     assert.equal(await page.locator('.finish-grid img').count(), 5);
-    assert.match(await page.locator('.finish-image-note').innerText(), /AI-generated appearance illustrations/);
+    assert.equal(await page.locator('.finish-image-note').innerText(), 'Actual texture and color are agreed per order.');
+    assert.doesNotMatch(await page.locator('main').innerText(), /AI[-\s]*generated|AI illustration/i);
     const finishFilenames = ['as-machined-aluminum-mounting-bracket', 'bead-blasted-aluminum-sensor-housing', 'clear-anodized-aluminum-flange-adapter', 'hard-anodized-aluminum-guide-carriage', 'blue-coated-aluminum-equipment-cover'];
     for (const [index, filename] of finishFilenames.entries()) {
       const img = page.locator('.finish-grid img').nth(index);
       assert.ok((await img.getAttribute('src')).includes(filename));
-      assert.match(await img.getAttribute('alt'), /^AI illustration/);
+      assert.ok((await img.getAttribute('alt')).length > 20);
       assert.ok(await img.getAttribute('srcset'));
       assert.equal(await img.getAttribute('loading'), 'lazy');
     }
