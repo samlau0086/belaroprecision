@@ -40,6 +40,18 @@ test('铝合金页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
     assert.equal(await page.locator('#rfq-form').count(), 1);
     assert.equal(await page.locator('#drawing-file').getAttribute('type'), 'file');
     assert.match(await page.locator('#finishing').innerText(), /supplier availability/);
+    assert.deepEqual(await page.locator('.finish-grid h3').allTextContents(), ['As-Machined', 'Bead Blasting', 'Clear Anodizing', 'Hard Anodizing', 'Powder Coating']);
+    assert.equal(await page.locator('.finish-grid article').count(), 5);
+    assert.equal(await page.locator('.finish-grid img').count(), 5);
+    assert.match(await page.locator('.finish-image-note').innerText(), /AI-generated appearance illustrations/);
+    const finishFilenames = ['as-machined-aluminum-mounting-bracket', 'bead-blasted-aluminum-sensor-housing', 'clear-anodized-aluminum-flange-adapter', 'hard-anodized-aluminum-guide-carriage', 'blue-coated-aluminum-equipment-cover'];
+    for (const [index, filename] of finishFilenames.entries()) {
+      const img = page.locator('.finish-grid img').nth(index);
+      assert.ok((await img.getAttribute('src')).includes(filename));
+      assert.match(await img.getAttribute('alt'), /^AI illustration/);
+      assert.ok(await img.getAttribute('srcset'));
+      assert.equal(await img.getAttribute('loading'), 'lazy');
+    }
     assert.match(await readFile('dist/sitemap.xml', 'utf8'), /\/materials\/aluminum-cnc-machining\//);
     const links = await page.locator('main a').evaluateAll(nodes => [...new Set(nodes.map(node => node.href))]);
     for (const href of links) {
@@ -53,7 +65,7 @@ test('铝合金页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
       await page.goto(`${base}${path}`);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 横向溢出`);
       await page.locator('main img').evaluateAll(nodes => Promise.all(nodes.map(node => { node.loading = 'eager'; return node.decode(); })));
-      assert.equal(await page.locator('main img').count(), 6);
+      assert.equal(await page.locator('main img:not(.finish-grid img)').count(), 6);
       if (width > 1100) {
         const brand = await page.locator('.site-header .brand').boundingBox();
         const nav = await page.locator('.desktop-nav').boundingBox();
@@ -83,6 +95,7 @@ test('铝合金页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
         await page.goto(`${base}${path}`);
         await page.locator('main img').evaluateAll(nodes => Promise.all(nodes.map(node => { node.loading = 'eager'; return node.decode(); })));
         await page.screenshot({ path: join(screenshots, `aluminum-${width}.png`), fullPage: true });
+        await page.locator('#finishing').screenshot({ path: join(screenshots, `finishing-${width}.png`) });
       }
     }
     const staticPage = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 390, height: 900 } });

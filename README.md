@@ -112,6 +112,12 @@ About 内容展示优化：应用方向改为分类标签，公司身份改为�
 
 ### Aluminum CNC Machining 材料页
 
+2026 年 11 月 22 日表面处理调整：Surface Finishing 分为 As-Machined、Bead Blasting、Clear Anodizing、Hard Anodizing、Powder Coating 五项，描述包含外观、用途及需按订单确认的条件。配图需求和原文件映射见 [aluminum-cnc-machining.md](docs/image-requirements/aluminum-cnc-machining.md)。用户提供的五张 AI 工件图片已从 `Aluminum/Webp/` 重命名并移动至 `src/assets/images/aluminum-finishes/`，页面显式导入，通过 Astro Image 生成响应式 WebP 并懒加载；图片缺失会使构建报错，避免静默漏图。
+
+配图为安装支架、传感器壳体、法兰转接件、导向滑座及设备护盖，不使用材料样块。Alt 已按实际工件更新，页面明确标注 AI 外观示意，不作为实物或工艺验证。蓝色护盖原名含 Anodized，与 Powder Coating 不一致，故使用中性 `blue-coated-aluminum-equipment-cover.webp` 命名；当前仅示意蓝色覆盖外观，不能证明喷粉工艺，后续可替换为更明确的哑光喷粉图。
+
+页面回归测试覆盖五项标题顺序、图片文件名映射、Alt、响应式图片属性、320–1920px 十种宽度、图片解码、SEO、菜单、FAQ 和询价定位，并输出 390px 与 1440px 截图；使用 `npm run build` 和 `node --test tests/aluminum-cnc-machining.test.mjs` 验证。未部署。
+
 `/materials/aluminum-cnc-machining/` 按九个章节组织英文内容，使用现有本地图片、Astro Image 优化、共享导航及 `RfqForm.astro`，报价按钮指向页内 `#rfq-form`。Materials 导航分组现提供 Aluminum、Stainless Steel、Brass、Carbon & Alloy Steel、Titanium 与 Engineering Plastics 六个子项，分组链接仍直接进入铝合金页；未新增空的材料总览页。新路由由既有构建流程自动纳入 sitemap 与 Agent Markdown。
 
 6061、6082、7075 沿用现有询价选项，仅作为待评审牌号，不宣称实时库存或保证可采购。材料状态、加工适用性、公差、检验文件与交期按项目确认；Anodizing、bead blasting、polishing 作为外协评审请求，不承诺默认供应或自有设备。代表性零件图片不证明具体材质或客户案例。上传字段、20 MB 单文件限制和后台映射沿用现有询价流程，没有新增依赖、环境变量或后台配置。浏览器回归命令为 `node --test tests/aluminum-cnc-machining.test.mjs`，须先执行 `npm run build`；浏览器运行环境仍遵循第 10 节现有说明。
@@ -137,6 +143,23 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 未新增依赖、后台字段或环境变量。运行 `npm run build` 后，可执行 `node --test tests/material-pages.test.mjs tests/rfq-submission.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs`，覆盖四页内容差异、SEO、内链、响应式、材料菜单、FAQ、询价定位与模拟后台提交。浏览器和后台验证边界仍遵循第 10 节，不替代生产收件或实际制造能力核验。
 
 2026 年 11 月 21 日本地验证：`npm run build` 通过，生成 21 页；执行 `node --test tests/material-pages.test.mjs tests/rfq-submission.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs tests/aluminum-cnc-machining.test.mjs tests/stainless-steel-cnc-machining.test.mjs tests/agent-discovery.test.mjs tests/agent-markdown.test.mjs`，25 项通过、0 项失败，1 项真实 Nginx 测试因未配置二进制而跳过。四个新页覆盖 320–1920px 十种宽度、图片解码、独立内容、内链与锚点、SEO、六项材料菜单、FAQ、无脚本回退与页内 RFQ；模拟提交覆盖启用及停用 Turnstile、附件、异常和防重复。已复核桌面与手机截图，四条本地开发路由均返回 HTTP 200，`git diff --check` 通过。项目未配置独立类型检查或 ESLint 脚本，因此未执行；未部署、提交真实询盘或核验制造资质。
+
+### 六个材料页 AI 配图需求
+
+2026 年 11 月 22 日补齐全页配图规划，按页面 slug 分别保存，供后续 AI 生图、审核及接入使用：
+
+| 材料页 | 图片需求文档 | 图位数 |
+| --- | --- | --- |
+| Aluminum | [aluminum-cnc-machining.md](docs/image-requirements/aluminum-cnc-machining.md) | 18（含已接入的 5 张表面处理图） |
+| Stainless Steel | [stainless-steel-cnc-machining.md](docs/image-requirements/stainless-steel-cnc-machining.md) | 16 |
+| Brass | [brass-cnc-machining.md](docs/image-requirements/brass-cnc-machining.md) | 14 |
+| Carbon & Alloy Steel | [carbon-alloy-steel-cnc-machining.md](docs/image-requirements/carbon-alloy-steel-cnc-machining.md) | 15 |
+| Titanium | [titanium-cnc-machining.md](docs/image-requirements/titanium-cnc-machining.md) | 13 |
+| Engineering Plastics | [engineering-plastics-cnc-machining.md](docs/image-requirements/engineering-plastics-cnc-machining.md) | 16 |
+
+共 92 个图位，其中 87 项为待生成、待审核、待接入需求。本次未生成新图片、未创建规划中的资源目录，也未更改页面模板或新增页面图位；铝材已有五图及其文件映射保持不变。文档覆盖 Hero、加工能力、典型零件、各 CNC 工艺、质检、相关表面处理和生产包装，提供具体工件提示词、英文 SEO 文件名、Alt、比例与验收要求。材料牌号不通过外观区分，FAQ 与 RFQ 默认不增加装饰图。
+
+内容按材料差异编写：黄铜强调螺纹与密封边，钢材增加热处理工序与硬度检验语境，钛材强调可达性、支承和资质边界，塑料区分夹持、调湿与光学验收。所有生成图仅作明确标注的 AI 示意；不能证明实际产能、设备资产、牌号、精度、认证或处理性能。候选镀层及指定表面处理须按订单确认后才能采用相应描述。
 
 ### CNC Machining 广告落地页
 
