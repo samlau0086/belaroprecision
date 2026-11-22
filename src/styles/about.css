@@ -1,4 +1,24 @@
 /* About 内容区：全局导入并以页面类限定，避免影响其他页面。 */
+.about-page .about-hero{position:relative;isolation:isolate;padding:32px 0 56px;min-height:570px;display:flex;align-items:center;background:#18282c}
+.about-page .about-hero-media{position:absolute;inset:0;z-index:-2}
+.about-page .about-hero-media img{display:block;width:100%;max-width:100%;height:100%;object-fit:cover;object-position:center}
+.about-page .about-hero::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(5,16,21,.94),rgba(5,16,21,.8) 40%,rgba(5,16,21,.2))}
+.about-page .about-hero-grid{display:block;max-width:760px}
+.about-page .about-hero h1{font-size:56px;letter-spacing:0}
+.about-page .about-hero p{max-width:660px}
+.about-page .about-profile-band{padding:36px 0;border-bottom:1px solid var(--line)}
+.about-page .company-profile{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.8fr);gap:48px;border:0;padding:0;background:none;color:var(--ink)}
+.about-page .company-profile h2{font-size:28px;line-height:1.25;letter-spacing:0;margin:12px 0 18px}
+.about-page .company-profile .profile-label,.about-page .company-profile dt,.about-page .company-profile dd{font-size:16px}
+.about-page .company-profile dt{margin-bottom:3px}
+.about-page .company-profile dd{font-weight:600;margin:0}
+.about-page .company-profile .profile-label,.about-page .company-profile dt{color:#526171;letter-spacing:0}
+.about-page .company-profile dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px;margin:0}
+.about-page .company-profile dl>div{border-top:1px solid var(--line);padding:12px 0 0}
+.about-page .about-body-image{margin-top:28px;min-width:0}
+.about-page .about-fixture-image,.about-page .about-handoff-image{max-width:640px;margin:36px auto 0}
+.about-page .about-body-image img,.about-page #workshop-team img{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:auto;object-fit:contain}
+@media(max-width:700px){.about-page .about-hero{padding:28px 0 40px;min-height:580px}.about-page .about-hero h1{font-size:38px}.about-page .about-hero-media img{object-position:68% center}.about-page .about-hero::before{background:linear-gradient(90deg,rgba(5,16,21,.9),rgba(5,16,21,.65))}.about-page .company-profile{grid-template-columns:minmax(0,1fr);gap:24px}.about-page .company-profile dl{grid-template-columns:minmax(0,1fr)}}
 .about-page .mini-label{font-size:16px;font-weight:700;letter-spacing:1.5px;color:#566477}
 .about-page #workshop-team .about-principles{margin-top:38px}
 .about-page .application-strip{margin-top:32px;padding:28px 0 0;border-top:1px solid #ccd5df;display:flex;align-items:center;justify-content:space-between;gap:24px}

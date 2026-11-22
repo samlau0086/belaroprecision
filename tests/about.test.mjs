@@ -12,12 +12,13 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
       const path = new URL(req.url, 'http://localhost').pathname;
       const file = path.endsWith('/') ? `${path}index.html` : path;
       const body = await readFile(new URL(`../dist${file}`, import.meta.url));
-      res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css' : file.endsWith('.js') ? 'text/javascript' : 'text/html');
+      const types = { css: 'text/css', js: 'text/javascript', webp: 'image/webp', png: 'image/png', svg: 'image/svg+xml' };
+      res.setHeader('Content-Type', types[file.split('.').at(-1)] || 'text/html');
       res.end(body);
     } catch { res.writeHead(404).end(); }
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const base = `http://127.0.0.1:${server.address().port}`;
+  const base = process.env.ABOUT_BASE_URL ?? `http://127.0.0.1:${server.address().port}`;
   let browser;
   try {
     browser = await chromium.launch({ headless: true });
@@ -27,7 +28,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     await page.route('**/*', route => route.request().url().startsWith(base) ? route.continue() : route.abort());
     await page.goto(`${base}/about/`);
     assert.match(await page.title(), /About Belaro Precision/);
-    assert.equal(await page.locator('h1').count(), 1);
+    assert.equal(await page.locator('main h1').count(), 1);
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://belaroprecision.com/about/');
     assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 50);
     assert.match(await page.locator('.company-profile').innerText(), /3-axis, 3\+2 & simultaneous 5-axis/);
@@ -41,6 +42,29 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.equal(await page.locator('#workshop-team article').count(), 3);
     assert.doesNotMatch(await page.locator('main').innerText(), /illustrative/i);
     assert.equal(await page.locator('#workshop-team img').count(), 5);
+    assert.equal(await page.locator('main img').count(), 10);
+    const imageMapping = [
+      ['.about-hero-media', 'about-verified-workshop-hero'],
+      ['#our-approach .about-drawing-image', 'home-drawing-led-component-review'],
+      ['#manufacturing-scope .about-fixture-image', 'about-indexed-milling-fixture'],
+      ['#supplier-coordination .about-handoff-image', 'quality-batch-identification'],
+      ['.about-quality .about-quality-image', 'quality-critical-dimension-check'],
+    ];
+    for (const [selector, filename] of imageMapping) {
+      const img = page.locator(`${selector} img`);
+      assert.equal(await img.count(), 1);
+      assert.ok((await img.getAttribute('src')).includes(filename));
+      assert.ok(await img.getAttribute('srcset'));
+      assert.ok(await img.getAttribute('sizes'));
+      assert.ok((await img.getAttribute('alt')).length > 20);
+      assert.doesNotMatch(await img.getAttribute('alt'), /verified|our factory/i);
+      assert.equal(await img.getAttribute('loading'), selector.includes('hero') ? 'eager' : 'lazy');
+    }
+    assert.equal(await page.locator('.about-hero-media img').getAttribute('fetchpriority'), 'high');
+    // 移除图片作用域标记，检验页面容器仍能保证等比显示。
+    await page.locator('main img').evaluateAll(nodes => nodes.forEach(node => {
+      for (const name of node.getAttributeNames()) if (name.startsWith('data-astro-cid-')) node.removeAttribute(name);
+    }));
     for (const image of await page.locator('#workshop-team img').all()) {
       await image.scrollIntoViewIfNeeded();
       await page.waitForFunction(node => node.complete && node.naturalWidth > 0, await image.elementHandle());
@@ -67,7 +91,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('main details').first().getAttribute('open'), '');
     const screenshots = await mkdtemp(join(tmpdir(), 'belaro-about-'));
-    for (const width of [320, 390, 700, 701, 900, 1024, 1100, 1101, 1440]) {
+    for (const width of [320, 390, 700, 701, 900, 1024, 1100, 1101, 1440, 1920, 2558]) {
       await page.setViewportSize({ width, height: 900 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 横向溢出`);
       for (const selector of ['.scope-grid', '.company-panel', '.contact-panel']) {
@@ -79,10 +103,39 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
       const contactIconSizes = await contactLabels.locator('svg').evaluateAll(nodes => nodes.map(node => { const { width, height } = node.getBoundingClientRect(); return { width, height }; }));
       assert.ok(contactIconSizes.every(size => size.width === 18 && size.height === 18), `${width}px 联系标签图标尺寸`);
       assert.notEqual(await page.locator('.scope-card').first().evaluate(node => getComputedStyle(node).backgroundColor), 'rgba(0, 0, 0, 0)');
-      const positions = await page.locator('.about-hero-grid > *').evaluateAll(nodes => nodes.map(node => { const { x, y } = node.getBoundingClientRect(); return { x, y }; }));
-      assert.ok(width <= 700 ? positions[0].x === positions[1].x && positions[1].y > positions[0].y : positions[1].x > positions[0].x, `${width}px 首屏列数`);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const hero = await page.locator('.about-hero').boundingBox();
+      assert.equal(await page.locator('.about-hero-grid').evaluate(node => getComputedStyle(node).display), 'block');
+      assert.equal(await page.locator('.about-hero h1').evaluate(node => getComputedStyle(node).fontSize), width <= 700 ? '38px' : '56px');
+      assert.equal(await page.locator('.company-profile').evaluate(node => getComputedStyle(node).backgroundColor), 'rgba(0, 0, 0, 0)');
+      const profile = await page.locator('.about-profile-band').boundingBox();
+      assert.ok(profile.y < 900, `${width}px 首屏露出企业概况`);
+      assert.ok(profile.y >= hero.y + hero.height - 1, '企业概况应在背景 Hero 之后');
+      const cta = await page.locator('.about-hero .button').boundingBox();
+      assert.ok(cta.y >= hero.y && cta.y + cta.height <= hero.y + hero.height, '报价按钮保留在 Hero 内');
+      for (const img of await page.locator('main img').all()) {
+        await img.scrollIntoViewIfNeeded();
+        await img.evaluate(node => node.decode());
+        const metrics = await img.evaluate(node => {
+          const r = node.getBoundingClientRect();
+          return { width: r.width, height: r.height, ratio: node.naturalWidth / node.naturalHeight, fit: getComputedStyle(node).objectFit };
+        });
+        assert.ok(metrics.width > 0 && metrics.height > 0);
+        if (await img.evaluate(node => !!node.closest('.about-hero-media'))) {
+          assert.equal(metrics.fit, 'cover');
+          assert.ok(Math.abs(metrics.width - hero.width) < 1 && Math.abs(metrics.height - hero.height) < 1, 'Hero 背景铺满');
+        } else {
+          assert.equal(metrics.fit, 'contain');
+          assert.ok(Math.abs(metrics.height - metrics.width / metrics.ratio) < 1, `${width}px 正文保持原始比例`);
+        }
+      }
+      for (const selector of ['.about-fixture-image', '.about-handoff-image']) {
+        assert.ok((await page.locator(selector).boundingBox()).width <= 640);
+      }
       if ([390, 1440].includes(width)) {
+        await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path: join(screenshots, `about-${width}.png`), fullPage: true });
+        await page.screenshot({ path: join(screenshots, `hero-${width}.png`) });
         await page.locator('#workshop-team').screenshot({ path: join(screenshots, `workshop-${width}.png`) });
       }
     }

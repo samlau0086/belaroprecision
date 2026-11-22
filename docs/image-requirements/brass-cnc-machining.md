@@ -2,8 +2,8 @@
 
 ## 范围与使用方法
 
-- 页面：`/materials/brass-cnc-machining/`；依据 `src/data/material-pages.ts` 当前内容，共 14 个图位，全部待生成、待审核、待接入。本次不修改共享模板或页面。
-- 建议资源目录：`src/assets/images/materials/brass/`，尚未创建。每项“提示词 + 统一规则 + 负面要求”组成完整生图输入；英文 Alt 接入时随实际图像核对。
+- 页面：`/materials/brass-cnc-machining/`；依据 `src/data/material-pages.ts` 当前内容，共 14 个图位，已完成素材接入。
+- 素材目录：`src/assets/images/materials/brass/`；用户原始素材保留在项目根目录 `Brass CNC Machining/`，页面使用独立副本。
 - 所有工件为 AI 外观与工艺构型示意，不是实拍客户产品或库存，展示处须明确 AI 示意。黄铜颜色不能证明 C360、含铅量、无铅合规、饮用水适用性、导电性或气密性。
 
 ## 统一规则
@@ -110,4 +110,4 @@
 
 ## 验收与接入
 
-核对 14 个图位与文件名、Alt 对应；重点检查螺纹、孔轴、密封边、黄铜色及夹持合理性。核实 AI 来源和使用权限，上线明确示意属性，不推断含铅量、气密性或涂层性能。接入时使用 Astro 响应式图片并检查桌面/移动裁切，运行 `npm run build` 和适用材料页测试；本轮仅编写需求，未执行图片接入检查。
+核对 14 个图位与文件名、Alt 对应；重点检查螺纹、孔轴、密封边、黄铜色及夹持合理性。核实 AI 来源和使用权限，上线明确示意属性，不推断含铅量、气密性或涂层性能。页面已使用 Astro `Image` 输出响应式图片：Hero 作为背景图并使用 `object-fit: cover`，正文图片保持自然比例并使用 `height: auto` / `object-fit: contain`，不拉伸。已执行 `npm run build`，构建通过；页面专属实现位于 `src/pages/materials/brass-cnc-machining/index.astro`。

@@ -110,6 +110,10 @@ Agent 可发现性上线验收：发布后通过正式域名检查 `/robots.txt`
 
 About 内容展示优化：应用方向改为分类标签，公司身份改为双栏信息卡，自有加工与外协范围采用深浅底色卡片，外协管理采用编号流程（桌面四列、平板两列、手机单列），联系方式采用引导区与信息卡双栏。新增 `src/styles/about.css`，样式限定在 `.about-page` 下，无新增依赖或交互脚本。
 
+2026 年 11 月 22 日 About 配图接入：用户 `About/` 目录中的两张新图复制到 `src/assets/images/pages/about/`；Hero 改为全幅等比裁切背景，企业概况移到其下方。正文新增装夹图及三张跨页复用图，原有五张车间、设备和协作图保留，正文统一按原始比例完整展示。Astro Image 提供响应式资源，Hero 优先加载、正文懒加载。规划的 11 个图位已接入 10 个，配套工艺共享壳体图仍未交付；来源与许可待企业确认，不能按 `verified` 文件名推定已核验实拍。位置和来源记录见 [About 图片需求](docs/image-requirements/about.md)。
+
+本次验证：`npm run build` 通过，生成 21 页；`node --test tests/about.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs` 三项通过。About 覆盖 320–2558px 的 11 种宽度、10 张图片解码与比例、背景铺满、概况区样式、链接、SEO、FAQ 和无脚本显示，390px 与 1440px 全页截图已复核；指定 `ABOUT_BASE_URL=http://127.0.0.1:4323` 的本地开发服务专项测试也通过。没有新增依赖或环境变量，未部署、未提交真实询盘；项目未配置独立类型检查及 ESLint 脚本，本次未执行。
+
 ### Aluminum CNC Machining 材料页
 
 2026 年 11 月 22 日表面处理调整：Surface Finishing 分为 As-Machined、Bead Blasting、Clear Anodizing、Hard Anodizing、Powder Coating 五项，描述包含外观、用途及需按订单确认的条件。配图需求和原文件映射见 [aluminum-cnc-machining.md](docs/image-requirements/aluminum-cnc-machining.md)。用户提供的五张 AI 工件图片已从 `Aluminum/Webp/` 重命名并移动至 `src/assets/images/aluminum-finishes/`，页面显式导入，通过 Astro Image 生成响应式 WebP 并懒加载；图片缺失会使构建报错，避免静默漏图。
@@ -159,7 +163,7 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 | Titanium | [titanium-cnc-machining.md](docs/image-requirements/titanium-cnc-machining.md) | 13 |
 | Engineering Plastics | [engineering-plastics-cnc-machining.md](docs/image-requirements/engineering-plastics-cnc-machining.md) | 16 |
 
-共 92 个图位，其中铝材 18 张、不锈钢 16 张已接入，其余材料 58 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 13 张 WebP 从 `Aluminum/Webp` 移至 `src/assets/images/materials/aluminum/`，用于铝材 Hero、能力、四种典型零件、五种加工工艺、质检及生产包装；已有五张表面处理图保持原位。铝材接入时未生成图片，仅调整铝材页及其测试。能力图文件名的 `features..webp` 修正为 `features.webp`，其余保留原名；图片内容不变，Astro 输出响应式图片，Hero 优先加载、正文懒加载。车削图对应卡盘与车刀；质检和包装 Alt 按实际画面标注机内测头及框形壳体，不因原文件名宣称 CMM 或支架。
+共 92 个图位，其中铝材 18 张、不锈钢 16 张、黄铜 14 张已接入，其余材料 44 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 Brass WebP 复制到 `src/assets/images/materials/brass/`，并新增 `src/pages/materials/brass-cnc-machining/index.astro`，用于黄铜 Hero、能力、三类典型零件、四种加工工艺、质检、三类表面处理和生产包装；Hero 作为背景图，正文使用 Astro 响应式图片并保持自然比例。图片仅作 AI 外观与工艺示意，不证明牌号、含铅量、无铅合规、气密性、实际设备或镀层能力。
 
 同日将 `Stainless Steel/` 的 16 张 WebP 移至 `src/assets/images/materials/stainless-steel/`，保留英文文件名及原始内容，分别用于不锈钢 Hero、能力、四类零件、五类加工工艺、质检、三种表面处理和生产包装。页面使用 Astro 响应式图片，工艺图采用图文列表，表面处理采用三列图文布局，手机端堆叠。CNC Turning 对应卡盘与车刀；质检 Alt 按实际顶尖支承和指示表描述，包装 Alt 按独立包裹的工件描述。钝化配图仅展示清洁接头，不将外观作为钝化证明。实际画面偏差与替换目标记录在对应需求文档。
 

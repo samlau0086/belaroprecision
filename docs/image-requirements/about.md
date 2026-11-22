@@ -4,7 +4,7 @@
 - 页面 slug：`about`
 - 扫描依据：[src/pages/about/index.astro](../../src/pages/about/index.astro)、[src/components/SecondaryProcessSupport.astro](../../src/components/SecondaryProcessSupport.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：配图规划。新增、替换和补充复用图位尚未制作或接入；保留项不代表已完成真实性核验。
+- 状态：已接入 10/11 个图位（2 张新增、5 张保留、3 张复用）；第 11 项共享壳体图尚未交付。接入不代表已完成真实性核验。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论
@@ -137,5 +137,23 @@ Hero 优先采集并核实企业现场全幅照片；保留企业概况文本。
 - 新图先审工件结构、夹持、刀具可达性及测量接触关系，再检查风格；不得据图确认精度、牌号、资质或制造能力。
 - 桌面和手机均检查裁切，完整保留关键工件、孔口及功能面；Hero 叠字需保持可读。报告按原始比例展示，不裁掉必要上下文。
 - Alt 按最终画面修订，不照搬文件名推断设备类型或工艺结果。保留来源和公开许可记录。
-- 本文仅为需求，不代表已完成图片制作、审核、前端布局或图片性能验收。
+- 图片接入与页面验证记录见下节；前端验收不替代来源、真实性及公开许可审核。
+
+## 5. 本次接入记录（2026 年 11 月 22 日）
+
+| 图位 | 实际资源与页面位置 |
+|---|---|
+| 01 | `About/about-verified-workshop-hero.webp` 复制到 `src/assets/images/pages/about/` 同名文件，作为全幅 Hero 背景；企业概况保留并移到 Hero 下方 |
+| 02–06 | 保留原有车间、设备、协作五张图，正文按原始比例完整显示 |
+| 07 | `About/about-indexed-milling-fixture.webp` 复制到 `src/assets/images/pages/about/` 同名文件，放在制造范围双栏之后 |
+| 08 | 直接导入首页 `src/assets/images/pages/home/home-drawing-led-component-review.webp`，放在 `#our-approach` 图纸评审内容旁 |
+| 09 | 复用 `src/assets/images/quality-batch-identification.webp`，放在外协交接四步之后 |
+| 10 | 复用 `src/assets/images/quality-critical-dimension-check.webp`，放在质量说明与质量页入口之后 |
+| 11 | `secondary-finished-housing-masking-detail.webp` 尚不存在，保持配套工艺正文，不用其他图片冒充 |
+
+两张新增图分别为 1672 × 941px、1448 × 1086px，原交付文件保留在 `About/`。Hero 使用 `object-fit: cover` 等比裁切铺满，正文使用自动高度与 `object-fit: contain`，避免拉伸。新增图使用 Astro Image 输出响应式 WebP，Hero 优先加载，正文懒加载；Alt 按实际画面描述。
+
+来源记录：新增图片由用户提供，本轮没有收到拍摄地点、日期、公开许可或真实性审核凭证。`verified` 文件名不构成实拍核验；图片不证明自有设备、现场身份、3+2 或联动五轴能力。原有及跨页复用素材沿用既有来源状态，仍需企业确认。
+
+验证记录：生产构建生成 21 页；About、公共导航、全站字号三项浏览器测试通过。About 专项覆盖 320–2558px 的 11 种宽度、10 张图片解码和等比显示、Hero 背景铺满、概况区样式、链接及无脚本行为；390px、1440px 全页与首屏截图已复核。现有本地开发服务的同一专项测试通过，未部署。
 
