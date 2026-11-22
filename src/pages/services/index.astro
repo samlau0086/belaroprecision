@@ -4,26 +4,58 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { Image } from 'astro:assets';
 import { images } from '../../data/images';
+import servicesHero from '../../assets/images/pages/services/services-cnc-part-families-hero.webp';
 ---
 
 <BaseLayout title="CNC Machining Capabilities" description="Explore Belaro Precision CNC machining and coordinated secondary process support for drawing-based OEM components.">
   <Header />
-  <main>
-    <section class="page-hero"><div class="container"><span class="eyebrow eyebrow-light">OUR CAPABILITIES</span><h1>Machining capability.<br/><em>Production focus.</em></h1><p>CNC machining and coordinated secondary process support for components manufactured to your engineering drawings.</p></div></section>
+  <main class="services-page">
+    <section class="page-hero services-hero">
+      <div class="services-hero-media"><Image src={servicesHero} alt="Machined mounting brackets with a stepped shaft and flanged bushing" widths={[480, 800, 1160, 1672]} sizes="100vw" loading="eager" fetchpriority="high" decoding="async" /></div>
+      <div class="services-hero-shade" aria-hidden="true"></div>
+      <div class="container"><span class="eyebrow eyebrow-light">OUR CAPABILITIES</span><h1>Machining capability.<br/><em>Production focus.</em></h1><p>CNC machining and coordinated secondary process support for components manufactured to your engineering drawings.</p></div>
+    </section>
     <section class="section"><div class="container">
       <div class="machining-overview"><h2>Custom CNC Machining</h2><p>Need a complete machining route? Explore milling, turning, coordinated finishing and drawing-based quotation in one place.</p><a class="button button-outline" href="/services/cnc-machining/">Explore CNC Machining <span aria-hidden="true">&#8594;</span></a></div>
       <div class="service-row" id="milling"><div class="service-image"><Image src={images['hero-cnc-milling']} alt="CNC milling machine cutting a metal component" widths={[480, 800, 1160]} sizes="(max-width: 700px) calc(100vw - 48px), 550px" loading="eager" decoding="async"/></div><div class="service-copy"><span class="eyebrow">01 / CNC MILLING</span><h2>Complex profiles.<br/><em>Controlled dimensions.</em></h2><p>3-axis, 3+2 positional and simultaneous 5-axis CNC milling for precision components used in industrial equipment and assemblies. Send your drawing so we can review feature access, material, tolerance and batch requirements.</p><ul class="check-list"><li>Machined plates, brackets and housings</li><li>3-axis, 3+2 positional and simultaneous 5-axis configurations</li><li>Drawing-based production review</li><li>Material and finish confirmed per project</li></ul><div class="milling-actions"><a class="button button-outline" href="/services/cnc-milling/">Explore CNC Milling <span aria-hidden="true">→</span></a><a class="button button-orange" href="/contact/?process=milling#rfq-form">Request a Milling Quote <span aria-hidden="true">↗</span></a></div></div></div>
       <div class="service-row service-row-reverse" id="turning"><div class="service-image"><Image src={images['hero-cnc-turning']} alt="Operator at a CNC turning machine" widths={[480, 800, 1160]} sizes="(max-width: 700px) calc(100vw - 48px), 550px" loading="lazy" decoding="async"/></div><div class="service-copy"><span class="eyebrow">02 / CNC TURNING</span><h2>Rotational parts.<br/><em>Made to drawing.</em></h2><p>Turning requirements can be reviewed for shafts, sleeves, bushings and other rotational components. Feasibility depends on dimensions, material, geometry and available process capability.</p><ul class="check-list"><li>Shafts and turned components</li><li>Sleeves, spacers and bushings</li><li>Threads and turned features, subject to review</li><li>Inspection criteria agreed before production</li></ul><div class="turning-actions"><a class="button button-outline" href="/services/cnc-turning/">Explore CNC Turning <span aria-hidden="true">→</span></a><a class="button button-orange" href="/contact/?process=turning#rfq-form">Request a Turning Quote <span aria-hidden="true">↗</span></a></div></div></div>
-      <div class="secondary-panel" id="secondary-processes"><span class="eyebrow">03 / SECONDARY PROCESSES</span><h2>Beyond machining.<br/><em>One coordinated requirement.</em></h2><p>The manufacturing ecosystem across Dongguan and Shenzhen gives Belaro access to flexible supplier support for grinding, heat treatment, surface finishing and other secondary processes required by your drawing.</p><div class="secondary-tags"><span>Grinding</span><span>Heat Treatment</span><span>Surface Finishing</span></div><a class="button button-outline" href="/services/secondary-processes/">Explore Secondary Processes <span aria-hidden="true">→</span></a></div>
-      <div class="production-panel" id="production"><span class="eyebrow eyebrow-light">04 / PRODUCTION SUPPORT</span><h2>Low-volume batches.<br/><em>Repeat-order mindset.</em></h2><p>Belaro is positioned for OEM component requirements where communication, drawing control and repeatability matter. Indicative batch quantities are around 20–500 pieces, subject to part complexity and production review.</p><a class="button button-white" href="/services/production/">Explore OEM production <span aria-hidden="true">→</span></a></div>
+      <div class="service-row" id="secondary-processes"><div class="service-image"><Image src={images['secondary-processes']} alt="Process montage showing grinding, anodizing, plating, heat treatment, blasting and polishing" widths={[480, 800, 1160]} sizes="(max-width: 700px) calc(100vw - 36px), 550px" loading="lazy" decoding="async" /></div><div class="service-copy"><span class="eyebrow">03 / SECONDARY PROCESSES</span><h2>Beyond machining.<br/><em>One coordinated requirement.</em></h2><p>The manufacturing ecosystem across Dongguan and Shenzhen gives Belaro access to flexible supplier support for grinding, heat treatment, surface finishing and other secondary processes required by your drawing.</p><div class="secondary-tags"><span>Grinding</span><span>Heat Treatment</span><span>Surface Finishing</span></div><a class="button button-outline" href="/services/secondary-processes/">Explore Secondary Processes <span aria-hidden="true">→</span></a></div></div>
+      <div class="service-row service-row-reverse" id="production"><div class="service-image"><Image src={images['production-oem']} alt="Batches of machined flanges, housings and sleeves on a workbench beside packing boxes" widths={[480, 800, 1160]} sizes="(max-width: 700px) calc(100vw - 36px), 550px" loading="lazy" decoding="async" /></div><div class="service-copy"><span class="eyebrow">04 / PRODUCTION SUPPORT</span><h2>Low-volume batches.<br/><em>Repeat-order mindset.</em></h2><p>Belaro is positioned for OEM component requirements where communication, drawing control and repeatability matter. Indicative batch quantities are around 20–500 pieces, subject to part complexity and production review.</p><a class="button button-outline" href="/services/production/">Explore OEM production <span aria-hidden="true">→</span></a></div></div>
     </div></section>
   </main>
   <Footer />
 </BaseLayout>
 
-<style>
-  .machining-overview{border-bottom:1px solid var(--line);padding-bottom:36px;margin-bottom:60px}.machining-overview h2{font-size:32px;letter-spacing:0}.machining-overview p{color:var(--muted);max-width:720px}
-  .milling-actions,.turning-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;width:100%;max-width:540px}
-  .secondary-panel{margin:90px 0;background:var(--soft);border-left:4px solid var(--orange);padding:55px 60px}.secondary-panel h2{font-size:44px;margin:18px 0}.secondary-panel h2 em{color:var(--orange);font-style:normal}.secondary-panel p{color:var(--muted);max-width:760px}.secondary-tags{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 30px}.secondary-tags span{background:#fff;border:1px solid var(--line);padding:8px 12px;font-size:16px;font-weight:600}
-  @media(max-width:700px){.secondary-panel{margin:70px 0;padding:38px 24px}.secondary-panel h2{font-size:35px}.milling-actions,.turning-actions{grid-template-columns:1fr}.milling-actions .button,.turning-actions .button{width:100%}}
+<style is:global>
+  /* 仅作用于本页，不依赖组件转发 Astro 作用域属性。背景等比裁切，正文完整显示。 */
+  .services-page .services-hero{position:relative;isolation:isolate;overflow:hidden;padding:0;min-height:560px;display:flex;align-items:center}
+  .services-page .services-hero:after{display:none}
+  .services-page .services-hero-media{position:absolute;inset:0;z-index:-2}
+  .services-page .services-hero-media img{display:block;width:100%;max-width:100%;height:100%;object-fit:cover;object-position:center}
+  .services-page .services-hero-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(9,23,42,.95),rgba(9,23,42,.82) 30%,rgba(9,23,42,.08) 65%,transparent)}
+  .services-page .services-hero .container{position:relative;padding-block:72px}
+  .services-page .services-hero h1{font-size:48px;line-height:1.15;max-width:470px;letter-spacing:0}
+  .services-page .services-hero p{max-width:390px}
+  .services-page .service-image,.services-page .service-copy{min-width:0}
+  .services-page .service-image img{display:block;width:100%;max-width:100%;height:auto;object-fit:contain}
+  .services-page .service-copy h2{letter-spacing:0}
+  .services-page .machining-overview{border-bottom:1px solid var(--line);padding-bottom:36px;margin-bottom:60px}
+  .services-page .machining-overview h2{font-size:32px;letter-spacing:0}
+  .services-page .machining-overview p{color:var(--muted);max-width:720px}
+  .services-page .milling-actions,.services-page .turning-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;width:100%;max-width:540px}
+  .services-page .secondary-tags{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 30px}
+  .services-page .secondary-tags span{background:var(--soft);border:1px solid var(--line);padding:8px 12px;font-size:16px;font-weight:600}
+  @media(max-width:1100px){
+    .services-page .services-hero h1{font-size:42px;max-width:410px}
+    .services-page .services-hero-shade{background:linear-gradient(90deg,rgba(9,23,42,.94),rgba(9,23,42,.72) 45%,rgba(9,23,42,.12))}
+  }
+  @media(max-width:700px){
+    .services-page .services-hero{min-height:620px;align-items:flex-start}
+    .services-page .services-hero-media img{object-position:64% center}
+    .services-page .services-hero-shade{background:linear-gradient(180deg,rgba(9,23,42,.94),rgba(9,23,42,.8) 46%,rgba(9,23,42,.12))}
+    .services-page .services-hero h1{font-size:36px}
+    .services-page .services-hero .container{padding-block:44px}
+    .services-page .milling-actions,.services-page .turning-actions{grid-template-columns:1fr}
+    .services-page .milling-actions .button,.services-page .turning-actions .button{width:100%}
+  }
 </style>

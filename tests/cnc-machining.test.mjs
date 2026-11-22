@@ -18,7 +18,7 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
     } catch { res.writeHead(404).end(); }
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const base = `http://127.0.0.1:${server.address().port}`;
+  const base = process.env.CNC_MACHINING_BASE_URL ?? `http://127.0.0.1:${server.address().port}`;
   const pathname = '/services/cnc-machining/';
   let browser;
   try {
@@ -30,8 +30,8 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`${base}${pathname}?gclid=Machining_Test_Click`);
     assert.match(await page.title(), /Custom CNC Machining Services.*Belaro Precision/);
-    assert.equal(await page.locator('h1').count(), 1);
-    assert.match(await page.locator('h1').innerText(), /CNC Machining\s+Services/);
+    assert.equal(await page.locator('main h1').count(), 1);
+    assert.match(await page.locator('main h1').innerText(), /CNC Machining\s+Services/);
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), `https://belaroprecision.com${pathname}`);
     assert.ok((await page.locator('meta[name="description"]').getAttribute('content')).length > 80);
     assert.equal(await page.locator('#rfq-form').count(), 1);
@@ -40,6 +40,22 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
     assert.equal(await page.locator('.machining-steps li').count(), 4);
     assert.equal(await page.locator('.machining-faq details').count(), 6);
     assert.equal(await page.locator('.hero-photo').getAttribute('fetchpriority'), 'high');
+    assert.equal(await page.locator('main img').count(), 13);
+    const imageMapping = [
+      ['.machining-hero-media', 'services-cnc-part-families-hero'],
+      ['.machining-quality-image', 'quality-critical-dimension-check'],
+      ['.machining-packaging-image', 'quality-protective-packaging'],
+      ['.machining-rfq-image', 'contact-rfq'],
+    ];
+    for (const [selector, filename] of imageMapping) {
+      const img = page.locator(`${selector} img`);
+      assert.equal(await img.count(), 1);
+      assert.ok((await img.getAttribute('src')).includes(filename));
+      assert.ok(await img.getAttribute('srcset'));
+      assert.ok(await img.getAttribute('sizes'));
+      assert.ok((await img.getAttribute('alt')).length > 20);
+      assert.equal(await img.getAttribute('loading'), selector.includes('hero') ? 'eager' : 'lazy');
+    }
     const contactLabels = page.locator('.contact-detail > .contact-label');
     assert.deepEqual(await contactLabels.allTextContents(), ['EMAIL', 'WHATSAPP', 'YOUR MANUFACTURING CONTACT']);
     assert.equal(await contactLabels.locator('svg[aria-hidden="true"][focusable="false"]').count(), 3);
@@ -63,9 +79,15 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
     await page.locator('[data-ad-deny]').click();
     await page.waitForFunction(() => document.querySelector('[name="gclid"]').value === '');
     await page.goto(`${base}${pathname}`);
+    // 模拟图片未携带页面作用域标记，仍应等比显示并维持背景层。
+    await page.locator('main img').evaluateAll(nodes => nodes.forEach(node => {
+      for (const name of node.getAttributeNames()) {
+        if (name.startsWith('data-astro-cid-')) node.removeAttribute(name);
+      }
+    }));
 
     const screenshots = await mkdtemp(join(tmpdir(), 'belaro-machining-'));
-    for (const width of [320, 390, 700, 701, 768, 1024, 1100, 1101, 1440, 1920]) {
+    for (const width of [320, 390, 700, 701, 768, 1024, 1100, 1101, 1440, 1920, 2558]) {
       await page.setViewportSize({ width, height: 900 });
       await page.evaluate(() => window.scrollTo(0, 0));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${width}px 不应横向溢出`);
@@ -95,10 +117,29 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
       const drawingCopyBox = await drawingBand.locator('p').boundingBox();
       const drawingCtaBox = await drawingCta.boundingBox();
       assert.ok(width <= 700 ? drawingCtaBox.y >= drawingCopyBox.y + drawingCopyBox.height : drawingCtaBox.x >= drawingCopyBox.x + drawingCopyBox.width, `${width}px 询价文案与按钮不应重叠`);
-      for (const selector of ['.machining-processes img', '.machining-parts img']) {
-        const ratios = await page.locator(selector).evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().width / node.getBoundingClientRect().height));
-        assert.ok(ratios.every(ratio => Math.abs(ratio - (selector.includes('processes') ? 1.65 : 1.5)) < 0.02), `${width}px 图片应保持统一比例`);
+      assert.equal(await page.locator('.machining-rfq-image').isVisible(), width > 700, '手机端不在表单之前展示辅助图');
+      for (const img of await page.locator('main img').all()) {
+        if (!(await img.isVisible())) continue;
+        await img.scrollIntoViewIfNeeded();
+        await img.evaluate(node => node.decode());
+        const metrics = await img.evaluate(node => {
+          const rect = node.getBoundingClientRect();
+          return { width: rect.width, height: rect.height, ratio: node.naturalWidth / node.naturalHeight, fit: getComputedStyle(node).objectFit };
+        });
+        assert.ok(metrics.width > 0 && metrics.height > 0);
+        if (await img.evaluate(node => node.closest('.machining-hero-media') !== null)) {
+          assert.equal(metrics.fit, 'cover');
+          const hero = await page.locator('.machining-hero').boundingBox();
+          assert.ok(Math.abs(metrics.width - hero.width) < 1 && Math.abs(metrics.height - hero.height) < 1, '背景铺满 Hero');
+        } else {
+          assert.equal(metrics.fit, 'contain', '正文及零件图片不变形且完整显示');
+          if (!(await img.evaluate(node => node.closest('.machining-parts') !== null))) {
+            assert.ok(Math.abs(metrics.height - metrics.width / metrics.ratio) < 1, `${width}px 正文图片保持原始比例`);
+          }
+        }
       }
+      const packaging = await page.locator('.machining-packaging-image').boundingBox();
+      assert.ok(packaging.width <= 640);
       await page.locator('.rfq-optional summary').click();
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${width}px 展开表单不应溢出`);
       await page.locator('.rfq-optional summary').click();
@@ -111,7 +152,7 @@ test('CNC 综合加工落地页：SEO、询价路径、广告偏好、图片、�
           }
           window.scrollTo(0, 0);
         });
-        await page.waitForFunction(() => [...document.querySelectorAll('main img')].every(img => img.complete && img.naturalWidth > 0));
+        await page.waitForFunction(() => [...document.querySelectorAll('main img')].filter(img => img.getClientRects().length).every(img => img.complete && img.naturalWidth > 0));
         await page.screenshot({ path: join(screenshots, `machining-${width}.png`), fullPage: true });
         await page.screenshot({ path: join(screenshots, `machining-hero-${width}.png`) });
         await drawingBand.scrollIntoViewIfNeeded();

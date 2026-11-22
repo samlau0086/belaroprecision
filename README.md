@@ -185,7 +185,17 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 
 修复验证：`npm run build` 通过，生成 21 页；开发环境执行首页浏览器回归通过，生产构建执行 `node --test tests/homepage.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs` 三项通过。首页覆盖 320–2558px 共 11 种宽度，并主动移除这 5 张输出图片的页面作用域属性后验证原始比例、完整显示与包装图宽度上限；390px 和 1440px 截图已复核。可通过 `HOMEPAGE_BASE_URL` 对指定本地开发地址运行同一首页测试。未执行未配置的独立类型检查与 ESLint，未部署。
 
+2026 年 11 月 22 日 Services 配图接入与显示修复：将用户交付的 `Services/services-cnc-part-families-hero.webp.webp` 去除重复扩展名，原样移动至 `src/assets/images/pages/services/services-cnc-part-families-hero.webp`。Hero 改为文字背后的绝对定位背景层，通过 `object-fit: cover` 等比铺满，响应式裁切而不拉伸；桌面和手机分别设置 560px、620px 最小高度及相应遮罩。实际画面为两件安装支架、阶梯轴与法兰轴套，Alt 按画面填写。原有铣削、车削图保留，二次工艺和生产支持分别复用 `secondary-processes.webp`、`production-oem.webp`；四张正文图均按原始比例完整显示，5 个图位均已展示。原规划的磨削轴细节图与独立分隔批次图仍未交付，现有素材不视为这两张新图的交付。详见 [Services 图片需求与交付记录](docs/image-requirements/services.md)。
+
+Services 样式仅通过 `.services-page` 限定，不依赖页面作用域属性，避免局部标记缺失时背景退化为普通大图；用户截图的原始触发原因尚未确认。继续使用 Astro Image 响应式 WebP、Hero 优先加载和正文懒加载，未新增依赖或环境变量，未修改其他页面。
+
+Services 配图修复验证：`npm run build` 完成 21 页构建；`node --test tests/services-images.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs` 三项通过。Services 图片测试覆盖 320–2558px 共 10 种宽度、5 个图位映射、响应式资源、解码、正文原始比例、Hero 背景铺满及文字叠层范围、受控首屏高度、无横向溢出和服务链接；主动移除整个本页 DOM 的作用域属性后仍通过。390px 与 1440px 截图已复核。另使用 `SERVICES_BASE_URL=http://127.0.0.1:4322` 对本地开发服务运行相同图片测试通过。未执行当前未配置的独立类型检查与 ESLint，未部署。
+
 ### CNC Machining 广告落地页
+
+2026 年 11 月 22 日配图补全：按 [CNC Machining 图片需求](docs/image-requirements/cnc-machining.md) 接入质量测量图、四步流程后的包装图及桌面 RFQ 导语评审图，保留三张工艺图和六张零件图，共 13 个图位。RFQ 辅助图在 700px 及以下隐藏，不推迟手机表单入口。专用 Hero 新图尚未交付，暂复用用户已交付的 Services 成品组合图作为文字背后的等比裁切背景，不将其记录为专用图交付完成。正文照片完整按原始比例显示，零件图通过 `contain` 保留完整主体；图片样式由本页原生容器限定，不依赖 Image 转发作用域属性。复用现有资源，不复制图片，不新增依赖、环境变量或修改共享表单。
+
+配图验证：`npm run build` 通过，生成 21 页；`node --test tests/cnc-machining.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs` 三项全部通过。CNC 页面覆盖 320–2558px 共 11 种宽度、13 个图位、图片解码、响应式资源、原始比例、背景铺满、询价定位和无脚本回退；主动移除图片的页面作用域属性后仍通过。390px 与 1440px 截图已复核。原 4322 开发服务未输出本轮新增图片样式，其专项回归失败；新启动 4323 服务后，设置 `CNC_MACHINING_BASE_URL=http://127.0.0.1:4323` 重跑同一测试通过。项目未配置独立类型检查或 ESLint 命令，未执行这两项；未部署、未提交真实询盘。
 
 `/services/cnc-machining/` 面向综合 CNC 加工询价，页头、首屏及中段主要报价按钮均指向本页 `#rfq-form`，无需跳转 Contact。页面使用现有本地图片、公开公司信息及代表性零件，不添加未经核实的认证、客户评价、固定公差或交期承诺。页头桌面/移动菜单、页脚和 Capabilities 总览提供该页面入口。
 

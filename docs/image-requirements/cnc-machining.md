@@ -4,7 +4,7 @@
 - 页面 slug：`cnc-machining`
 - 扫描依据：[src/pages/services/cnc-machining/index.astro](../../src/pages/services/cnc-machining/index.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：配图规划。新增、替换和补充复用图位尚未制作或接入；保留项不代表已完成真实性核验。
+- 状态：13 个图位已接入，手机端按规划隐藏 RFQ 辅助图。专用 Hero 尚未交付，当前复用用户已交付的 Services 成品组合图；保留及复用项不代表已完成真实性核验。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论
@@ -152,11 +152,28 @@
 - 制作提示词／保留要求：引用 Contact 已有图纸与 CAD 评审图；只在桌面导语空余位置使用，移动端放表单之后或不显示，不增加首屏负担。
 - 英文 Alt 草案：`Generic drawing and CAD model prepared for machining review`。
 
-## 4. 本页验收重点
+## 4. 实际接入记录
+
+2026 年 11 月 22 日，在保留三张工艺图及六张代表性零件主图的基础上补齐三个复用图位，并替换原先与铣削卡片重复的首屏背景。没有新增依赖、环境变量或修改共享表单；未重新生成、覆盖或复制原始图片。
+
+| 图位 | 实际资源 | 展示方式 |
+| --- | --- | --- |
+| Hero | `src/assets/images/pages/services/services-cnc-part-families-hero.webp` | 暂用已交付的安装支架、阶梯轴和法兰轴套组合图；绝对定位背景层，`object-fit: cover` 等比铺满，响应式裁切；Alt 为 `Machined mounting brackets with a stepped shaft and flanged bushing` |
+| 质量评审 | `src/assets/images/quality-critical-dimension-check.webp` | 放在导语及质量链接之后，与四项评审文字并列；完整显示千分尺与 V 形块支撑的轴件，Alt 按实际画面填写 |
+| 四步流程之后 | `src/assets/images/quality-protective-packaging.webp` | 完整显示泡棉分隔包装，最大宽度 640px，不替代四步流程文字 |
+| RFQ 桌面导语 | `src/assets/images/contact-rfq.webp` | 放在导语底部，实际为两人查看图纸和 CAD 模型；700px 及以下隐藏，避免推迟表单入口 |
+
+原规划的 `cnc-machining-oem-components-hero.webp` 尚未交付，当前复用图没有 CNC 机床背景，也不视为专用 Hero 制作完成。后续交付专用图后可按第 3 节替换，不删除 Services 原图或铣削原图。
+
+正文照片采用响应式 Astro Image、懒加载、`width: 100%`、`height: auto` 与 `object-fit: contain`，按原始比例完整显示；六张公开零件图保留既有路径与容器比例，通过 `contain` 避免裁切主体。图片约束均限定于 `.machining-page` 下的原生容器，不依赖 Image 转发页面作用域标记。
+
+来源边界：Hero 为用户前次交付素材，其余为项目已有资源；未核验拍摄或生成信息、公开授权和企业资产归属，不据图新增加工能力、认证或客户案例声明。测试与截图验收结果见根 README。
+
+## 5. 本页验收重点
 
 - 图像必须说明相邻正文的工件、工序或评审要点；不得用图片替代原有参数、FAQ 或询价字段。
 - 新图先审工件结构、夹持、刀具可达性及测量接触关系，再检查风格；不得据图确认精度、牌号、资质或制造能力。
 - 桌面和手机均检查裁切，完整保留关键工件、孔口及功能面；Hero 叠字需保持可读。报告按原始比例展示，不裁掉必要上下文。
 - Alt 按最终画面修订，不照搬文件名推断设备类型或工艺结果。保留来源和公开许可记录。
-- 本文仅为需求，不代表已完成图片制作、审核、前端布局或图片性能验收。
+- 制作需求与实际接入以第 4 节区分；前端测试不替代素材真实性、授权或加工能力核验。
 
