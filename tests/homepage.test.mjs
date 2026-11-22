@@ -8,13 +8,15 @@ test('首页九个模块：内容顺序、能力边界、链接、FAQ 与响应�
   const server = createServer(async (req, res) => {
     try {
       const path = new URL(req.url, 'http://localhost').pathname;
-      const body = await readFile(new URL(`../dist${path === '/' ? '/index.html' : path}`, import.meta.url));
-      res.setHeader('Content-Type', path.endsWith('.css') ? 'text/css' : path.endsWith('.js') ? 'text/javascript' : 'text/html');
+      const filePath = path === '/' ? '/index.html' : path;
+      const body = await readFile(new URL(`../dist${filePath}`, import.meta.url));
+      const types = { css: 'text/css', js: 'text/javascript', webp: 'image/webp', html: 'text/html' };
+      res.setHeader('Content-Type', types[filePath.split('.').pop()] ?? 'application/octet-stream');
       res.end(body);
     } catch { res.writeHead(404).end(); }
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const baseUrl = `http://127.0.0.1:${server.address().port}`;
+  const baseUrl = process.env.HOMEPAGE_BASE_URL ?? `http://127.0.0.1:${server.address().port}`;
   let browser;
   try {
     browser = await chromium.launch({ headless: true });
@@ -62,6 +64,25 @@ test('首页九个模块：内容顺序、能力边界、链接、FAQ 与响应�
     assert.equal(await page.locator('#faq-rfq details').count(), 4);
     assert.equal(await page.locator('#faq-rfq a[href="/contact/"]').count(), 1);
 
+    const imageMapping = [
+      ['#procurement-fit', 'home-drawing-led-component-review'],
+      ['#quality-inspection', 'quality-critical-dimension-check'],
+      ['#target-applications article:first-child', 'industry-automation-fixture'],
+      ['#target-applications article:last-child', 'industry-machinery-shaft-assembly'],
+      ['#production-flow', 'quality-protective-packaging'],
+    ];
+    for (const [selector, filename] of imageMapping) {
+      const img = page.locator(`${selector} img`);
+      assert.equal(await img.count(), 1);
+      assert.ok((await img.getAttribute('src')).includes(filename), filename);
+      assert.ok(await img.getAttribute('srcset'), filename);
+      assert.ok(await img.getAttribute('sizes'), filename);
+      assert.ok((await img.getAttribute('alt')).length > 20, filename);
+      assert.equal(await img.getAttribute('loading'), 'lazy');
+    }
+    assert.equal(await page.locator('main img').count(), 15);
+    assert.equal(await page.locator('#capability-overview img').count(), 0, '未交付的能力图不使用占位图片');
+
     const capabilityText = await page.locator('#capability-overview').innerText();
     assert.match(capabilityText, /3-axis CNC milling/);
     assert.match(capabilityText, /simultaneous 5-axis CNC milling/);
@@ -69,12 +90,41 @@ test('首页九个模块：内容顺序、能力边界、链接、FAQ 与响应�
     assert.doesNotMatch(capabilityText, /±0\.01|20–500/);
     assert.doesNotMatch(await page.locator('.hero-proof').innerText(), /±0\.01|20–500/);
 
-    for (const width of [320, 390, 700, 701, 900, 901, 1024, 1440]) {
+    // 模拟图片组件未转发页面作用域属性，容器样式仍须保持图片比例。
+    for (const [selector] of imageMapping) {
+      await page.locator(`${selector} img`).evaluate(img => {
+        for (const name of img.getAttributeNames()) {
+          if (name.startsWith('data-astro-cid-')) img.removeAttribute(name);
+        }
+      });
+    }
+    for (const width of [320, 390, 700, 701, 900, 901, 1024, 1100, 1440, 1920, 2558]) {
       await page.setViewportSize({ width, height: 1000 });
+      await page.locator('main img').evaluateAll(nodes => Promise.all(nodes.map(node => { node.loading = 'eager'; return node.decode(); })));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 不应横向溢出`);
       assert.equal(await page.locator('.hero-proof > div').evaluateAll(nodes => nodes.some(node => node.scrollWidth > node.clientWidth)), false, `${width}px 优势文案不应溢出`);
+      for (const [selector] of imageMapping) {
+        const fits = await page.locator(`${selector} img`).evaluate(img => {
+          const rect = img.getBoundingClientRect();
+          const parent = img.parentElement.getBoundingClientRect();
+          return rect.width > 0 && rect.left >= parent.left - 1 && rect.right <= parent.right + 1 && Math.abs(rect.width / rect.height - img.naturalWidth / img.naturalHeight) < 0.01;
+        });
+        assert.ok(fits, `${width}px ${selector} 图片应完整等比显示且不超出容器`);
+        assert.equal(await page.locator(`${selector} img`).evaluate(img => getComputedStyle(img).objectFit), 'contain');
+      }
+      assert.ok(await page.locator('.delivery-image').evaluate(node => node.getBoundingClientRect().width <= 640), '包装图不应超过 640px');
       if (process.env.HOMEPAGE_SCREENSHOT_DIR && [390, 1440].includes(width)) {
+        for (const img of await page.locator('main img').all()) {
+          if (!(await img.isVisible())) continue;
+          await img.scrollIntoViewIfNeeded();
+          await img.evaluate(node => node.decode());
+        }
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         await page.screenshot({ path: `${process.env.HOMEPAGE_SCREENSHOT_DIR}/homepage-${width}.png`, fullPage: true });
+        for (const selector of ['procurement-fit', 'quality-inspection', 'target-applications', 'production-flow']) {
+          await page.locator(`#${selector}`).screenshot({ path: `${process.env.HOMEPAGE_SCREENSHOT_DIR}/${selector}-${width}.png` });
+        }
       }
     }
     assert.deepEqual(errors, []);
