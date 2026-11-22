@@ -146,18 +146,24 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 
 ### 六个材料页 AI 配图需求
 
+不锈钢页正文图片按原始宽高比展示，使用自适应高度，不固定为 4:3；Hero 使用 `object-fit: cover` 等比缩放、居中裁切并铺满全宽背景，不留空白。原始资源不做裁剪或拉伸。
+
 2026 年 11 月 22 日补齐全页配图规划，按页面 slug 分别保存，供后续 AI 生图、审核及接入使用：
 
 | 材料页 | 图片需求文档 | 图位数 |
 | --- | --- | --- |
 | Aluminum | [aluminum-cnc-machining.md](docs/image-requirements/aluminum-cnc-machining.md) | 18（全部已接入） |
-| Stainless Steel | [stainless-steel-cnc-machining.md](docs/image-requirements/stainless-steel-cnc-machining.md) | 16 |
+| Stainless Steel | [stainless-steel-cnc-machining.md](docs/image-requirements/stainless-steel-cnc-machining.md) | 16（全部已接入） |
 | Brass | [brass-cnc-machining.md](docs/image-requirements/brass-cnc-machining.md) | 14 |
 | Carbon & Alloy Steel | [carbon-alloy-steel-cnc-machining.md](docs/image-requirements/carbon-alloy-steel-cnc-machining.md) | 15 |
 | Titanium | [titanium-cnc-machining.md](docs/image-requirements/titanium-cnc-machining.md) | 13 |
 | Engineering Plastics | [engineering-plastics-cnc-machining.md](docs/image-requirements/engineering-plastics-cnc-machining.md) | 16 |
 
-共 92 个图位，其中铝材 18 张已接入，其余材料 74 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 13 张 WebP 从 `Aluminum/Webp` 移至 `src/assets/images/materials/aluminum/`，用于铝材 Hero、能力、四种典型零件、五种加工工艺、质检及生产包装；已有五张表面处理图保持原位。本次未生成图片，仅调整铝材页及其测试。能力图文件名的 `features..webp` 修正为 `features.webp`，其余保留原名；图片内容不变，Astro 输出响应式图片，Hero 优先加载、正文懒加载。车削图对应卡盘与车刀；质检和包装 Alt 按实际画面标注机内测头及框形壳体，不因原文件名宣称 CMM 或支架。
+共 92 个图位，其中铝材 18 张、不锈钢 16 张已接入，其余材料 58 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 13 张 WebP 从 `Aluminum/Webp` 移至 `src/assets/images/materials/aluminum/`，用于铝材 Hero、能力、四种典型零件、五种加工工艺、质检及生产包装；已有五张表面处理图保持原位。铝材接入时未生成图片，仅调整铝材页及其测试。能力图文件名的 `features..webp` 修正为 `features.webp`，其余保留原名；图片内容不变，Astro 输出响应式图片，Hero 优先加载、正文懒加载。车削图对应卡盘与车刀；质检和包装 Alt 按实际画面标注机内测头及框形壳体，不因原文件名宣称 CMM 或支架。
+
+同日将 `Stainless Steel/` 的 16 张 WebP 移至 `src/assets/images/materials/stainless-steel/`，保留英文文件名及原始内容，分别用于不锈钢 Hero、能力、四类零件、五类加工工艺、质检、三种表面处理和生产包装。页面使用 Astro 响应式图片，工艺图采用图文列表，表面处理采用三列图文布局，手机端堆叠。CNC Turning 对应卡盘与车刀；质检 Alt 按实际顶尖支承和指示表描述，包装 Alt 按独立包裹的工件描述。钝化配图仅展示清洁接头，不将外观作为钝化证明。实际画面偏差与替换目标记录在对应需求文档。
+
+不锈钢图片接入验证：`npm run build` 通过，生成 21 页；`node --test tests/stainless-steel-cnc-machining.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs tests/aluminum-cnc-machining.test.mjs`，4 项全部通过。覆盖 16 图的章节与顺序、响应式属性、加载策略、解码、320–1920px 十种宽度、图片容器、内链、SEO、菜单、FAQ 和询价定位。已复核 390px 与 1440px 截图，本地开发页面返回 HTTP 200，`git diff --check` 通过；未配置独立类型检查或 ESLint 命令，未执行这两项。未部署、未提交真实询盘。
 
 文档覆盖 Hero、加工能力、典型零件、各 CNC 工艺、质检、相关表面处理和生产包装，提供具体工件提示词、英文 SEO 文件名、Alt、比例与验收要求。铝材文档记录交付映射与实际画面偏差，原提示词保留用于后续替换。材料牌号不通过外观区分，FAQ 与 RFQ 默认不增加装饰图。
 

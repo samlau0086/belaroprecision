@@ -46,6 +46,30 @@ test('不锈钢页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
     assert.equal(await page.locator('#drawing-file').getAttribute('type'), 'file');
     assert.match(await page.locator('#finishing').innerText(), /supplier availability/);
     assert.match(await readFile('dist/sitemap.xml', 'utf8'), /\/materials\/stainless-steel-cnc-machining\//);
+    const imageGroups = [
+      ['.stainless-hero', ['stainless-steel-cnc-machining-oem-components-hero']],
+      ['#capabilities', ['stainless-steel-machined-port-body-features']],
+      ['#components', ['stainless-steel-cnc-precision-stepped-shaft', 'stainless-steel-cnc-flanged-sleeve', 'stainless-steel-cnc-threaded-connector', 'stainless-steel-cnc-equipment-interface-block']],
+      ['#processes', ['stainless-steel-cnc-milling-interface-body', 'stainless-steel-cnc-turning-shaft-shoulder', 'stainless-steel-three-axis-milling-plate', 'stainless-steel-indexed-milling-angled-port', 'stainless-steel-five-axis-contoured-housing']],
+      ['#quality', ['stainless-steel-shaft-runout-inspection']],
+      ['#finishing', ['stainless-steel-clean-connector-passivation-context', 'bead-blasted-stainless-steel-sensor-cover', 'polished-stainless-steel-equipment-collar']],
+      ['#production', ['stainless-steel-connectors-small-batch-packing']],
+    ];
+    for (const [selector, names] of imageGroups) {
+      const pictures = page.locator(`${selector} img`);
+      assert.equal(await pictures.count(), names.length, selector);
+      for (const [index, name] of names.entries()) {
+        const picture = pictures.nth(index);
+        assert.ok((await picture.getAttribute('src')).includes(name), name);
+        assert.ok(await picture.getAttribute('srcset'), name);
+        assert.ok(await picture.getAttribute('sizes'), name);
+        const alt = await picture.getAttribute('alt');
+        assert.ok(alt.length > 20 && !/AI illustration/i.test(alt), name);
+        assert.equal(await picture.getAttribute('loading'), selector === '.stainless-hero' ? 'eager' : 'lazy');
+      }
+    }
+    assert.match(await page.locator('#processes img').nth(1).getAttribute('alt'), /Lathe chuck.*turning tool/);
+    assert.doesNotMatch(await page.locator('#finishing img').first().getAttribute('alt'), /passivat/i);
     const links = await page.locator('main a').evaluateAll(nodes => [...new Set(nodes.map(node => node.href))]);
     for (const href of links) {
       const target = new URL(href);
@@ -58,7 +82,21 @@ test('不锈钢页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
       await page.goto(`${base}${path}`);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 横向溢出`);
       await page.locator('main img').evaluateAll(nodes => Promise.all(nodes.map(node => { node.loading = 'eager'; return node.decode(); })));
-      assert.equal(await page.locator('main img').count(), 6);
+      assert.equal(await page.locator('main img').count(), 16);
+      assert.equal(await page.locator('main img:not(.hero-photo)').evaluateAll(nodes => nodes.every(node => {
+        const box = node.getBoundingClientRect();
+        return Math.abs(box.height - box.width * Number(node.getAttribute('height')) / Number(node.getAttribute('width'))) < 1;
+      })), true, `${width}px 正文图片应保持原始比例`);
+      assert.equal(await page.locator('main img:not(.hero-photo)').evaluateAll(nodes => nodes.every(node => getComputedStyle(node).objectFit === 'contain')), true, `${width}px 正文图片不应裁切`);
+      assert.equal(await page.locator('.hero-photo').evaluate(node => {
+        const image = node.getBoundingClientRect();
+        const hero = node.parentElement.getBoundingClientRect();
+        return getComputedStyle(node).objectFit === 'cover'
+          && Math.abs(image.x - hero.x) < 1 && Math.abs(image.y - hero.y) < 1
+          && Math.abs(image.width - hero.width) < 1 && Math.abs(image.height - hero.height) < 1
+          && Math.abs(hero.width - innerWidth) < 1;
+      }), true, `${width}px Hero 应全宽铺满背景`);
+      assert.equal(await page.locator('main img:not(.hero-photo)').evaluateAll(nodes => nodes.every(node => node.getBoundingClientRect().width <= node.parentElement.getBoundingClientRect().width + 1)), true, `${width}px 图片超出容器`);
       if (width > 1100) {
         const brand = await page.locator('.site-header .brand').boundingBox();
         const nav = await page.locator('.desktop-nav').boundingBox();
@@ -92,6 +130,9 @@ test('不锈钢页面：九章节、材料菜单、图片、SEO、FAQ 和询价�
         await page.goto(`${base}${path}`);
         await page.locator('main img').evaluateAll(nodes => Promise.all(nodes.map(node => { node.loading = 'eager'; return node.decode(); })));
         await page.screenshot({ path: join(screenshots, `stainless-${width}.png`), fullPage: true });
+        for (const section of ['processes', 'finishing']) {
+          await page.locator(`#${section}`).screenshot({ path: join(screenshots, `stainless-${section}-${width}.png`) });
+        }
       }
     }
     const staticPage = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 390, height: 900 } });
