@@ -20,6 +20,11 @@ import millingProcessDetail from '../assets/images/milling-process-detail.webp';
 import productionOem from '../assets/images/production-oem.webp';
 import qualityInspection from '../assets/images/quality-inspection.webp';
 import secondaryProcesses from '../assets/images/secondary-processes.webp';
+import secondaryGroundShaft from '../assets/images/pages/secondary-processes/secondary-ground-shaft-detail.webp';
+import secondaryHeatTreatment from '../assets/images/pages/secondary-processes/secondary-heat-treatment-parts-tray.webp';
+import secondaryFinishedHousing from '../assets/images/pages/secondary-processes/secondary-finished-housing-masking-detail.webp';
+import secondaryProtectedBracket from '../assets/images/pages/secondary-processes/secondary-bracket-protected-thread-and-face.webp';
+import secondaryReturnedInspection from '../assets/images/pages/secondary-processes/secondary-returned-component-inspection.webp';
 import turningProcessDetail from '../assets/images/turning-process-detail.webp';
 import turningShoulderCut from '../assets/images/pages/cnc-turning/turning-shaft-shoulder-cut.webp';
 import turningBearingSeat from '../assets/images/pages/cnc-turning/turning-bearing-seat-shoulder-detail.webp';
@@ -57,6 +62,11 @@ export const images = {
   'production-oem': productionOem,
   'quality-inspection': qualityInspection,
   'secondary-processes': secondaryProcesses,
+  'secondary-ground-shaft-detail': secondaryGroundShaft,
+  'secondary-heat-treatment-parts-tray': secondaryHeatTreatment,
+  'secondary-finished-housing-masking-detail': secondaryFinishedHousing,
+  'secondary-bracket-protected-thread-and-face': secondaryProtectedBracket,
+  'secondary-returned-component-inspection': secondaryReturnedInspection,
   'turning-process-detail': turningProcessDetail,
   'turning-shaft-shoulder-cut': turningShoulderCut,
   'turning-bearing-seat-shoulder-detail': turningBearingSeat,

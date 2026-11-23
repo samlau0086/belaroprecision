@@ -4,7 +4,7 @@
 - 页面 slug：`secondary-processes`
 - 扫描依据：[src/pages/services/secondary-processes/index.astro](../../src/pages/services/secondary-processes/index.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：配图规划。新增、替换和补充复用图位尚未制作或接入；保留项不代表已完成真实性核验。
+- 状态：7/7 个图位已接入，包括用户交付的 5 张新图、1 张保留 Hero 和 1 张复用包装图；接入不代表已完成来源、授权或实际工艺能力核验。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论
@@ -97,5 +97,18 @@ Hero 为多种工艺综合图；Grinding、Heat Treatment、Surface Finishing �
 - 新图先审工件结构、夹持、刀具可达性及测量接触关系，再检查风格；不得据图确认精度、牌号、资质或制造能力。
 - 桌面和手机均检查裁切，完整保留关键工件、孔口及功能面；Hero 叠字需保持可读。报告按原始比例展示，不裁掉必要上下文。
 - Alt 按最终画面修订，不照搬文件名推断设备类型或工艺结果。保留来源和公开许可记录。
-- 本文仅为需求，不代表已完成图片制作、审核、前端布局或图片性能验收。
+- 本文同时保留原始制作需求与实际接入记录；实际画面差异、来源与验证范围见下文。
+
+## 5. 实际接入记录
+
+- 2026 年 11 月 23 日，将用户 `secondary-processes/` 目录中的 5 张 WebP 原样复制至 `src/assets/images/pages/secondary-processes/`，保留原始交付文件。全部尺寸为 1448 × 1086，低于建议母版 1600 × 1200；按原始比例展示，不放大伪造母版。
+- 通过 `src/data/images.ts` 统一映射，页面复用 `ProcessImage.astro` 输出响应式 WebP、`srcset`、`sizes` 与正文懒加载。仅修改本页图位，不更改其他页面的共享区块。
+- 保留现有 Hero 综合图和并排文字布局，不将综合拼图裁成背景。新增三张工艺图分别置于 `#grinding`、`#heat-treatment`、`#surface-finishing` 的工艺说明上方。
+- 新增保护面图与回件检查图分别置于清单的 `#protected-areas` 和 `#inspection-records`；将数量与交付项放到其前，使桌面两张示例图并排、移动端逐项堆叠，六项要求全部保留。
+- 在 One Coordinated Requirement 标题下复用现有 `quality-batch-identification.webp`，不重复复制共享资源。实际画面为保护包裹的零件与空白纸箱标签，Alt 按实际画面描述。
+- 轴件图使用金属 V 形支承，与原需求的软支承不同，展示相邻区域纹理但不能从外观验证磨削结果；壳体图保留黄色遮蔽材料，不按外观推断指定镀层或处理工艺。热处理图有开口背景炉体与暖光，与原需求的封闭炉体不同，但不出现可读温度或硬度结果；不能证明自有设备或工艺完成。
+- 回件检查图按可见千分尺与凸台接触构型描述，不宣称尺寸合格；所有图片均不作为性能、材料牌号、认证或企业资产证明。具体来源平台、母版与公开许可仍待用户确认。
+- 正文统一采用 `width:100%`、`height:auto`、`object-fit:contain`，完整保留工件；新增说明只使用客观 Alt，不增加页面可见 AI 来源标注。FAQ、CTA 与其他未确定工艺不新增装饰图，本页无 RFQ 表单，询价按钮继续跳转 `/contact/#rfq-form`。
+- 验证：`npm run build` 通过；`node --test tests/secondary-processes.test.mjs tests/image-labels.test.mjs` 两项通过，覆盖全部 7 个图位加载、Alt、响应式资源、12 种屏宽下的等比与横向溢出检查、FAQ 和询价跳转，并人工核对 390px 与 1440px 全页截图。
+- 全站 `tests/site-typography.test.mjs` 未通过：碳钢材料页已有 13px 的 `grade-label` 与 15px 的 `scope-note`；不属于本次配图修改范围，未调整该页面。
 

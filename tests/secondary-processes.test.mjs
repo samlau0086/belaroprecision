@@ -12,7 +12,8 @@ test('配套工艺页：内容边界、站内入口、导航与响应式', async
       const path = new URL(req.url, 'http://localhost').pathname;
       const file = path.endsWith('/') ? `${path}index.html` : path;
       const body = await readFile(new URL(`../dist${file}`, import.meta.url));
-      res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css' : file.endsWith('.js') ? 'text/javascript' : 'text/html');
+      const types = { css: 'text/css', js: 'text/javascript', webp: 'image/webp', html: 'text/html' };
+      res.setHeader('Content-Type', types[file.split('.').pop()] ?? 'application/octet-stream');
       res.end(body);
     } catch { res.writeHead(404).end(); }
   });
@@ -35,17 +36,57 @@ test('配套工艺页：内容边界、站内入口、导航与响应式', async
     assert.equal(await page.locator('#surface-finishing').count(), 1);
     assert.match(await page.locator('main').innerText(), /supplier network/i);
     assert.match(await page.locator('main').innerText(), /not.*in-house|core offering is CNC machining/is);
+    assert.equal(await page.locator('main img').count(), 7);
+    assert.doesNotMatch(await page.locator('main').innerText(), /AI illustrations?|AI[-\s]*generated/i);
+    const imageMapping = [
+      ['.secondary-hero', 'secondary-processes'],
+      ['.handoff-media', 'quality-batch-identification'],
+      ['#grinding', 'secondary-ground-shaft-detail'],
+      ['#heat-treatment', 'secondary-heat-treatment-parts-tray'],
+      ['#surface-finishing', 'secondary-finished-housing-masking-detail'],
+      ['#protected-areas', 'secondary-bracket-protected-thread-and-face'],
+      ['#inspection-records', 'secondary-returned-component-inspection'],
+    ];
+    for (const [selector, name] of imageMapping) {
+      const img = page.locator(`${selector} img`);
+      assert.equal(await img.count(), 1);
+      assert.ok((await img.getAttribute('src')).includes(name), name);
+      assert.ok(await img.getAttribute('srcset'));
+      assert.ok(await img.getAttribute('sizes'));
+      assert.ok((await img.getAttribute('alt')).length > 20);
+      assert.equal(await img.getAttribute('loading'), selector === '.secondary-hero' ? 'eager' : 'lazy');
+    }
+    assert.equal(await page.locator('.requirements-list dt').count(), 6);
 
-    await page.locator('summary').first().focus();
+    await page.locator('.faq-list summary').first().focus();
     await page.keyboard.press('Enter');
-    assert.equal(await page.locator('details').first().getAttribute('open'), '');
+    await page.waitForFunction(() => document.querySelector('.faq-list details').open);
+    assert.equal(await page.locator('.faq-list details').first().getAttribute('open'), '');
 
     const screenshots = await mkdtemp(join(tmpdir(), 'belaro-secondary-'));
-    for (const width of [320, 390, 700, 701, 1024, 1100, 1101, 1440]) {
+    for (const width of [320, 390, 700, 701, 800, 801, 1024, 1100, 1101, 1440, 1920, 2558]) {
       await page.setViewportSize({ width, height: 900 });
+      for (const img of await page.locator('main img').all()) {
+        await img.scrollIntoViewIfNeeded();
+        await img.evaluate(node => node.decode());
+        const metrics = await img.evaluate(node => {
+          const rect = node.getBoundingClientRect();
+          return { width: rect.width, height: rect.height, ratio: node.naturalWidth / node.naturalHeight, fit: getComputedStyle(node).objectFit };
+        });
+        assert.ok(metrics.width > 0 && metrics.height > 0);
+        assert.ok(Math.abs(metrics.height - metrics.width / metrics.ratio) < 1, `${width}px 图片等比：${JSON.stringify(metrics)}`);
+        if (!(await img.getAttribute('src')).includes('/secondary-processes.')) assert.equal(metrics.fit, 'contain');
+      }
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 不应横向溢出`);
-      if ([390, 1440].includes(width)) await page.screenshot({ path: join(screenshots, `secondary-${width}.png`), fullPage: true });
+      if ([390, 1440].includes(width)) {
+        await page.evaluate(() => scrollTo(0, 0));
+        await page.screenshot({ path: join(screenshots, `secondary-${width}.png`), fullPage: true });
+      }
     }
+    await page.locator('.hero-actions .button').click();
+    assert.equal(new URL(page.url()).pathname, '/contact/');
+    assert.equal(new URL(page.url()).hash, '#rfq-form');
+    await page.goto(`${baseUrl}/services/secondary-processes/`);
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.getByRole('link', { name: /Capabilities/ }).first().hover();

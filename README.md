@@ -181,6 +181,8 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 
 ### 非材料页配图需求
 
+2026 年 11 月 23 日 Secondary Processes 页按需求接入全部 7 个图位：保留综合 Hero，新增磨削、热处理、表面处理、保护区域和回件检查 5 张图，并在工艺交接说明中复用批次包装图。新增资产原样复制到 `src/assets/images/pages/secondary-processes/`，保留用户交付目录，统一通过 `src/data/images.ts` 和 `ProcessImage.astro` 输出响应式图片；正文自然高度、等比完整展示、懒加载，不增加 AI 来源标注。本页无 RFQ 表单，询价仍指向 Contact 页表单。画面差异和来源边界详见 [Secondary Processes 接入记录](docs/image-requirements/secondary-processes.md#5-实际接入记录)。未新增依赖或环境变量。
+
 2026 年 11 月 22 日按当前页面源码、图片映射和零件图库整理全部 15 个非材料页面的图片需求，见[非材料页图片需求总索引](docs/image-requirements/README.md)。每页按末级 slug 单独保存，首页使用 `home.md`。三个政策页也有独立审查文档，结论为不新增装饰图片。
 
 规划共 133 个图位，其中 31 项新增、3 项替换，其余为保留或跨页复用；唯一待制作任务共 34 项。逐项记录图位、优先级、英文文件名、制作提示词、Alt 草案、比例、现有来源或建议交付路径，并提供图文组织、真实性和验收要求。About 的企业现场图片需实拍核验，不用 AI 图片虚构企业资产。本轮仅完成需求文档，未生成或接入图片、未改页面；六个材料页已有需求保持不变。
