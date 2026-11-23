@@ -63,11 +63,25 @@ test('铣削页：站内入口、响应式、SEO、FAQ 与工艺询价', async (
     }
     await page.goto(`${baseUrl}/services/cnc-milling/`);
     await page.getByRole('link', { name: 'Request a Milling Quote' }).first().click();
-    await page.waitForURL('**/contact/?process=milling#rfq-form');
+    await page.waitForURL('**/services/cnc-milling/#rfq-form');
     await page.waitForLoadState('load');
     assert.equal(new URL(page.url()).hash, '#rfq-form');
     assert.equal(await page.locator('[name="process"]').inputValue(), 'CNC Milling');
     assert.equal(await page.locator('[name="details"]').inputValue(), '');
+    const quoteLinks = page.locator('a[href="#rfq-form"]');
+    assert.equal(await quoteLinks.count(), 8, '页头、移动菜单、正文与页脚询价入口均应指向本页表单');
+    await page.locator('[name="name"]').fill('Milling Buyer');
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const link of await quoteLinks.all()) {
+        if (!(await link.isVisible())) continue;
+        await link.click();
+        assert.equal(new URL(page.url()).pathname, '/services/cnc-milling/');
+        assert.equal(new URL(page.url()).hash, '#rfq-form');
+        assert.equal(await page.locator('[name="name"]').inputValue(), 'Milling Buyer');
+      }
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.locator('.rfq-optional summary').click();
     await page.locator('[name="process"]').selectOption({ label: 'CNC Turning' });
     assert.equal(await page.locator('[name="process"]').inputValue(), 'CNC Turning');

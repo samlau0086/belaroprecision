@@ -42,7 +42,7 @@ const imageProps = { widths: [480, 800, 1200], sizes: '(max-width: 700px) calc(1
   <Header quoteHref="#rfq-form" />
   <main class="carbon-page">
     <section class="material-hero carbon-hero" aria-labelledby="carbon-title">
-      <Image class="hero-photo" src={hero} alt="AI illustration of a steel stepped shaft and CNC-machined equipment mount" widths={[640, 1024, 1600, 1920]} sizes="100vw" loading="eager" fetchpriority="high" />
+      <Image class="hero-photo" src={hero} alt="A steel stepped shaft and CNC-machined equipment mount" widths={[640, 1024, 1600, 1920]} sizes="100vw" loading="eager" fetchpriority="high" />
       <div class="container hero-copy"><nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="#grades">Materials</a><span aria-hidden="true">/</span><span aria-current="page">Carbon &amp; Alloy Steel CNC Machining</span></nav><span class="eyebrow">CARBON &amp; ALLOY STEEL CNC MACHINING</span><h1 id="carbon-title">{material.title}</h1><p>{material.intro}</p><a class="button button-orange" href="#rfq-form">Request a Quote <span aria-hidden="true">&#8599;</span></a></div>
     </section>
     <nav class="section-index" aria-label="Page sections"><div class="container">{material.sections.map(section => <a href={`#${section.id}`}>{section.title}</a>)}<a href="#faq">FAQ</a><a href="#quote">Request a Quote</a></div></nav>

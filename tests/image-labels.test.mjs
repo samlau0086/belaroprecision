@@ -12,7 +12,7 @@ test('全站 HTML 和 Markdown 不包含 AI 生成来源标注', () => {
         if (!entry.name.startsWith('_')) check(path);
       } else if (/\.(html|md)$/.test(entry.name)) {
         const content = readFileSync(path, 'utf8');
-        assert.doesNotMatch(content, /\bAI[-\s\u2010-\u2014]*generated\b|\bAI\s+illustration\b|\b(?:generated|created)\s+(?:by|with)\s+AI\b|(?:AI|人工智能)\s*生成/i, path);
+        assert.doesNotMatch(content, /\bAI[-\s\u2010-\u2014]*generated\b|\bAI\s+illustrations?\b|\b(?:generated|created)\s+(?:by|with)\s+AI\b|(?:AI|人工智能)\s*生成/i, path);
         if (entry.name.endsWith('.html')) pageCount++;
       }
     }

@@ -3,6 +3,7 @@ import CountrySelect from './CountrySelect.astro';
 import PhoneField from './PhoneField.astro';
 import MaterialSelect from './MaterialSelect.astro';
 import { gravityForms } from '../config';
+const { defaultProcess = '' } = Astro.props;
 ---
 <form class="rfq-form" id="rfq-form" data-gravity-forms={JSON.stringify(gravityForms)}  method="POST" enctype="multipart/form-data">
   <input type="hidden" name="gclid" value=""/>
@@ -26,7 +27,7 @@ import { gravityForms } from '../config';
     <p class="file-error" id="drawing-error" role="alert" hidden></p>
   </div><details class="rfq-optional full-field">
     <summary><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><span>Add details (optional)<small>Process, material, quantity, tolerances, documents and project notes</small></span></summary>
-    <div class="form-grid optional-fields"><label>Machining process<select name="process"><option value="">Select process</option><option>CNC Milling</option><option>CNC Turning</option><option>Not sure — please review</option></select></label><MaterialSelect/><label>Estimated quantity<select name="quantity"><option value="">Select quantity</option><option>1–19 pcs</option><option>20–50 pcs</option><option>51–100 pcs</option><option>101–500 pcs</option><option>More than 500 pcs</option><option>Recurring / annual demand</option></select></label><label class="full-field">Tolerance / critical requirements<textarea name="tolerance" rows="3" placeholder="List critical dimensions, tolerances, surface finish or inspection requirements."></textarea></label><fieldset class="document-options full-field" aria-describedby="documents-help">
+    <div class="form-grid optional-fields"><label>Machining process<select name="process"><option value="">Select process</option><option selected={defaultProcess === 'CNC Milling'}>CNC Milling</option><option selected={defaultProcess === 'CNC Turning'}>CNC Turning</option><option>Not sure — please review</option></select></label><MaterialSelect/><label>Estimated quantity<select name="quantity"><option value="">Select quantity</option><option>1–19 pcs</option><option>20–50 pcs</option><option>51–100 pcs</option><option>101–500 pcs</option><option>More than 500 pcs</option><option>Recurring / annual demand</option></select></label><label class="full-field">Tolerance / critical requirements<textarea name="tolerance" rows="3" placeholder="List critical dimensions, tolerances, surface finish or inspection requirements."></textarea></label><fieldset class="document-options full-field" aria-describedby="documents-help">
       <legend>Documents you need</legend>
       <div class="document-choices">
         <label><input type="checkbox" name="documents" value="FAI report"/>FAI report</label>

@@ -64,14 +64,14 @@
 | `/services/` | CNC 铣削、车削及小批量生产介绍；锚点为 `milling`、`turning`、`production` |
 | `/services/cnc-machining/` | CNC 综合加工服务与 Google Ads 落地页：首屏报价入口、无固定 MOQ 与附条件的 24 小时回复目标、工艺与零件示例、质量评审、四步合作流程、FAQ 和页内 RFQ |
 | `/services/production/` | OEM 与小批量生产专页，包含需求对齐、生产流程、重复订单、检验要求和项目讨论入口 |
-| `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、3+2 CNC Milling、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和铣削询价入口 |
-| `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口 |
+| `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、3+2 CNC Milling、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和页内 RFQ；页头、正文及页脚询价入口均锚定本页 `#rfq-form`，默认预选 CNC Milling，可手动更改 |
+| `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口；5 张用户交付图位于 `src/assets/images/pages/cnc-turning/`，Hero 使用现有图作等比裁切背景，正文完整等比展示。共享磨削轴颈图尚未交付，详见 [图片需求与接入记录](docs/image-requirements/cnc-turning.md) |
 | `/materials/aluminum-cnc-machining/` | 铝合金 CNC 加工页，包含加工能力、牌号、典型零件、加工工艺、公差与质检、表面处理、订单生产、FAQ 和页内图纸 RFQ；桌面与移动端 Materials 下拉菜单及页脚提供入口 |
 | `/materials/stainless-steel-cnc-machining/` | 不锈钢 CNC 加工页，包含加工能力、303/304/316/316L/17-4 PH 询价牌号、典型零件、加工工艺、公差与质检、表面处理、订单生产、FAQ 和页内图纸 RFQ |
 | `/materials/brass-cnc-machining/` | 黄铜独立页，重点说明 C360 含铅要求、螺纹与密封接口、毛刺、镀层与最终尺寸 |
 | `/materials/carbon-alloy-steel-cnc-machining/` | 碳钢与合金钢独立页，重点说明 1018/1045/4140、材料状态、热处理顺序、硬度与防锈 |
 | `/materials/titanium-cnc-machining/` | 钛材独立页，重点说明 Grade 2/5、追溯、薄壁与刀具可达性、表面验收和资质边界 |
-| `/materials/engineering-plastics-cnc-machining/` | 工程塑料独立页，重点说明使用环境、具体牌号与填充、尺寸稳定性、功能配合和清洁包装 |
+| `/materials/engineering-plastics-cnc-machining/` | 工程塑料独立页，重点说明使用环境、具体牌号与填充、尺寸稳定性、功能配合和清洁包装；已接入 16 张 AI 示意图，Hero 背景、正文等比；导向件图已补齐，详见[接入记录](docs/image-requirements/engineering-plastics-cnc-machining.md#实际接入记录) |
 | `/services/secondary-processes/` | 配套工艺专页，说明通过东莞及深圳供应商网络协调磨削、热处理、表面处理及其他二次工艺的方式、询价资料和能力边界 |
 | `/industries/` | 自动化、工业机械、液压/气动、实验室与测试设备四个目标领域的应用说明、应用场景示意图、零件分类链接、图纸评审重点、加工与配套工艺入口、RFQ 清单及 FAQ；不代表已有客户关系或行业认证 |
 | `/quality/` | 图纸与材料确认、公差可行性、检测方法与环节、文件范围、首件/抽检/全检约定、偏差处理、包装标识七项质量说明；设备与文件能力按项目核实，没有在线检验管理功能 |
@@ -138,6 +138,8 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 
 ### 黄铜、钢材、钛材与工程塑料材料页
 
+工程塑料页面已按要求移除 Hero 中的 AI 来源说明和正文 AI 图注；图片 Alt 使用客观画面描述，碳钢页面 Hero Alt 同步移除 AI 前缀。内部需求文档继续保留图片来源及授权待核实记录，不将示意图片描述为经验证的企业实拍。
+
 四种材料分别生成独立静态页面。`src/data/material-pages.ts` 定义类型化英文内容与六个材料导航入口，`src/components/MaterialPage.astro` 复用页面布局、章节导航、FAQ 和现有 RFQ，`src/pages/materials/[material]/index.astro` 通过 `getStaticPaths()` 生成四条独立路由。原铝合金与不锈钢页面保持独立，不做无关重构。
 
 四页统一采用 Hero 与 01–09 章节：加工能力、材料牌号、典型零件、CNC 加工工艺、公差与质量控制、表面处理、生产与订单、FAQ、图纸 RFQ。章节顺序一致，内容按材料区分：黄铜强调含铅、螺纹密封与镀层后尺寸；钢材在加工工艺中说明热处理顺序，在质检中说明硬度；钛材强调追溯、薄壁与资质边界；塑料在加工能力中评审使用环境，在质检中说明调湿、尺寸稳定性与功能配合，表面处理不套用金属镀层要求。所有材料、外协、检测与证书要求须按项目确认，不宣称库存、固定精度、交期或特殊行业资质。图片沿用现有设备与检测语境图，不作为具体材料实物或客户案例的证据。
@@ -163,7 +165,7 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 | Titanium | [titanium-cnc-machining.md](docs/image-requirements/titanium-cnc-machining.md) | 13 |
 | Engineering Plastics | [engineering-plastics-cnc-machining.md](docs/image-requirements/engineering-plastics-cnc-machining.md) | 16 |
 
-共 92 个图位，其中铝材 18 张、不锈钢 16 张、黄铜 14 张及碳钢/合金钢 15 张已接入，其余材料 29 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 Brass WebP 复制到 `src/assets/images/materials/brass/`，并新增 `src/pages/materials/brass-cnc-machining/index.astro`，用于黄铜 Hero、能力、三类典型零件、四种加工工艺、质检、三类表面处理和生产包装；Hero 作为背景图，正文使用 Astro 响应式图片并保持自然比例。图片仅作 AI 外观与工艺示意，不证明牌号、含铅量、无铅合规、气密性、实际设备或镀层能力。
+共 92 个图位，其中铝材 18 张、不锈钢 16 张、黄铜 14 张及碳钢/合金钢 15 张已接入，工程塑料 16 张已接入，钛材 13 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 Brass WebP 复制到 `src/assets/images/materials/brass/`，并新增 `src/pages/materials/brass-cnc-machining/index.astro`，用于黄铜 Hero、能力、三类典型零件、四种加工工艺、质检、三类表面处理和生产包装；Hero 作为背景图，正文使用 Astro 响应式图片并保持自然比例。图片仅作 AI 外观与工艺示意，不证明牌号、含铅量、无铅合规、气密性、实际设备或镀层能力。
 
 2026 年 11 月 23 日将用户提供的 Carbon & Alloy Steel 15 张 WebP 复制到 `src/assets/images/materials/carbon-alloy-steel/`（保留原始 `webp/`），新增独立材料页。15 张图分别用于 Hero、加工能力、三类零件、五类工艺、CMM/硬度检验、表面外观概念、运输保护与生产托盘；Hero 等比覆盖为背景，正文使用 Astro 响应式图像并自然高度展示。配图仅为 AI 几何与工艺语境示意，不证明材料牌号、热处理、硬度、表面处理、尺寸验收或设备能力。
 
@@ -449,6 +451,8 @@ RFQ 表单会将 Full name、Business email、Company name、Country / Region、
 CNC Milling 页面位于 `src/pages/services/cnc-milling/index.astro`，沿用公共布局、设计变量和零件 SVG 组件；页面明确区分 3-axis、3+2 positional 与 simultaneous 5-axis 铣削配置，三类铣削零件由共享数据按 `CNC Milling` 工艺筛选。首页、Capabilities 铣削区、Machined Parts 的铣削工艺标签和页脚均已连接到独立页面，原 `/services/#milling` 锚点保留。
 
 铣削询价入口为 `/contact/?process=milling#rfq-form`，只将空的加工工艺字段预选为 `CNC Milling`，项目详情保持空白并可自由编辑。`process` 参数仅接受固定值 `milling`；与有效 `part` 参数同时存在时，零件工艺优先。3-axis、3+2 positional 和 simultaneous 5-axis 是用户已确认的 Belaro 铣削能力，具体尺寸、材料、几何、精度和交期仍需按图纸逐项目确认。未新增后端字段、依赖或环境变量，示意图不代表客户案例。
+
+2026 年 11 月 23 日 CNC Milling 配图接入：`webp/` 中的 7 张用户素材复制到 `src/assets/images/pages/services/` 并通过 `src/data/images.ts` 显式映射。CNC Milling Hero 改为全幅背景图；三种铣削配置、图纸评审、材料与表面要求均补充对应图片，正文图片按原始比例显示，避免拉伸；二次工艺区复用 `secondary-processes.webp`。图片来源、许可和真实性仍需上线前确认。`npm run build` 已通过，未新增依赖或环境变量。
 
 配套工艺页面位于 `src/pages/services/secondary-processes/index.astro`。网站将磨削、热处理、表面处理和其他二次工艺描述为依托东莞及深圳制造生态与供应商网络协调的项目支持，不将其表述为全部自营能力。具体供应商、工艺标准、证书、检验方式和交期必须在报价阶段按图纸确认。公共 `SecondaryProcessSupport.astro` 区块已用于首页、Machined Parts、CNC Milling、CNC Turning 和 OEM Production 页面；Capabilities、About、Quality、页头和页脚也提供相应说明或入口。该变更未新增依赖、环境变量或 RFQ 后端字段。
 

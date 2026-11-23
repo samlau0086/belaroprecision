@@ -4,7 +4,7 @@
 - 页面 slug：`cnc-turning`
 - 扫描依据：[src/pages/services/cnc-turning/index.astro](../../src/pages/services/cnc-turning/index.astro)、[src/components/SecondaryProcessSupport.astro](../../src/components/SecondaryProcessSupport.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：配图规划。新增、替换和补充复用图位尚未制作或接入；保留项不代表已完成真实性核验。
+- 状态：5 张新增图已接入，4 个保留图位继续使用；共享磨削轴颈图未交付，待补。图片不代表已完成真实性或工艺能力核验。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论
@@ -121,11 +121,23 @@ Hero 有车削图、典型零件有三张主图；轴肩配合、跳动、螺纹
 - 制作提示词／保留要求：复用 Secondary Processes 的磨削轴颈近景，不另行生成。
 - 英文 Alt 草案：`Ground journal on a machined shaft`。
 
-## 4. 本页验收重点
+## 4. 实际接入记录
+
+- 用户交付目录：`webp/`；5 张原图均为 1448 × 1086px，已复制至 `src/assets/images/pages/cnc-turning/`，保留原始文件名和交付原图，不覆盖旧资产。
+- `turning-shaft-shoulder-cut.webp`：图纸评审前的加工语境，与评审引导文字左右排列。
+- `turning-bearing-seat-shoulder-detail.webp`：Diameter fits & shoulders 评审项。
+- `turning-shaft-indicator-runout-setup.webp`：Runout & concentricity 评审项。
+- `turning-connector-thread-and-seat-detail.webp`：Threads & interfaces 评审项。
+- `turning-sleeve-protected-functional-surfaces.webp`：Material & finish 左侧，右侧保留全部要求文字。
+- Hero 保留 `turning-process-detail.webp`，改为等比裁切背景，标题及按钮置于遮罩上方；3 张类别主图继续引用公共零件图库。正文均以原始比例完整显示，不拉伸、不裁切功能细节。
+- `secondary-ground-shaft-detail.webp` 在交付目录及项目图片目录中均未找到，SecondaryProcessSupport 暂不接入替代图，不重复制作或复制其他图片冒充磨削结果。当前接入 9/10 个规划图位。
+- 来源：用户提供，生成或拍摄方式、母版、公开许可与企业工程审核待确认。已做画面初检，使用中性 Alt，不凭外观确认材料、精度、涂层或企业设备资产。
+
+## 5. 本页验收重点
 
 - 图像必须说明相邻正文的工件、工序或评审要点；不得用图片替代原有参数、FAQ 或询价字段。
 - 新图先审工件结构、夹持、刀具可达性及测量接触关系，再检查风格；不得据图确认精度、牌号、资质或制造能力。
 - 桌面和手机均检查裁切，完整保留关键工件、孔口及功能面；Hero 叠字需保持可读。报告按原始比例展示，不裁掉必要上下文。
 - Alt 按最终画面修订，不照搬文件名推断设备类型或工艺结果。保留来源和公开许可记录。
-- 本文仅为需求，不代表已完成图片制作、审核、前端布局或图片性能验收。
+- 接入状态以上述记录为准；图片不能代替企业工程审核、来源许可确认或制造能力验收。
 
