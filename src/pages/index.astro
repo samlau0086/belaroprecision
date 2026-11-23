@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import ProcessImage from '../components/ProcessImage.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import HeroSlider from '../components/HeroSlider.astro';
 import { machinedParts } from '../data/machined-parts';
@@ -74,6 +75,7 @@ const representativeParts = [machinedParts[0], machinedParts[1], machinedParts[2
           <SectionHeading eyebrow="CAPABILITY OVERVIEW" title="Confirmed processes, project-specific limits" text="Belaro confirms manufacturability against the complete part requirement rather than presenting unverified limits as blanket capability." />
           <a class="text-link" href="/services/secondary-processes/">Explore secondary process support <span aria-hidden="true">→</span></a>
         </div>
+        <div class="capability-examples"><div><ProcessImage name="milling-three-axis-plate-setup" alt="Three-axis milling setup for a mounting plate" sizes="(max-width: 700px) calc((100vw - 64px) / 2), 260px" /><p>3-axis milling</p></div><div><ProcessImage name="milling-indexed-angled-bracket" alt="Indexed-angle drilling setup for an inclined bracket face" sizes="(max-width: 700px) calc((100vw - 64px) / 2), 260px" /><p>3+2 positional milling</p></div><div><ProcessImage name="milling-five-axis-contoured-mount" alt="Five-axis tool access around a contoured mounting component" sizes="(max-width: 700px) calc((100vw - 64px) / 2), 260px" /><p>Simultaneous 5-axis milling</p></div><div><ProcessImage name="turning-shaft-shoulder-cut" alt="Turning tool approaching a stepped shaft shoulder" sizes="(max-width: 700px) calc((100vw - 64px) / 2), 260px" /><p>CNC turning</p></div></div>
         <dl class="capability-list">
           <div><dt>Machining</dt><dd>3-axis CNC milling, 3+2 positional milling, simultaneous 5-axis CNC milling and CNC turning.</dd></div>
           <div><dt>Materials</dt><dd>Confirmed from the drawing and material specification during technical review.</dd></div>
@@ -140,6 +142,7 @@ const representativeParts = [machinedParts[0], machinedParts[1], machinedParts[2
 </BaseLayout>
 
 <style>
+  .capability-examples{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;order:1}.capability-examples>div{min-width:0}.capability-examples p{font-weight:600;font-size:16px;margin:12px 0 0}.capability-examples :global(img){width:100%;height:auto;object-fit:contain}@media(max-width:700px){.capability-examples{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 16px}}
   /* 由页面原生容器约束图片，不依赖 Image 组件转发页面作用域属性。 */
   .procurement-image :global(img),.quality-image :global(img),.application-image :global(img),.delivery-image :global(img){display:block;width:100%;max-width:100%;height:auto;object-fit:contain}
   .procurement-image{margin-bottom:32px}.quality-evidence{min-width:0}.quality-image{margin-bottom:24px}.application-image{margin-bottom:26px}.delivery-image{max-width:640px;margin:40px auto 0}

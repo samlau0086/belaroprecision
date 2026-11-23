@@ -42,7 +42,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.equal(await page.locator('#workshop-team article').count(), 3);
     assert.doesNotMatch(await page.locator('main').innerText(), /illustrative/i);
     assert.equal(await page.locator('#workshop-team img').count(), 5);
-    assert.equal(await page.locator('main img').count(), 10);
+    assert.equal(await page.locator('main img').count(), 11);
     const imageMapping = [
       ['.about-hero-media', 'about-verified-workshop-hero'],
       ['#our-approach .about-drawing-image', 'home-drawing-led-component-review'],

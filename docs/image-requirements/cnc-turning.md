@@ -4,7 +4,7 @@
 - 页面 slug：`cnc-turning`
 - 扫描依据：[src/pages/services/cnc-turning/index.astro](../../src/pages/services/cnc-turning/index.astro)、[src/components/SecondaryProcessSupport.astro](../../src/components/SecondaryProcessSupport.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：5 张新增图已接入，4 个保留图位继续使用；共享磨削轴颈图未交付，待补。图片不代表已完成真实性或工艺能力核验。
+- 状态：原 10 个规划图位已接入，另补数量与复购图位，当前共 11 个图位。来源与真实性仍需确认。当前跨页状态见 [核对记录](cross-page-reuse.md)。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论
@@ -17,7 +17,7 @@ Hero 有车削图、典型零件有三张主图；轴肩配合、跳动、螺纹
 
 保留首屏与三类零件；围绕四项评审增加三张对应近景，工艺正文补一张真实夹持关系图，表面要求补一张保护面示意。
 
-不新增图片的区域与限制：数量与复购项不额外配图片；FAQ、三步询价和 CTA 保持简洁。
+补充调整：数量与复购项复用现有小批量包装图，与其他三项评审形成完整图文网格；FAQ、三步询价和 CTA 保持简洁。
 
 ## 3. 逐项图片要求
 
@@ -130,10 +130,20 @@ Hero 有车削图、典型零件有三张主图；轴肩配合、跳动、螺纹
 - `turning-connector-thread-and-seat-detail.webp`：Threads & interfaces 评审项。
 - `turning-sleeve-protected-functional-surfaces.webp`：Material & finish 左侧，右侧保留全部要求文字。
 - Hero 保留 `turning-process-detail.webp`，改为等比裁切背景，标题及按钮置于遮罩上方；3 张类别主图继续引用公共零件图库。正文均以原始比例完整显示，不拉伸、不裁切功能细节。
-- `secondary-ground-shaft-detail.webp` 在交付目录及项目图片目录中均未找到，SecondaryProcessSupport 暂不接入替代图，不重复制作或复制其他图片冒充磨削结果。当前接入 9/10 个规划图位。
+- 2026 年 11 月 23 日已找到正式资源并在 SecondaryProcessSupport 接入共享阶梯轴图，当前 10/10 个规划图位已展示；画面不作为磨削结果证明。
 - 来源：用户提供，生成或拍摄方式、母版、公开许可与企业工程审核待确认。已做画面初检，使用中性 Alt，不凭外观确认材料、精度、涂层或企业设备资产。
 
 ## 5. 本页验收重点
+
+### 数量与复购补充图位
+
+- 2026 年 11 月 24 日按反馈补齐 Quantity & repeat orders，当前共 11 个图位；原规划 10 个的统计保留用于追溯。
+- 直接复用 `src/assets/images/materials/stainless-steel/stainless-steel-connectors-small-batch-packing.webp`，不复制资产。
+- 原图为 1448 × 1086px，与另外三项评审图保持 4:3，正文完整等比展示，不拉伸或裁切。
+- Alt：`Small batch of individually foam-wrapped threaded connectors in a divided carton`。
+- 图片仅说明小批量零件独立防护的语境，不证明真实订单、复购记录、库存、材质或交付能力；来源与许可审核沿用原素材记录。
+
+### 通用验收
 
 - 图像必须说明相邻正文的工件、工序或评审要点；不得用图片替代原有参数、FAQ 或询价字段。
 - 新图先审工件结构、夹持、刀具可达性及测量接触关系，再检查风格；不得据图确认精度、牌号、资质或制造能力。

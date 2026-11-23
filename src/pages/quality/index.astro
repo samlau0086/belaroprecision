@@ -18,6 +18,13 @@ const packingMedia: MediaItem[] = [
   { name: 'quality-batch-identification', alt: 'Thick EPE foam-wrapped aluminum bracket beside a corrugated carton with a blank identification label', title: 'Packing & batch identification', caption: 'Part number, revision, quantity and lot / batch information are agreed per order; the blank label is not a shipment record.' },
 ];
 
+const topicMedia: Partial<Record<string, Pick<MediaItem, 'name' | 'alt'>>> = {
+  requirements: { name: 'home-drawing-led-component-review', alt: 'Machined mounting bracket beside a drawing and CAD model on a monitor' },
+  feasibility: { name: 'quality-bore-measurement-access', alt: 'Bore-measurement tool entering a hole in a machined metal block' },
+  'inspection-plan': { name: 'quality-inspection-coverage-selection', alt: 'One shaft on supports beside a micrometer and a tray of matching shafts' },
+  deviations: { name: 'quality-held-parts-separate-review-tray', alt: 'One machined bracket in a separate tray beside a blank review card' },
+};
+
 const topics = [
   { id: 'requirements', label: 'Drawing & material', title: 'Which drawing, material and dimensions govern the order?', intro: 'Use a shared production reference. Resolve open requirements before releasing work for production.', cards: [
     ['Confirm the released files', 'Identify the part number, drawing revision, date, units and matching 3D model. Clarify differences between the drawing and model, including which reference governs acceptance. Reconfirm revision status for repeat orders.'],
@@ -66,7 +73,10 @@ const topics = [
     </div></section>
     <nav class="quality-nav" aria-label="Quality topics"><div class="container">{topics.map((topic, index) => <a href={`#${topic.id}`}><span>0{index + 1}</span> {topic.label}</a>)}</div></nav>
     {topics.map((topic, index) => <section class:list={['section', { 'section-soft': index % 2 === 1 }]} id={topic.id}><div class="container">
-      <SectionHeading eyebrow={`0${index + 1} / ${topic.label.toUpperCase()}`} title={topic.title} text={topic.intro}/>
+      <div class:list={['quality-topic-intro', { 'quality-topic-with-image': !!topicMedia[topic.id] }]}>
+        <SectionHeading eyebrow={`0${index + 1} / ${topic.label.toUpperCase()}`} title={topic.title} text={topic.intro}/>
+        {topicMedia[topic.id] && <div class:list={['quality-topic-media', { 'requirements-media': topic.id === 'requirements' }]}><ProcessImage name={topicMedia[topic.id]!.name} alt={topicMedia[topic.id]!.alt} sizes="(max-width: 900px) calc(100vw - 48px), (max-width: 1200px) 45vw, 550px" /></div>}
+      </div>
       <div class="quality-cards">{topic.cards.map(([title, text]) => <article><h3>{title}</h3><p>{text}</p></article>)}</div>
       {topic.id === 'inspection' && <MediaGallery items={inspectionMedia} />}
       {topic.id === 'documents' && <MediaGallery items={documentMedia} />}
@@ -80,9 +90,10 @@ const topics = [
 </BaseLayout>
 
 <style>
+  .quality-topic-with-image{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center;margin-bottom:32px}.quality-topic-with-image :global(.section-heading){margin-bottom:0}.quality-topic-media{min-width:0}.quality-topic-media :global(img){width:100%;height:auto;object-fit:contain}
   .breadcrumbs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:38px;font-size:16px;color:#c7d1dd}.breadcrumbs a:hover{color:var(--orange)}.quality-media-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:48px;align-items:center}.quality-media-grid h1{font-size:clamp(38px,4.6vw,62px)}.quality-media-grid>div>p{max-width:620px;color:#c7d1dd}.quality-media-grid :global(.process-image){border:1px solid #40516a;background:#14263e}.quality-hero .hero-actions{flex-wrap:wrap}
   .quality-nav{background:var(--soft);border-bottom:1px solid var(--line)}.quality-nav .container{display:flex;flex-wrap:wrap;gap:12px 25px;padding-block:24px}.quality-nav a{font-size:16px;font-weight:600}.quality-nav a span{color:#a74b19;margin-right:5px}.quality-nav a:hover{color:#a74b19}
   section[id]{scroll-margin-top:24px}.quality-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.quality-cards article{min-width:0;background:white;border:1px solid var(--line);border-top:3px solid var(--orange);padding:28px}.quality-cards h3{font-size:23px;line-height:1.35;letter-spacing:-.6px;margin:0 0 14px}.quality-cards p{color:var(--muted);margin:0}.quality-footnote{color:var(--muted);margin:26px 0 0}.related-link{margin:26px 0 0}main a:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
-  @media(max-width:900px){.quality-media-grid,.quality-cards{grid-template-columns:minmax(0,1fr)}.quality-media-grid{gap:36px}.quality-cards article{padding:24px}}
+  @media(max-width:900px){.quality-media-grid,.quality-cards,.quality-topic-with-image{grid-template-columns:minmax(0,1fr)}.quality-media-grid{gap:36px}.quality-topic-with-image{gap:24px}.quality-cards article{padding:24px}}
   @media(max-width:600px){.breadcrumbs{margin-bottom:28px}.quality-hero .button{width:100%;gap:12px}.quality-nav .container{gap:12px 20px}.quality-cards h3{font-size:22px}}
 </style>

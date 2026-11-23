@@ -8,16 +8,27 @@ import automation from '../assets/images/industry-automation-fixture.webp';
 import machinery from '../assets/images/industry-machinery-shaft-assembly.webp';
 import fluid from '../assets/images/industry-fluid-interface.webp';
 import laboratory from '../assets/images/industry-test-equipment-mounting.webp';
+import automationInterface from '../assets/images/pages/industries/industries-automation-locating-interface.webp';
+import machineryInterface from '../assets/images/pages/industries/industries-machinery-shaft-sleeve-interface.webp';
+import fluidInterface from '../assets/images/pages/industries/industries-fluid-port-sealing-face.webp';
+import sensorBracket from '../assets/images/pages/industries/industries-test-equipment-sensor-bracket.webp';
 import inspectionTools from '../assets/images/quality-inspection-tools.webp';
 import dimensionCheck from '../assets/images/quality-critical-dimension-check.webp';
 import reportSample from '../assets/images/quality-dimensional-report-sample.webp';
 import packaging from '../assets/images/quality-protective-packaging.webp';
 import batchIdentification from '../assets/images/quality-batch-identification.webp';
+import boreMeasurementAccess from '../assets/images/pages/quality/quality-bore-measurement-access.webp';
+import inspectionCoverageSelection from '../assets/images/pages/quality/quality-inspection-coverage-selection.webp';
+import heldPartsReview from '../assets/images/pages/quality/quality-held-parts-separate-review-tray.webp';
 import contactRfq from '../assets/images/contact-rfq.webp';
+import homeDrawingReview from '../assets/images/pages/home/home-drawing-led-component-review.webp';
 import heroCncMilling from '../assets/images/hero-cnc-milling.webp';
 import heroCncTurning from '../assets/images/hero-cnc-turning.webp';
 import millingProcessDetail from '../assets/images/milling-process-detail.webp';
 import productionOem from '../assets/images/production-oem.webp';
+import productionBatch from '../assets/images/pages/production/production-separated-components-batch.webp';
+import productionFirstPiece from '../assets/images/pages/production/production-first-piece-comparison.webp';
+import productionRevisionReview from '../assets/images/pages/production/production-repeat-order-revision-review.webp';
 import qualityInspection from '../assets/images/quality-inspection.webp';
 import secondaryProcesses from '../assets/images/secondary-processes.webp';
 import secondaryGroundShaft from '../assets/images/pages/secondary-processes/secondary-ground-shaft-detail.webp';
@@ -31,6 +42,7 @@ import turningBearingSeat from '../assets/images/pages/cnc-turning/turning-beari
 import turningRunout from '../assets/images/pages/cnc-turning/turning-shaft-indicator-runout-setup.webp';
 import turningConnector from '../assets/images/pages/cnc-turning/turning-connector-thread-and-seat-detail.webp';
 import turningSleeve from '../assets/images/pages/cnc-turning/turning-sleeve-protected-functional-surfaces.webp';
+import connectorsSmallBatchPacking from '../assets/images/materials/stainless-steel/stainless-steel-connectors-small-batch-packing.webp';
 import cncMillingHousingSetupHero from '../assets/images/pages/services/cnc-milling-housing-setup-hero.webp';
 import millingThreeAxisPlateSetup from '../assets/images/pages/services/milling-three-axis-plate-setup.webp';
 import millingIndexedAngledBracket from '../assets/images/pages/services/milling-indexed-angled-bracket.webp';
@@ -49,17 +61,28 @@ export const images = {
   'industry-machinery-shaft-assembly': machinery,
   'industry-fluid-interface': fluid,
   'industry-test-equipment-mounting': laboratory,
+  'industries-automation-locating-interface': automationInterface,
+  'industries-machinery-shaft-sleeve-interface': machineryInterface,
+  'industries-fluid-port-sealing-face': fluidInterface,
+  'industries-test-equipment-sensor-bracket': sensorBracket,
   'quality-inspection-tools': inspectionTools,
   'quality-critical-dimension-check': dimensionCheck,
   'quality-dimensional-report-sample': reportSample,
   'quality-protective-packaging': packaging,
   'quality-batch-identification': batchIdentification,
+  'quality-bore-measurement-access': boreMeasurementAccess,
+  'quality-inspection-coverage-selection': inspectionCoverageSelection,
+  'quality-held-parts-separate-review-tray': heldPartsReview,
   'about-workshop': aboutWorkshop,
   'contact-rfq': contactRfq,
+  'home-drawing-led-component-review': homeDrawingReview,
   'hero-cnc-milling': heroCncMilling,
   'hero-cnc-turning': heroCncTurning,
   'milling-process-detail': millingProcessDetail,
   'production-oem': productionOem,
+  'production-separated-components-batch': productionBatch,
+  'production-first-piece-comparison': productionFirstPiece,
+  'production-repeat-order-revision-review': productionRevisionReview,
   'quality-inspection': qualityInspection,
   'secondary-processes': secondaryProcesses,
   'secondary-ground-shaft-detail': secondaryGroundShaft,
@@ -73,6 +96,7 @@ export const images = {
   'turning-shaft-indicator-runout-setup': turningRunout,
   'turning-connector-thread-and-seat-detail': turningConnector,
   'turning-sleeve-protected-functional-surfaces': turningSleeve,
+  'stainless-steel-connectors-small-batch-packing': connectorsSmallBatchPacking,
   'cnc-milling-housing-setup-hero': cncMillingHousingSetupHero,
   'milling-three-axis-plate-setup': millingThreeAxisPlateSetup,
   'milling-indexed-angled-bracket': millingIndexedAngledBracket,

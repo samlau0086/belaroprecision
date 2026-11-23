@@ -34,8 +34,8 @@ test('Services 配图：图位、原始比例、响应式布局与服务链接',
       ['.services-hero-media', 'services-cnc-part-families-hero', 'eager'],
       ['#milling', 'hero-cnc-milling', 'eager'],
       ['#turning', 'hero-cnc-turning', 'lazy'],
-      ['#secondary-processes', 'secondary-processes', 'lazy'],
-      ['#production', 'production-oem', 'lazy'],
+      ['#secondary-processes', 'secondary-ground-shaft-detail', 'lazy'],
+      ['#production', 'production-separated-components-batch', 'lazy'],
     ];
     for (const [selector, filename, loading] of mapping) {
       const img = page.locator(`${selector} img`);

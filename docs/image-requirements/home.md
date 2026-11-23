@@ -4,7 +4,7 @@
 - 页面 slug：`home`（首页没有末级 slug，约定使用 home）
 - 扫描依据：[src/pages/index.astro](../../src/pages/index.astro)、[src/components/HeroSlider.astro](../../src/components/HeroSlider.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：部分已接入。2026 年 11 月 22 日接入用户提供的 1 张新增图及 4 张现有复用图；能力概览的 4 张跨页新图尚未交付。保留项不代表已完成真实性核验。
+- 状态：19 个规划图位已接入，能力概览新增四张跨页复用图。 来源与真实性仍需确认。当前跨页状态见 [核对记录](cross-page-reuse.md)。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论
@@ -218,13 +218,13 @@
 | 图位 | 资源 | 本轮处理 |
 | --- | --- | --- |
 | 05 / 采购评审 | `home-drawing-led-component-review.webp` | 已接入标题后、四项采购要点前；按原始比例展示 |
-| 12–15 / 能力概览 | 三轴、3+2、五轴、车削共 4 张跨页新图 | 尚未交付，保留文字，不引用不存在的文件、不用其他图冒充 |
+| 12–15 / 能力概览 | 三轴、3+2、五轴、车削共 4 张跨页新图 | 2026 年 11 月 23 日已补齐，复用各工艺页正式资产，桌面四列、手机两列等比展示 |
 | 16 / 质量检验 | `quality-critical-dimension-check.webp` | 已复用，位于清单上方，完整保留千分尺与轴的关系 |
 | 17 / 自动化应用 | `industry-automation-fixture.webp` | 已复用，位于自动化卡片顶部 |
 | 18 / 工业机械 | `industry-machinery-shaft-assembly.webp` | 已复用，位于工业机械卡片顶部 |
 | 19 / 检验交付 | `quality-protective-packaging.webp` | 已复用，位于四步流程下方 |
 
-图位 01–04、06–11 原有图片继续保留。首页已接入 15 个图位，剩余 4 个待交付；本轮新增页面展示 5 张。全部本轮接入图片使用 Astro Image、响应式 WebP、明确尺寸与正文懒加载，页面不增加 AI 来源图注。包装图实际 Alt 为 `Machined brackets and shafts protected with foam inside a carton`；自动化图实际 Alt 为 `Machined workpiece held by locating blocks and a toggle clamp`，避免推断不可见工件结构。
+图位 01–04、06–11 原有图片继续保留。首页当前 19 个图位已接入，正文图按原比例完整展示，来源与许可仍需确认。
 
 同日修复正文图片拉伸：以上 5 张图片改用页面原生容器和容器内图片样式控制，统一按原始比例完整展示，不依赖 Image 组件转发页面作用域属性；包装图最大宽度为 640px。原始文件不变，开发与生产构建回归覆盖 320–2558px 共 11 种宽度，并复核桌面和手机截图。
 

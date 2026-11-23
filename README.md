@@ -60,12 +60,12 @@
 | 路由 | 当前实现 |
 | --- | --- |
 | `/` | 首页，按首屏定位、采购需求匹配、核心服务、代表性零件、能力概览、质量检验、目标应用、合作流程、FAQ 与询价入口组织 |
-| `/machined-parts/` | 六类按图加工零件展示、应用方向、工艺归类、图纸评审要点、询价准备资料和 FAQ；零件图片为代表性视觉参考，不代表客户案例或库存产品 |
+| `/machined-parts/` | 六类按图加工零件展示、应用方向、工艺归类、图纸评审要点、询价准备资料和 FAQ；三项需求评审均配图，Quantity & delivery 复用 Production 的分隔托盘批量零件图；零件图片为代表性视觉参考，不代表客户案例或库存产品 |
 | `/services/` | CNC 铣削、车削及小批量生产介绍；锚点为 `milling`、`turning`、`production` |
 | `/services/cnc-machining/` | CNC 综合加工服务与 Google Ads 落地页：首屏报价入口、无固定 MOQ 与附条件的 24 小时回复目标、工艺与零件示例、质量评审、四步合作流程、FAQ 和页内 RFQ |
 | `/services/production/` | OEM 与小批量生产专页，包含需求对齐、生产流程、重复订单、检验要求和项目讨论入口 |
 | `/services/cnc-milling/` | 独立 CNC Milling 服务页，包含 3-Axis CNC Machining、3+2 CNC Milling、Simultaneous 5-Axis CNC Machining、典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和页内 RFQ；页头、正文及页脚询价入口均锚定本页 `#rfq-form`，默认预选 CNC Milling，可手动更改 |
-| `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口；5 张用户交付图位于 `src/assets/images/pages/cnc-turning/`，Hero 使用现有图作等比裁切背景，正文完整等比展示。共享磨削轴颈图尚未交付，详见 [图片需求与接入记录](docs/image-requirements/cnc-turning.md) |
+| `/services/cnc-turning/` | 独立 CNC Turning 服务页，包含典型零件、图纸评审、材料与表面要求、合作流程、FAQ 和车削询价入口；5 张用户交付图位于 `src/assets/images/pages/cnc-turning/`，Hero 使用现有图作等比裁切背景，正文完整等比展示。共享磨削轴颈图已接入；Quantity & repeat orders 复用螺纹接头小批量包装图，四项评审均配图，详见 [图片需求与接入记录](docs/image-requirements/cnc-turning.md) |
 | `/materials/aluminum-cnc-machining/` | 铝合金 CNC 加工页，包含加工能力、牌号、典型零件、加工工艺、公差与质检、表面处理、订单生产、FAQ 和页内图纸 RFQ；桌面与移动端 Materials 下拉菜单及页脚提供入口 |
 | `/materials/stainless-steel-cnc-machining/` | 不锈钢 CNC 加工页，包含加工能力、303/304/316/316L/17-4 PH 询价牌号、典型零件、加工工艺、公差与质检、表面处理、订单生产、FAQ 和页内图纸 RFQ |
 | `/materials/brass-cnc-machining/` | 黄铜独立页，重点说明 C360 含铅要求、螺纹与密封接口、毛刺、镀层与最终尺寸 |
@@ -99,6 +99,10 @@
 首页“代表性零件”、CNC Milling“典型零件”和 CNC Turning“典型零件”卡片直接复用 `public/images/machined-parts/` 中六类零件的主图，并通过 `src/data/machined-parts.ts` 的 `image` 字段保持类别与图片映射一致。
 
 Quality 页面按七项采购问题提供主题锚点、评审要点和询价入口，已移除未经确认的固定公差范围。检测方法示例不代表实际设备资产；设备、校准状态、文件可用性与检验覆盖率须在报价和订单阶段确认。当前缺少经企业核实的设备清单和报告样本，页面不承诺默认提供全部文件、正式 FAI/PPAP 或认证，后续取得确认资料后再补充。
+
+2026 年 11 月 23 日 Quality 配图补齐：用户 `webp/` 的 3 张新增图原样复制至 `src/assets/images/pages/quality/`，分别接入测量可达性、检验覆盖和偏差隔离评审区域。加上已复用图纸评审图及 6 张保留图，10 个规划图位均已展示；四个单图主题采用桌面图文双列、手机上下排列，新增图等比完整显示并懒加载，报告原图入口保持不变。来源和实际能力仍须核实，详见 [Quality 图片接入记录](docs/image-requirements/quality.md#5-实际接入记录)。
+
+本轮 `npm run build` 及 Quality、跨页复用、来源标签共 3 项测试通过；320–1440px 布局检查和 390px/1440px 新增图位截图复核完成。未新增依赖或环境变量，未部署。
 
 About 页面区分自有 CNC 加工能力和通过东莞、深圳供应商协调的二次工艺，并列出外协范围确认、图纸及批次交接、回件检查和偏差处理等需按订单确认的控制要求。联系方式复用 `src/config.ts`，不在 About 显示中文法定名称。页面已接入用户提供的车间场景图片作为加工与检验语境展示；设备型号清单和团队资料仍未公开，具体设备、人员及图片来源真实性仍须在供应商评审时核实。邮箱收件、WhatsApp 账号和现场地址未通过此次代码测试作外部核验。
 
@@ -180,6 +184,12 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 内容按材料差异编写：黄铜强调螺纹与密封边，钢材增加热处理工序与硬度检验语境，钛材强调可达性、支承和资质边界，塑料区分夹持、调湿与光学验收。所有生成图仅作视觉参考，来源在内部文档中记录，页面不再展示 AI 来源说明；不能证明实际产能、设备资产、牌号、精度、认证或处理性能。候选镀层及指定表面处理须按订单确认后才能采用相应描述。
 
 ### 非材料页配图需求
+
+2026 年 11 月 24 日 Machined Parts 的 Quantity & delivery 配图复核：保留已接入的 Production 分隔托盘批量零件图，补充跨页复用回归断言。三项需求评审的桌面图框统一为 4:3，图片仍按原始比例完整显示，避免不同原图比例导致标题错位；700px 及以下恢复自然高度。`npm run build` 通过，生成 23 页；`node --test tests/machined-parts.test.mjs tests/cross-page-image-reuse.test.mjs tests/image-labels.test.mjs` 共 4 项通过，零件页覆盖 320–1440px 十种宽度，390px 与 1440px 评审区截图已复核。未新增依赖或环境变量，未部署。
+
+2026 年 11 月 23 日跨页复用补齐：核对全部 35 个规划复用图位，在首页、Services、Milling、Turning、About、Industries、Machined Parts、Production、Quality 共 9 页初次补齐或替换 19 处。Production 新图交付后又补齐 Services 与 Industries 的生产批次图，当前 34 个复用图位已落地，Contact 可选图按需求避免重复。复用原始资源和 Astro 图片组件，正文按比例完整展示。位置与例外见 [跨页复用核对记录](docs/image-requirements/cross-page-reuse.md)。下方历史接入记录保留当时口径，当前状态以该核对记录为准。
+
+再次复查全部 21 份页面图片需求后，8 张新增主资产对应的 19 个必需跨页复用图位均已接入，没有新的页面漏项；其余 15 处复用原有素材。核对记录补充了主资产与目标页面清单，`tests/cross-page-image-reuse.test.mjs` 增加关联数量、全部共享源文件唯一性及全部 34 个实际图位的桌面/手机加载与防拉伸检查；综合加工页手机端按需求隐藏 RFQ 辅助图的规则保留。
 
 2026 年 11 月 23 日 Secondary Processes 页按需求接入全部 7 个图位：保留综合 Hero，新增磨削、热处理、表面处理、保护区域和回件检查 5 张图，并在工艺交接说明中复用批次包装图。新增资产原样复制到 `src/assets/images/pages/secondary-processes/`，保留用户交付目录，统一通过 `src/data/images.ts` 和 `ProcessImage.astro` 输出响应式图片；正文自然高度、等比完整展示、懒加载，不增加 AI 来源标注。本页无 RFQ 表单，询价仍指向 Contact 页表单。画面差异和来源边界详见 [Secondary Processes 接入记录](docs/image-requirements/secondary-processes.md#5-实际接入记录)。未新增依赖或环境变量。
 
@@ -444,6 +454,8 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 Machined Blocks 卡片的细节图库使用 `machined-block-pocket.webp`（型腔与加工纹路）和 `machined-block-threaded-hole.webp`（螺纹孔与倒角），文件位于 `public/images/machined-parts/`；原始素材保留在 `webp/Machined Blocks/`。
 
+2026 年 11 月 23 日 Machined Parts Hero 接入：将 `webp/machined-parts-component-collection-hero.webp` 复制到 `src/assets/images/pages/machined-parts/`，保留原始文件，以全幅等比裁切背景替换原线稿。Astro Image 提供响应式资源和首屏优先加载；标题、导语与按钮叠加于遮罩之上，手机端调整背景焦点。其余零件图库及跨页复用图位保持不变；来源与许可仍需确认，详见[图片需求与接入记录](docs/image-requirements/machined-parts.md)。
+
 图片映射如下：`hero-cnc-milling.webp` 用于首页和 Capabilities 铣削展示，`hero-cnc-turning.webp` 用于车削展示，`milling-process-detail.webp`、`turning-process-detail.webp` 和 `production-oem.webp` 用于对应服务详情页，`quality-inspection.webp` 用于 Quality，`secondary-processes.webp` 用于 Secondary Processes，`about-workshop.webp` 用于 About，`contact-rfq.webp` 用于 RFQ。替换素材时应保持相同文件名，或同步修改 `src/data/images.ts` 中的导入、组件引用与 Alt 文本；不要直接编辑生成的 `dist/_astro/` 文件。
 
 Machined Parts 卡片通过 `/contact/?part=<id>#rfq-form` 进入询价页。联系页只接受 `src/data/machined-parts.ts` 中的分类 ID，并仅在对应字段为空时预填加工工艺和项目详情；该流程没有新增后端字段，也不会把任意 URL 文本写入表单。字体通过 Google Fonts 外部加载，可根据实际需求考虑自托管。当前没有站内数据库初始化、迁移或页面内容 CMS 发布命令。
@@ -512,6 +524,12 @@ Google 官方参考（上线前核对当前要求）：[数据收集和使用政
 `agent-instructions.md` 应配置为系统指令；内部使用说明和审核清单不应导入访客业务知识库。正文及 QA 需业务负责人审核后导入，不表示已接入客服平台、已配置真实转人工/CRM/订单查询，也不代表已核验线上部署或实际业务能力。网站政策与 GTM 条件加载状态存在需线上复核的差异，客服不据此声称完全没有统计追踪。没有新增依赖、环境变量或页面行为。
 
 修改 `docs/customer-service/qa.json` 后，运行 `node scripts/customer-service-qa.mjs` 同步生成问答 Markdown；使用 `node scripts/customer-service-qa.mjs --check` 和 `node --test tests/customer-service-knowledge.test.mjs` 检查结构、来源路径、联系方式、表单常量及文件同步。真实客服模型、多语言召回、人工转接和工具权限需另行验收，详见内部清单。
+
+Industries 新增配图接入：用户 `webp/` 的 5 张图片复制到 `src/assets/images/pages/industries/`，保留原始文件。Hero 使用全幅等比裁切背景和文字遮罩，四个行业的接口细节图置于各自主图下方，正文完整等比显示。原有 4 张应用主图和 3 处复用图保持不变，生产页交付后补齐第 4 处生产批次共享图，目前 13 个规划图位全部接入。画面不能作为客户案例、配合精度、密封性能或行业认证证明，详见 [Industries 图片需求与接入记录](docs/image-requirements/industries.md#5-实际接入记录)。
+
+Production 新增配图接入：用户 `webp/` 的 3 张同名图片原样复制到 `src/assets/images/pages/production/`，分别用于生产模式的分隔批次、Review feasibility 的首件核对语境及 Manage repeats 的版本比对。图纸审查图放在 Share the requirement 步骤；保留现有 Hero、质量、包装及配套工艺图，共 8 个规划图位全部展示。桌面流程图文并排、手机上下排列，正文等比完整展示及懒加载；Services 与 Industries 共享同一批次源文件。需求及来源限制见 [Production 接入记录](docs/image-requirements/production.md#5-实际接入记录)。本轮 `npm run build` 和 Production 配图、Industries、Services 配图、跨页复用、来源标签共 5 项测试通过，桌面及手机截图已复核；未新增依赖或环境变量，未部署。
+
+Production 补图与布局调整（2026 年 11 月 24 日）：Approve the order、Part documentation、Quantity profile 复用现有图纸评审与分隔批次素材，实际展示增至 11 图，不新增图片文件。流程区采用桌面四列、中屏两列、手机单列，资料区采用桌面两列、手机单列；同排图片框对齐，原图等比完整显示。详见 [Production 补充接入记录](docs/image-requirements/production.md#5-实际接入记录)。
 
 ## 10. 测试与质量检查
 

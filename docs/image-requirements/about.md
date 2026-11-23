@@ -4,7 +4,7 @@
 - 页面 slug：`about`
 - 扫描依据：[src/pages/about/index.astro](../../src/pages/about/index.astro)、[src/components/SecondaryProcessSupport.astro](../../src/components/SecondaryProcessSupport.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：已接入 10/11 个图位（2 张新增、5 张保留、3 张复用）；第 11 项共享壳体图尚未交付。接入不代表已完成真实性核验。
+- 状态：11 个规划图位已接入，区域供应商网络共享壳体图已补齐。 来源与真实性仍需确认。当前跨页状态见 [核对记录](cross-page-reuse.md)。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论

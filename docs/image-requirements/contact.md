@@ -4,7 +4,7 @@
 - 页面 slug：`contact`
 - 扫描依据：[src/pages/contact/index.astro](../../src/pages/contact/index.astro)、[src/components/RfqForm.astro](../../src/components/RfqForm.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：配图规划。新增、替换和补充复用图位尚未制作或接入；保留项不代表已完成真实性核验。
+- 状态：已按可选规则复核；现有 RFQ 配图足够，本轮不重复添加首页审查图。 来源与真实性仍需确认。当前跨页状态见 [核对记录](cross-page-reuse.md)。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论

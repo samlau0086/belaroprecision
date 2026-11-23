@@ -11,7 +11,7 @@ test('Quality 七项主题、能力边界、锚点和响应式布局', async () 
     try {
       const path = new URL(req.url, 'http://localhost').pathname;
       const body = await readFile(new URL(`../dist${path.endsWith('/') ? `${path}index.html` : path}`, import.meta.url));
-      res.setHeader('Content-Type', path.endsWith('.css') ? 'text/css' : path.endsWith('.js') ? 'text/javascript' : 'text/html');
+      res.setHeader('Content-Type', path.endsWith('.css') ? 'text/css' : path.endsWith('.js') ? 'text/javascript' : path.endsWith('.webp') ? 'image/webp' : 'text/html');
       res.end(body);
     } catch { res.writeHead(404).end(); }
   });
@@ -38,9 +38,23 @@ test('Quality 七项主题、能力边界、锚点和响应式布局', async () 
     assert.match(await page.locator('#deviations').innerText(), /written approval/);
     assert.match(await page.locator('#packing').innerText(), /lot \/ batch/);
     assert.equal(await page.locator('.media-gallery img').count(), 5);
+    assert.equal(await page.locator('main img').count(), 10);
+    const newImages = {
+      feasibility: 'quality-bore-measurement-access',
+      'inspection-plan': 'quality-inspection-coverage-selection',
+      deviations: 'quality-held-parts-separate-review-tray',
+    };
+    for (const [id, name] of Object.entries(newImages)) {
+      const image = page.locator(`#${id} .quality-topic-media img`);
+      assert.equal(await image.count(), 1);
+      assert.match(await image.getAttribute('src'), new RegExp(name));
+      assert.equal(await image.getAttribute('loading'), 'lazy');
+      assert.ok((await image.getAttribute('alt')).length > 20);
+      assert.ok(await image.getAttribute('srcset'));
+    }
     assert.equal(await page.locator('#documents .document-preview').count(), 1);
     assert.match(await page.locator('#packing').innerText(), /single thick EPE foam sheet/);
-    for (const image of await page.locator('.media-gallery img').all()) {
+    for (const image of await page.locator('main img').all()) {
       await image.scrollIntoViewIfNeeded();
       await page.waitForFunction(node => node.complete && node.naturalWidth > 0, await image.elementHandle());
       await image.evaluate(node => node.decode());
@@ -59,9 +73,18 @@ test('Quality 七项主题、能力边界、锚点和响应式布局', async () 
     for (const width of [320, 390, 600, 700, 900, 901, 1024, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 横向溢出`);
+      for (const image of await page.locator('.quality-topic-media img').all()) {
+        const geometry = await image.evaluate(node => {
+          const bounds = node.getBoundingClientRect();
+          const heading = node.closest('.quality-topic-intro').querySelector('.section-heading').getBoundingClientRect();
+          return { ratio: bounds.width / bounds.height, natural: node.naturalWidth / node.naturalHeight, left: bounds.left, top: bounds.top, headingRight: heading.right, headingBottom: heading.bottom };
+        });
+        assert.ok(Math.abs(geometry.ratio - geometry.natural) < 0.01, `${width}px 图片保持原比例`);
+        assert.ok(width > 900 ? geometry.left >= geometry.headingRight : geometry.top >= geometry.headingBottom, `${width}px 图文排列不重叠`);
+      }
       if ([390, 1440].includes(width)) {
-        for (const id of ['inspection', 'documents', 'packing']) {
-          await page.locator(`#${id}`).screenshot({ path: join(screenshots, `${id}-${width}.png`) });
+        for (const id of ['requirements', 'feasibility', 'inspection', 'documents', 'inspection-plan', 'deviations', 'packing']) {
+          await page.locator(`#${id}`).screenshot({ path: join(screenshots, `${id}-${width}.png`), style: '.site-header{visibility:hidden}' });
         }
       }
     }

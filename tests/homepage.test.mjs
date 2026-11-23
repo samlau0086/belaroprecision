@@ -80,8 +80,8 @@ test('首页九个模块：内容顺序、能力边界、链接、FAQ 与响应�
       assert.ok((await img.getAttribute('alt')).length > 20, filename);
       assert.equal(await img.getAttribute('loading'), 'lazy');
     }
-    assert.equal(await page.locator('main img').count(), 15);
-    assert.equal(await page.locator('#capability-overview img').count(), 0, '未交付的能力图不使用占位图片');
+    assert.equal(await page.locator('main img').count(), 19);
+    assert.equal(await page.locator('#capability-overview img').count(), 4, '已交付的能力图应在概览中复用');
 
     const capabilityText = await page.locator('#capability-overview').innerText();
     assert.match(capabilityText, /3-axis CNC milling/);

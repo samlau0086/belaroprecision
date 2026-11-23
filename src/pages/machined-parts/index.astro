@@ -3,7 +3,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
-import PartIllustration from '../../components/PartIllustration.astro';
+import { Image } from 'astro:assets';
+import partsHero from '../../assets/images/pages/machined-parts/machined-parts-component-collection-hero.webp';
+import ProcessImage from '../../components/ProcessImage.astro';
 import SecondaryProcessSupport from '../../components/SecondaryProcessSupport.astro';
 import { machinedParts } from '../../data/machined-parts';
 ---
@@ -11,14 +13,14 @@ import { machinedParts } from '../../data/machined-parts';
   <Header />
   <main>
     <section class="page-hero parts-hero">
-      <div class="container parts-hero-grid">
+      <div class="parts-hero-media"><Image src={partsHero} alt="Machined bracket, block, stepped shaft, flanged sleeve, threaded connector and open housing" widths={[480, 800, 1160, partsHero.width]} sizes="100vw" loading="eager" fetchpriority="high" decoding="async" /></div>
+      <div class="container parts-hero-content">
         <div>
           <span class="eyebrow eyebrow-light">MACHINED PARTS / OEM COMPONENTS</span>
           <h1>Your drawing.<br/>Your application.<br/><em>Your part.</em></h1>
           <p>Custom CNC-milled and turned components for industrial equipment. Milling capabilities include 3-axis, 3+2 positional and simultaneous 5-axis machining. Explore part families, then share your drawing, quantity and requirements for review.</p>
           <a class="button button-orange" href="#part-families">Explore part families <span aria-hidden="true">↓</span></a>
         </div>
-        <div class="hero-drawing"><span>PART STUDY / 01</span><PartIllustration kind="mounting-brackets" /><p>Mounting bracket</p></div>
       </div>
     </section>
     <section class="section" id="part-families" aria-labelledby="parts-heading">
@@ -35,9 +37,13 @@ import { machinedParts } from '../../data/machined-parts';
         <p class="parts-note">Material grade, dimensions, tolerances, finishes and batch suitability are confirmed during drawing review. The examples above are not standard stocked products.</p>
       </div>
     </section>
-    <SecondaryProcessSupport soft title="From machined geometry to the finished component" text="Where your drawing requires grinding, heat treatment or surface finishing, Belaro can review and coordinate those secondary processes through its Dongguan and Shenzhen supplier network." />
+    <SecondaryProcessSupport imageName="secondary-finished-housing-masking-detail" imageAlt="Dark housing with exposed metallic bores and mating faces and yellow masking" soft title="From machined geometry to the finished component" text="Where your drawing requires grinding, heat treatment or surface finishing, Belaro can review and coordinate those secondary processes through its Dongguan and Shenzhen supplier network." />
     <section class="section"><div class="container"><SectionHeading eyebrow="FROM PART FAMILY TO PRODUCTION" title="The details that define your part" text="A part name is only the beginning. Share the specifications that matter to its function and assembly."/>
-      <div class="requirements-grid"><article><span>01 / GEOMETRY</span><h3>Drawing & revision</h3><p>Provide a dimensioned drawing and, where available, a 3D model. Identify the revision and critical mating features.</p></article><article><span>02 / REQUIREMENTS</span><h3>Material & inspection</h3><p>Specify material grade, surface treatment, critical tolerances and any inspection records needed for the order.</p><a class="text-link" href="/quality/">Quality approach <span aria-hidden="true">→</span></a></article><article><span>03 / PRODUCTION</span><h3>Quantity & delivery</h3><p>Tell us the initial batch quantity, target delivery and whether repeat orders are expected.</p><a class="text-link" href="/services/#production">Production approach <span aria-hidden="true">→</span></a></article></div>
+      <div class="requirements-grid">
+        <article><div class="requirement-media"><ProcessImage name="home-drawing-led-component-review" alt="Machined mounting bracket beside a drawing and CAD model on a monitor" /></div><span>01 / GEOMETRY</span><h3>Drawing & revision</h3><p>Provide a dimensioned drawing and, where available, a 3D model. Identify the revision and critical mating features.</p></article>
+        <article><div class="requirement-media"><ProcessImage name="quality-critical-dimension-check" alt="Micrometer checking the diameter of a shaft supported on V-blocks" /></div><span>02 / REQUIREMENTS</span><h3>Material & inspection</h3><p>Specify material grade, surface treatment, critical tolerances and any inspection records needed for the order.</p><a class="text-link" href="/quality/">Quality approach <span aria-hidden="true">→</span></a></article>
+        <article><div class="requirement-media"><ProcessImage name="production-separated-components-batch" alt="Small batch of identical mounting brackets in separated blue trays" /></div><span>03 / PRODUCTION</span><h3>Quantity & delivery</h3><p>Tell us the initial batch quantity, target delivery and whether repeat orders are expected.</p><a class="text-link" href="/services/#production">Production approach <span aria-hidden="true">→</span></a></article>
+      </div>
     </div></section>
     <section class="section"><div class="container parts-faq"><SectionHeading eyebrow="BEFORE YOU ENQUIRE" title="A few practical answers"/>
       <div class="faq-list">
@@ -54,11 +60,30 @@ import { machinedParts } from '../../data/machined-parts';
 </BaseLayout>
 
 <style>
-  .parts-hero-grid{display:grid;grid-template-columns:1.25fr 1fr;align-items:center;gap:60px}.parts-hero h1{font-size:clamp(42px,5vw,66px)}.parts-hero .button{margin-top:12px}.hero-drawing{border:1px solid #40516a;background:linear-gradient(135deg,#223a57,#14263e);padding:24px;color:#506b88}.hero-drawing>span,.hero-drawing>p{font-size:16px;letter-spacing:1.5px;color:#bdccdb;margin:0}.hero-drawing :global(svg){display:block;width:100%;height:auto}.hero-drawing>p{letter-spacing:.5px}
+  .requirement-media{margin-bottom:24px;aspect-ratio:4/3;display:flex;align-items:center}.requirement-media :global(figure){width:100%}.requirement-media :global(img){width:100%;height:auto;object-fit:contain}
+  @media(max-width:700px){.requirement-media{aspect-ratio:auto}}
   .parts-intro{display:grid;grid-template-columns:1.1fr 1fr;gap:70px;align-items:end;margin-bottom:35px}.parts-intro h2{font-size:clamp(32px,4vw,44px);line-height:1.2;margin:14px 0 0}.parts-intro h2 em{font-style:normal;color:var(--orange)}.parts-intro>p{margin:0;color:var(--muted)}.part-jumps{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:40px}.part-jumps a{border:1px solid var(--line);padding:10px 15px;font-size:16px;font-weight:600;display:inline-flex;gap:15px;align-items:center}.part-jumps a:hover{border-color:var(--orange)}.part-jumps span{color:var(--orange)}
   .parts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}.part-card{border:1px solid var(--line);scroll-margin-top:24px;display:flex;flex-direction:column;min-width:0}.part-visual{position:relative;background-color:var(--soft);background-image:linear-gradient(#e3e8ee80 1px,transparent 1px),linear-gradient(90deg,#e3e8ee80 1px,transparent 1px);background-size:28px 28px;padding:48px 24px 58px;color:#415d7b}.part-image-frame{overflow:hidden;width:100%;background:#fff;border:1px solid #d9e0e7}.part-image{display:block;width:100%;height:auto;transform:scale(1.16);transform-origin:center;object-fit:cover}.part-index{position:absolute;top:18px;left:22px;font-size:16px;letter-spacing:1.5px;color:var(--muted);z-index:1}.part-process{position:absolute;bottom:17px;left:22px;background:var(--white);border:1px solid var(--line);padding:3px 9px;font-size:16px;font-weight:700;z-index:1}.illustration-label{position:absolute;bottom:21px;right:22px;font-size:16px;letter-spacing:1px;color:var(--muted);z-index:1}.part-gallery{height:124px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 24px 0;background:var(--soft)}.part-gallery img{display:block;width:100%;height:100%;min-width:0;object-fit:cover;border:1px solid #d9e0e7;background:#fff}.part-gallery-empty{visibility:hidden}
   .part-copy{padding:30px;display:flex;flex-direction:column;flex:1}.part-application{font-size:16px!important;letter-spacing:1px;text-transform:uppercase;color:#a74b19!important;margin-bottom:10px}.part-copy h3{font-size:27px;letter-spacing:-.8px;margin:0 0 13px}.part-copy p{font-size:16px;color:var(--muted)}.part-copy h4{font-size:16px;margin:8px 0}.part-copy ul{padding-left:19px;margin:0 0 26px;color:var(--muted);font-size:16px}.part-copy li{padding:3px 0}.part-copy li::marker{color:var(--orange)}.part-copy .text-link{margin-top:auto;padding-top:18px;border-top:1px solid var(--line);font-size:16px}.parts-note{margin:28px 0 0;padding-left:18px;border-left:2px solid var(--orange);color:var(--muted);font-size:16px}
   .requirements-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px}.requirements-grid article{border-top:2px solid var(--orange);padding-top:22px}.requirements-grid article>span{font-size:16px;color:var(--muted);letter-spacing:1px}.requirements-grid h3{font-size:23px;letter-spacing:-.6px;margin:17px 0 12px}.requirements-grid p{color:var(--muted)}.parts-faq{display:grid;grid-template-columns:1fr 1.2fr;gap:70px}.faq-list details{border-bottom:1px solid var(--line);padding:20px 0}.faq-list details:first-child{border-top:1px solid var(--line)}.faq-list summary{font-weight:600;cursor:pointer;padding-right:14px}.faq-list details p{color:var(--muted);margin:15px 0 0}.part-jumps a:focus-visible,.part-card a:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
-  @media(max-width:900px){.parts-hero-grid{gap:30px}.parts-intro{gap:35px}.parts-faq{gap:30px}.part-copy{padding:24px}.requirements-grid{gap:22px}}
-  @media(max-width:700px){.parts-hero-grid,.parts-intro,.parts-grid,.requirements-grid,.parts-faq{grid-template-columns:minmax(0,1fr)}.parts-hero-grid{gap:35px}.hero-drawing :global(svg){max-height:230px}.parts-intro{gap:20px}.parts-grid{gap:24px}.part-visual{padding:42px 15px 52px}.part-gallery{height:84px;padding-inline:15px}.part-copy{padding:24px}.part-copy h3{font-size:25px}.part-jumps{gap:8px}.part-jumps a{padding:8px 11px;font-size:16px;gap:8px}.illustration-label{right:14px;font-size:16px;letter-spacing:.5px}.part-process{left:14px}.requirements-grid{gap:30px}.parts-faq{gap:0}}
+  @media(max-width:900px){.parts-intro{gap:35px}.parts-faq{gap:30px}.part-copy{padding:24px}.requirements-grid{gap:22px}}
+  @media(max-width:700px){.parts-intro,.parts-grid,.requirements-grid,.parts-faq{grid-template-columns:minmax(0,1fr)}.parts-intro{gap:20px}.parts-grid{gap:24px}.part-visual{padding:42px 15px 52px}.part-gallery{height:84px;padding-inline:15px}.part-copy{padding:24px}.part-copy h3{font-size:25px}.part-jumps{gap:8px}.part-jumps a{padding:8px 11px;font-size:16px;gap:8px}.illustration-label{right:14px;font-size:16px;letter-spacing:.5px}.part-process{left:14px}.requirements-grid{gap:30px}.parts-faq{gap:0}}
+</style>
+
+<style is:global>
+  .parts-hero{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;min-height:700px;padding:72px 0}
+  .parts-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,23,42,.96),rgba(9,23,42,.83) 35%,rgba(9,23,42,.16) 72%,rgba(9,23,42,.05));z-index:1;pointer-events:none}
+  .parts-hero::after{display:none}
+  .parts-hero .parts-hero-media{position:absolute;inset:0;z-index:0}
+  .parts-hero .parts-hero-media img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top}
+  .parts-hero .parts-hero-content{position:relative;z-index:2}
+  .parts-hero .parts-hero-content>div{max-width:550px}
+  .parts-hero h1{font-size:66px;letter-spacing:0}
+  .parts-hero .button{margin-top:12px}
+  @media(max-width:700px){
+    .parts-hero{min-height:660px;padding:56px 0}
+    .parts-hero::before{background:linear-gradient(90deg,rgba(9,23,42,.93),rgba(9,23,42,.65))}
+    .parts-hero .parts-hero-media img{object-position:65% center}
+    .parts-hero h1{font-size:42px}
+  }
 </style>

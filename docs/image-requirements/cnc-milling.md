@@ -4,14 +4,14 @@
 - 页面 slug：`cnc-milling`
 - 扫描依据：[src/pages/services/cnc-milling/index.astro](../../src/pages/services/cnc-milling/index.astro)、[src/components/SecondaryProcessSupport.astro](../../src/components/SecondaryProcessSupport.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：已接入。新增、替换和复用图位已按页面结构接入；图片来源、生成方式及真实性仍需企业上线前核验。
+- 状态：11 个图位均展示；配套工艺已替换为共享阶梯轴新图。 来源与真实性仍需确认。当前跨页状态见 [核对记录](cross-page-reuse.md)。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论
 
 Hero 使用一张配置对照图，典型零件有三张现成主图；三种铣削配置、四项图纸评审及材料表面要求缺乏独立图解。
 
-规划图位共 11 个：新增 6 个，替换 1 个，保留 3 个，复用 1 个。新增素材位于 `src/assets/images/pages/services/`；Hero 已改为全幅背景展示，正文图使用 Astro `Image` 响应式输出并保持原始比例。当前共享二次工艺图复用 `secondary-processes.webp`，待后续交付更具体的磨削细节图时再替换映射。
+规划图位共 11 个：新增 6 个，替换 1 个，保留 3 个，复用 1 个。新增素材位于 `src/assets/images/pages/services/`；Hero 已改为全幅背景展示，正文图使用 Astro `Image` 响应式输出并保持原始比例。共享二次工艺图现已使用 secondary-ground-shaft-detail.webp，替换原综合工艺拼图。
 
 ## 2. 图文组织建议
 

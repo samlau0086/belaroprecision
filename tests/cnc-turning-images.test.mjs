@@ -29,16 +29,17 @@ test('CNC Turning 配图：图位、等比显示、背景文字与响应式布�
     await page.goto(`${baseUrl}/services/cnc-turning/`);
     await page.evaluate(() => document.fonts.ready);
     assert.equal(await page.locator('main h1').count(), 1);
-    assert.equal(await page.locator('main img').count(), 9);
+    assert.equal(await page.locator('main img').count(), 11);
     assert.equal(await page.locator('.turned-part').count(), 3);
     assert.equal(await page.locator('.turning-review-grid article').count(), 4);
-    assert.equal(await page.locator('.turning-review-grid article').last().locator('img').count(), 0);
+    assert.equal(await page.locator('.turning-review-grid article').last().locator('img').count(), 1);
     const mapping = [
       ['.turning-hero-media', 'turning-process-detail'],
       ['.turning-review-intro', 'turning-shaft-shoulder-cut'],
       ['.turning-review-grid article:nth-child(1)', 'turning-bearing-seat-shoulder-detail'],
       ['.turning-review-grid article:nth-child(2)', 'turning-shaft-indicator-runout-setup'],
       ['.turning-review-grid article:nth-child(3)', 'turning-connector-thread-and-seat-detail'],
+      ['.turning-review-grid article:nth-child(4)', 'stainless-steel-connectors-small-batch-packing'],
       ['.turning-specs-media', 'turning-sleeve-protected-functional-surfaces'],
     ];
     for (const [selector, name] of mapping) {
@@ -77,9 +78,21 @@ test('CNC Turning 配图：图位、等比显示、背景文字与响应式布�
       const copy = await page.locator('.turning-specs-copy').boundingBox();
       assert.ok(width <= 700 ? media.y < copy.y : media.x < copy.x);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      const reviewCards = await page.locator('.turning-review-grid article').all();
+      for (let index = 0; index < reviewCards.length; index++) {
+        assert.equal(await reviewCards[index].locator('img').count(), 1);
+        if (width > 700 && index % 2 === 1) {
+          const left = await reviewCards[index - 1].locator('h3').boundingBox();
+          const right = await reviewCards[index].locator('h3').boundingBox();
+          assert.ok(Math.abs(left.y - right.y) < 1, `${width}px 同排评审标题对齐`);
+        }
+      }
       if ([390, 1440].includes(width)) {
         await page.evaluate(() => scrollTo(0, 0));
         await page.screenshot({ path: join(screenshots, `turning-${width}.png`), fullPage: true });
+        const screenshotStyle = await page.addStyleTag({ content: '.site-header { visibility: hidden !important; }' });
+        await page.locator('.turning-review-grid').screenshot({ path: join(screenshots, `turning-review-${width}.png`) });
+        await screenshotStyle.evaluate(node => node.remove());
       }
     }
     await page.getByRole('link', { name: 'Request a Turning Quote' }).first().click();
