@@ -159,11 +159,13 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 | Aluminum | [aluminum-cnc-machining.md](docs/image-requirements/aluminum-cnc-machining.md) | 18（全部已接入） |
 | Stainless Steel | [stainless-steel-cnc-machining.md](docs/image-requirements/stainless-steel-cnc-machining.md) | 16（全部已接入） |
 | Brass | [brass-cnc-machining.md](docs/image-requirements/brass-cnc-machining.md) | 14 |
-| Carbon & Alloy Steel | [carbon-alloy-steel-cnc-machining.md](docs/image-requirements/carbon-alloy-steel-cnc-machining.md) | 15 |
+| Carbon & Alloy Steel | [carbon-alloy-steel-cnc-machining.md](docs/image-requirements/carbon-alloy-steel-cnc-machining.md) | 15（全部已接入） |
 | Titanium | [titanium-cnc-machining.md](docs/image-requirements/titanium-cnc-machining.md) | 13 |
 | Engineering Plastics | [engineering-plastics-cnc-machining.md](docs/image-requirements/engineering-plastics-cnc-machining.md) | 16 |
 
-共 92 个图位，其中铝材 18 张、不锈钢 16 张、黄铜 14 张已接入，其余材料 44 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 Brass WebP 复制到 `src/assets/images/materials/brass/`，并新增 `src/pages/materials/brass-cnc-machining/index.astro`，用于黄铜 Hero、能力、三类典型零件、四种加工工艺、质检、三类表面处理和生产包装；Hero 作为背景图，正文使用 Astro 响应式图片并保持自然比例。图片仅作 AI 外观与工艺示意，不证明牌号、含铅量、无铅合规、气密性、实际设备或镀层能力。
+共 92 个图位，其中铝材 18 张、不锈钢 16 张、黄铜 14 张及碳钢/合金钢 15 张已接入，其余材料 29 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 Brass WebP 复制到 `src/assets/images/materials/brass/`，并新增 `src/pages/materials/brass-cnc-machining/index.astro`，用于黄铜 Hero、能力、三类典型零件、四种加工工艺、质检、三类表面处理和生产包装；Hero 作为背景图，正文使用 Astro 响应式图片并保持自然比例。图片仅作 AI 外观与工艺示意，不证明牌号、含铅量、无铅合规、气密性、实际设备或镀层能力。
+
+2026 年 11 月 23 日将用户提供的 Carbon & Alloy Steel 15 张 WebP 复制到 `src/assets/images/materials/carbon-alloy-steel/`（保留原始 `webp/`），新增独立材料页。15 张图分别用于 Hero、加工能力、三类零件、五类工艺、CMM/硬度检验、表面外观概念、运输保护与生产托盘；Hero 等比覆盖为背景，正文使用 Astro 响应式图像并自然高度展示。配图仅为 AI 几何与工艺语境示意，不证明材料牌号、热处理、硬度、表面处理、尺寸验收或设备能力。
 
 同日将 `Stainless Steel/` 的 16 张 WebP 移至 `src/assets/images/materials/stainless-steel/`，保留英文文件名及原始内容，分别用于不锈钢 Hero、能力、四类零件、五类加工工艺、质检、三种表面处理和生产包装。页面使用 Astro 响应式图片，工艺图采用图文列表，表面处理采用三列图文布局，手机端堆叠。CNC Turning 对应卡盘与车刀；质检 Alt 按实际顶尖支承和指示表描述，包装 Alt 按独立包裹的工件描述。钝化配图仅展示清洁接头，不将外观作为钝化证明。实际画面偏差与替换目标记录在对应需求文档。
 
