@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
+import RfqSection from '../../components/RfqSection.astro';
 import Footer from '../../components/Footer.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import ProcessImage from '../../components/ProcessImage.astro';
@@ -61,7 +62,7 @@ const capabilities: { title: string; text: string; href: string; label: string; 
 ];
 ---
 <BaseLayout title="CNC Machined Components for Industrial OEM Applications" description="Explore CNC machined components for automation, industrial machinery, hydraulic and pneumatic equipment, and laboratory systems. Discuss your drawing with Belaro.">
-  <Header />
+  <Header quoteHref="#rfq-form" />
   <main>
     <section class="page-hero industries-hero">
       <div class="industries-hero-media"><Image src={industriesHero} alt="Shaft held by a dark locating support and a metal bearing bracket on a fixture base plate" widths={[480, 800, 1160, industriesHero.width]} sizes="100vw" loading="eager" fetchpriority="high" decoding="async" /></div>
@@ -70,7 +71,7 @@ const capabilities: { title: string; text: string; href: string; label: string; 
         <span class="eyebrow eyebrow-light">INDUSTRIAL APPLICATIONS / OEM COMPONENTS</span>
         <h1>Your application.<br/><em>Our starting point.</em></h1>
         <p>Drawing-based CNC machined components for equipment builders and OEM teams. Connect your application to the part geometry, process route and inspection requirements that define it.</p>
-        <div class="hero-actions"><a class="button button-orange" href="/contact/#rfq-form">Discuss Your Component <span aria-hidden="true">↗</span></a><a class="text-link text-link-light" href="#applications">Explore applications <span aria-hidden="true">↓</span></a></div>
+        <div class="hero-actions"><a class="button button-orange" href="#rfq-form">Discuss Your Component <span aria-hidden="true">↗</span></a><a class="text-link text-link-light" href="#applications">Explore applications <span aria-hidden="true">↓</span></a></div>
       </div>
     </section>
 
@@ -81,7 +82,7 @@ const capabilities: { title: string; text: string; href: string; label: string; 
         <div class="sector-details">
           {sectors.map((sector, index) => <article class="industry-detail" id={sector.id} aria-labelledby={`${sector.id}-heading`}>
             <div class="industry-visual"><span class="study-number">{String(index + 1).padStart(2, '0')} / APPLICATION STUDY</span><ProcessImage name={sector.image} alt={sector.imageAlt} /><div class="industry-interface-media"><ProcessImage name={sector.detailImage} alt={sector.detailAlt} /></div></div>
-            <div class="industry-copy"><span class="industry-context">{sector.context}</span><h3 id={`${sector.id}-heading`}>{sector.title}</h3><p>{sector.description}</p><h4>Typical component requirements</h4><div class="component-links">{sector.parts.map(id => <a href={`/machined-parts/#${id}`}>{machinedParts.find(part => part.id === id)!.title}<span aria-hidden="true">↗</span></a>)}</div><h4>What we review with your drawing</h4><ul>{sector.review.map(item => <li>{item}</li>)}</ul>{sector.id === 'fluid' && <p class="scope-note">Pressure rating, leak testing, cleanliness verification and system compliance are not assumed services. State the required standards and evidence so feasibility and scope can be confirmed before ordering.</p>}<a class="text-link" href="/contact/#rfq-form" aria-label={`Discuss your ${sector.title} component`}>Discuss your component <span aria-hidden="true">↗</span></a></div>
+            <div class="industry-copy"><span class="industry-context">{sector.context}</span><h3 id={`${sector.id}-heading`}>{sector.title}</h3><p>{sector.description}</p><h4>Typical component requirements</h4><div class="component-links">{sector.parts.map(id => <a href={`/machined-parts/#${id}`}>{machinedParts.find(part => part.id === id)!.title}<span aria-hidden="true">↗</span></a>)}</div><h4>What we review with your drawing</h4><ul>{sector.review.map(item => <li>{item}</li>)}</ul>{sector.id === 'fluid' && <p class="scope-note">Pressure rating, leak testing, cleanliness verification and system compliance are not assumed services. State the required standards and evidence so feasibility and scope can be confirmed before ordering.</p>}<a class="text-link" href="#rfq-form" aria-label={`Discuss your ${sector.title} component`}>Discuss your component <span aria-hidden="true">↗</span></a></div>
           </article>)}
         </div>
       </div>
@@ -101,9 +102,10 @@ const capabilities: { title: string; text: string; href: string; label: string; 
       <details><summary>Can machining and secondary processes be reviewed together?</summary><p>Yes. Include the complete requirements for grinding, heat treatment, surface finishing or other secondary processes. These can be reviewed through the Dongguan and Shenzhen supplier network, with the included operations and documentation agreed per project.</p></details>
     </div></div></section>
 
-    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">LET’S REVIEW YOUR APPLICATION</span><h2>Start with the part<br/><em>your equipment needs.</em></h2><p>Send your drawing, material, quantity and application requirements. We’ll review the manufacturing route and clarify the next steps.</p></div><a class="button button-orange button-large" href="/contact/#rfq-form">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
+    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">LET’S REVIEW YOUR APPLICATION</span><h2>Start with the part<br/><em>your equipment needs.</em></h2><p>Send your drawing, material, quantity and application requirements. We’ll review the manufacturing route and clarify the next steps.</p></div><a class="button button-orange button-large" href="#rfq-form">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
+    <RfqSection description="Share your drawing, application, material, quantity and equipment requirements for review." />
   </main>
-  <Footer />
+  <Footer quoteHref="#rfq-form" />
 </BaseLayout>
 
 <style>

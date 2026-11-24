@@ -7,7 +7,7 @@ import { rfqFields } from '../src/lib/gravity-forms.mjs';
 
 const documentChoices = [{inputId:15.1,value:'FAI report'},{inputId:15.2,value:'CMM / dimensional report'},{inputId:15.3,value:'EN 10204 3.1 material cert'}];
 
-for (const rfqPath of ['/contact/', '/services/cnc-machining/', '/materials/aluminum-cnc-machining/', '/materials/stainless-steel-cnc-machining/', '/materials/brass-cnc-machining/', '/materials/carbon-alloy-steel-cnc-machining/', '/materials/titanium-cnc-machining/', '/materials/engineering-plastics-cnc-machining/']) {
+for (const rfqPath of ['/contact/', '/services/cnc-machining/', '/machined-parts/', '/industries/', '/quality/', '/services/cnc-turning/', '/services/secondary-processes/', '/services/production/', '/services/', '/materials/aluminum-cnc-machining/', '/materials/stainless-steel-cnc-machining/', '/materials/brass-cnc-machining/', '/materials/carbon-alloy-steel-cnc-machining/', '/materials/titanium-cnc-machining/', '/materials/engineering-plastics-cnc-machining/']) {
 for (const turnstileEnabled of [true, false]) {
 test(`RFQ ${rfqPath} 提交：${turnstileEnabled ? '启用' : '停用'}人机验证、附件、异常和防重复`, async () => {
   let configured = false;
@@ -53,7 +53,8 @@ test(`RFQ ${rfqPath} 提交：${turnstileEnabled ? '启用' : '停用'}人机验
       const payload = route.request().postDataBuffer().toString();
       if (mode === 'optional') {
         const fields = JSON.parse(payload).variables.input.fieldValues;
-        for (const id of [5, 6, 7, 8, 10]) assert.equal(fields.find(field => field.id === id).value, '');
+        assert.equal(fields.find(field => field.id === 5).value, rfqPath === '/services/cnc-turning/' ? 'CNC Turning' : '');
+        for (const id of [6, 7, 8, 10]) assert.equal(fields.find(field => field.id === id).value, '');
         assert.equal(fields.some(field => field.id === 9), false);
         assert.deepEqual(fields.find(field => field.id === 15).checkboxValues, []);
         return route.fulfill({ json: { data: { submitGfForm: { entry: null, errors: [{id:5,message:'Please clarify the process.'}] } } } });

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
+import RfqSection from '../../components/RfqSection.astro';
 import Footer from '../../components/Footer.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import ProcessImage from '../../components/ProcessImage.astro';
@@ -65,11 +66,11 @@ const topics = [
 ---
 
 <BaseLayout title="Quality & Inspection | Drawing Review, Checks & Documentation" description="Define drawing revisions, tolerances, inspection methods, quality documents, first-piece approval, deviation handling and packing for your Belaro CNC machining project.">
-  <Header />
+  <Header quoteHref="#rfq-form" />
   <main>
     <section class="page-hero quality-hero"><div class="container">
       <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">Quality</span></nav>
-      <div class="quality-media-grid"><div><span class="eyebrow eyebrow-light">QUALITY & INSPECTION</span><h1>Define the requirement.<br/><em>Agree how to verify it.</em></h1><p>From the drawing revision to the packing label, agree what will be checked, recorded and delivered before production begins.</p><div class="hero-actions"><a class="button button-orange" href="/contact/#rfq-form">Discuss Quality Requirements <span aria-hidden="true">↗</span></a></div></div><ProcessImage loading="eager" name="quality-inspection" alt="Machined component inspection using dimensional measuring equipment" width={1585} height={992} /></div>
+      <div class="quality-media-grid"><div><span class="eyebrow eyebrow-light">QUALITY & INSPECTION</span><h1>Define the requirement.<br/><em>Agree how to verify it.</em></h1><p>From the drawing revision to the packing label, agree what will be checked, recorded and delivered before production begins.</p><div class="hero-actions"><a class="button button-orange" href="#rfq-form">Discuss Quality Requirements <span aria-hidden="true">↗</span></a></div></div><ProcessImage loading="eager" name="quality-inspection" alt="Machined component inspection using dimensional measuring equipment" width={1585} height={992} /></div>
     </div></section>
     <nav class="quality-nav" aria-label="Quality topics"><div class="container">{topics.map((topic, index) => <a href={`#${topic.id}`}><span>0{index + 1}</span> {topic.label}</a>)}</div></nav>
     {topics.map((topic, index) => <section class:list={['section', { 'section-soft': index % 2 === 1 }]} id={topic.id}><div class="container">
@@ -84,9 +85,10 @@ const topics = [
       {topic.id === 'inspection' && <p class="related-link"><a class="text-link" href="/services/secondary-processes/">Include secondary process requirements <span aria-hidden="true">→</span></a></p>}
       {topic.id === 'documents' && <p class="quality-footnote">This website does not claim quality certifications or accredited laboratory status. Confirm project-specific evidence before ordering.</p>}
     </div></section>)}
-    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">START WITH THE REQUIREMENT</span><h2>Send the drawing.<br/><em>Include the acceptance criteria.</em></h2><p>Share the revision, material, quantity, critical features, inspection coverage, document templates and packing requirements. We can then clarify feasibility and the quality scope for quotation.</p></div><a class="button button-orange button-large" href="/contact/#rfq-form">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
+    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">START WITH THE REQUIREMENT</span><h2>Send the drawing.<br/><em>Include the acceptance criteria.</em></h2><p>Share the revision, material, quantity, critical features, inspection coverage, document templates and packing requirements. We can then clarify feasibility and the quality scope for quotation.</p></div><a class="button button-orange button-large" href="#rfq-form">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
+    <RfqSection description="Include the drawing revision, critical dimensions, inspection coverage, documents and acceptance criteria." />
   </main>
-  <Footer />
+  <Footer quoteHref="#rfq-form" />
 </BaseLayout>
 
 <style>

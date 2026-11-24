@@ -1,0 +1,32 @@
+---
+import RfqForm from './RfqForm.astro';
+
+interface Props {
+  description: string;
+  defaultProcess?: string;
+}
+
+const { description, defaultProcess = '' } = Astro.props;
+---
+
+<section class="section rfq-section" aria-labelledby="rfq-title">
+  <div class="container rfq-layout">
+    <div class="rfq-intro">
+      <span class="eyebrow">REQUEST A QUOTE</span>
+      <h2 id="rfq-title">Your drawing.<br />Our technical review.</h2>
+      <p>{description}</p>
+      <p>One file up to 20 MB; use a ZIP for multiple drawings and models. Material availability, process scope, documents, price and estimated lead time are confirmed during quotation.</p>
+      <p>Your drawings may contain confidential technical information. Avoid uploading sensitive files until suitable confidentiality arrangements have been agreed.</p>
+    </div>
+    <RfqForm defaultProcess={defaultProcess} />
+  </div>
+</section>
+
+<style>
+  .rfq-layout > * { min-width: 0; }
+  .rfq-intro h2 { font-size: 36px; letter-spacing: 0; }
+  .rfq-intro p { margin-top: 24px; overflow-wrap: anywhere; }
+  @media (max-width: 700px) {
+    .rfq-intro h2 { font-size: 30px; }
+  }
+</style>

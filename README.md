@@ -191,7 +191,7 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 
 再次复查全部 21 份页面图片需求后，8 张新增主资产对应的 19 个必需跨页复用图位均已接入，没有新的页面漏项；其余 15 处复用原有素材。核对记录补充了主资产与目标页面清单，`tests/cross-page-image-reuse.test.mjs` 增加关联数量、全部共享源文件唯一性及全部 34 个实际图位的桌面/手机加载与防拉伸检查；综合加工页手机端按需求隐藏 RFQ 辅助图的规则保留。
 
-2026 年 11 月 23 日 Secondary Processes 页按需求接入全部 7 个图位：保留综合 Hero，新增磨削、热处理、表面处理、保护区域和回件检查 5 张图，并在工艺交接说明中复用批次包装图。新增资产原样复制到 `src/assets/images/pages/secondary-processes/`，保留用户交付目录，统一通过 `src/data/images.ts` 和 `ProcessImage.astro` 输出响应式图片；正文自然高度、等比完整展示、懒加载，不增加 AI 来源标注。本页无 RFQ 表单，询价仍指向 Contact 页表单。画面差异和来源边界详见 [Secondary Processes 接入记录](docs/image-requirements/secondary-processes.md#5-实际接入记录)。未新增依赖或环境变量。
+2026 年 11 月 23 日 Secondary Processes 页按需求接入全部 7 个图位：保留综合 Hero，新增磨削、热处理、表面处理、保护区域和回件检查 5 张图，并在工艺交接说明中复用批次包装图。新增资产原样复制到 `src/assets/images/pages/secondary-processes/`，保留用户交付目录，统一通过 `src/data/images.ts` 和 `ProcessImage.astro` 输出响应式图片；正文自然高度、等比完整展示、懒加载，不增加 AI 来源标注。当时本页无 RFQ 表单；2026 年 11 月 24 日已新增共享页内 RFQ，询价入口改为本页表单。画面差异和来源边界详见 [Secondary Processes 接入记录](docs/image-requirements/secondary-processes.md#5-实际接入记录)。未新增依赖或环境变量。
 
 2026 年 11 月 22 日按当前页面源码、图片映射和零件图库整理全部 15 个非材料页面的图片需求，见[非材料页图片需求总索引](docs/image-requirements/README.md)。每页按末级 slug 单独保存，首页使用 `home.md`。三个政策页也有独立审查文档，结论为不新增装饰图片。
 
@@ -234,6 +234,16 @@ Google Ads 的 Final URL 可在正式部署并验收后设置为 `https://belaro
 公共布局通过 `WhatsAppFloat.astro` 在返回顶部按钮下方提供绿色 WhatsApp 图标，复用 `src/config.ts` 的 `site.whatsappUrl`，在新标签页打开。WhatsApp 始终显示，不依赖 JavaScript；返回顶部保留滚动一屏后显示的行为。启用 LiveChat 时，从上到下为返回顶部、WhatsApp、LiveChat，前两者间距为 16px，并为底部客服入口预留 104px 偏移；客服脚本加载失败时仍保留该位置。停用 LiveChat 时两个站内图标下移，手机端适配安全区域。移动菜单展开时 WhatsApp 与其他背景内容一同暂停交互，无新增依赖或环境变量。
 
 可执行 `npm run build` 后运行 `node --test tests/livechat.test.mjs tests/site-navigation.test.mjs` 验证全站入口、链接配置、响应式间距和导航交互；客服位置使用模拟入口验证，不替代真实外部客服服务验收。
+
+### 业务页面页内 RFQ
+
+2026 年 11 月 24 日，`/machined-parts/`、`/industries/`、`/quality/`、`/services/`、`/services/cnc-turning/`、`/services/secondary-processes/` 和 `/services/production/` 新增页内 RFQ。这七页通过 `src/components/RfqSection.astro` 复用已有 `RfqForm.astro` 和双栏响应式布局；六个 Materials 页面保留已有表单，不重复添加。
+
+上述页面的页头、页脚和通用报价按钮定位本页 `#rfq-form`；CNC Turning 默认选择 CNC Turning，客户仍可手动修改。Machined Parts 分类链接及 Services 铣削、车削专用报价链接保留 Contact 参数预填流程。材料页的 Contact Belaro 仍可打开联系方式页面。表单字段、单附件 20 MB 限制、Turnstile、GraphQL、联系信息恢复及成功转化逻辑保持不变，无新增依赖、环境变量或后台字段。
+
+构建后可执行 `node --test tests/rfq-pages.test.mjs tests/rfq-submission.test.mjs`，分别验证全部 13 个目标页面的唯一表单、页内入口、响应式布局，以及模拟后台下的提交、附件、人机验证和异常处理。浏览器测试仍依赖本机已有的 Playwright / Chromium，当前未纳入项目锁文件；不替代正式域名和真实后台验收。
+
+本次本地验证：`npm run build` 通过，生成 23 页；13 个目标页面在 320、390、700、701、1024、1440px 下的布局与页内定位检查通过，30 项模拟提交测试通过。执行 `node --test tests/rfq-pages.test.mjs tests/quality.test.mjs tests/secondary-processes.test.mjs tests/cnc-turning-images.test.mjs tests/gravity-forms.test.mjs`，15 项全部通过；零件、行业、服务、生产、材料页、站点导航和联系信息恢复相关回归通过。额外的 `tests/site-typography.test.mjs` 仍因碳钢材料页既有的 13px `grade-label` 与 15px `scope-note` 未通过，已核对修改前源码，本次未调整无关字号。项目没有独立类型检查或 ESLint 脚本，因此未执行；未部署或提交真实询盘。
 
 ## 5. 环境要求、安装与启动
 

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
+import RfqSection from '../../components/RfqSection.astro';
 import Footer from '../../components/Footer.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import { Image } from 'astro:assets';
@@ -10,7 +11,7 @@ import SecondaryProcessSupport from '../../components/SecondaryProcessSupport.as
 import { machinedParts } from '../../data/machined-parts';
 ---
 <BaseLayout title="Custom CNC Machined Parts for OEM Production" description="Explore drawing-based brackets, blocks, shafts, bushings, connectors and housings for OEM applications. Send your requirements for a CNC machining review.">
-  <Header />
+  <Header quoteHref="#rfq-form" />
   <main>
     <section class="page-hero parts-hero">
       <div class="parts-hero-media"><Image src={partsHero} alt="Machined bracket, block, stepped shaft, flanged sleeve, threaded connector and open housing" widths={[480, 800, 1160, partsHero.width]} sizes="100vw" loading="eager" fetchpriority="high" decoding="async" /></div>
@@ -54,9 +55,10 @@ import { machinedParts } from '../../data/machined-parts';
         <details><summary>Can you support grinding, heat treatment and surface finishing?</summary><p>These secondary processes can be reviewed and coordinated through suitable suppliers in Dongguan and Shenzhen. Include the exact process specification, final dimensions and requested records in your RFQ.</p></details>
       </div>
     </div></section>
-    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">HAVE SOMETHING SIMILAR?</span><h2>Let’s start with<br/><em>your drawing.</em></h2><p>Share your component, material and quantity. We’ll review the requirements and clarify the next steps.</p></div><a class="button button-orange button-large" href="/contact/">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
+    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">HAVE SOMETHING SIMILAR?</span><h2>Let’s start with<br/><em>your drawing.</em></h2><p>Share your component, material and quantity. We’ll review the requirements and clarify the next steps.</p></div><a class="button button-orange button-large" href="#rfq-form">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
+    <RfqSection description="Share your component drawing, material, quantity and critical features for a machining review." />
   </main>
-  <Footer />
+  <Footer quoteHref="#rfq-form" />
 </BaseLayout>
 
 <style>

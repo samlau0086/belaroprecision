@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
+import RfqSection from '../../components/RfqSection.astro';
 import Footer from '../../components/Footer.astro';
 import { Image } from 'astro:assets';
 import { images } from '../../data/images';
@@ -8,7 +9,7 @@ import servicesHero from '../../assets/images/pages/services/services-cnc-part-f
 ---
 
 <BaseLayout title="CNC Machining Capabilities" description="Explore Belaro Precision CNC machining and coordinated secondary process support for drawing-based OEM components.">
-  <Header />
+  <Header quoteHref="#rfq-form" />
   <main class="services-page">
     <section class="page-hero services-hero">
       <div class="services-hero-media"><Image src={servicesHero} alt="Machined mounting brackets with a stepped shaft and flanged bushing" widths={[480, 800, 1160, 1672]} sizes="100vw" loading="eager" fetchpriority="high" decoding="async" /></div>
@@ -22,8 +23,9 @@ import servicesHero from '../../assets/images/pages/services/services-cnc-part-f
       <div class="service-row" id="secondary-processes"><div class="service-image"><Image src={images['secondary-ground-shaft-detail']} alt="Stepped shaft with contrasting journal and shoulder textures on a V-shaped support" widths={[480, 800, 1160]} sizes="(max-width: 700px) calc(100vw - 36px), 550px" loading="lazy" decoding="async" /></div><div class="service-copy"><span class="eyebrow">03 / SECONDARY PROCESSES</span><h2>Beyond machining.<br/><em>One coordinated requirement.</em></h2><p>The manufacturing ecosystem across Dongguan and Shenzhen gives Belaro access to flexible supplier support for grinding, heat treatment, surface finishing and other secondary processes required by your drawing.</p><div class="secondary-tags"><span>Grinding</span><span>Heat Treatment</span><span>Surface Finishing</span></div><a class="button button-outline" href="/services/secondary-processes/">Explore Secondary Processes <span aria-hidden="true">→</span></a></div></div>
       <div class="service-row service-row-reverse" id="production"><div class="service-image"><Image src={images['production-separated-components-batch']} alt="Slotted metal mounting brackets arranged in separate compartments of a blue tray" widths={[480, 800, 1160]} sizes="(max-width: 700px) calc(100vw - 36px), 550px" loading="lazy" decoding="async" /></div><div class="service-copy"><span class="eyebrow">04 / PRODUCTION SUPPORT</span><h2>Low-volume batches.<br/><em>Repeat-order mindset.</em></h2><p>Belaro is positioned for OEM component requirements where communication, drawing control and repeatability matter. Indicative batch quantities are around 20–500 pieces, subject to part complexity and production review.</p><a class="button button-outline" href="/services/production/">Explore OEM production <span aria-hidden="true">→</span></a></div></div>
     </div></section>
+    <RfqSection description="Share your drawing, material, quantity and machining or secondary process requirements." />
   </main>
-  <Footer />
+  <Footer quoteHref="#rfq-form" />
 </BaseLayout>
 
 <style is:global>

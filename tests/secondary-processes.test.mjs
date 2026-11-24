@@ -84,7 +84,7 @@ test('配套工艺页：内容边界、站内入口、导航与响应式', async
       }
     }
     await page.locator('.hero-actions .button').click();
-    assert.equal(new URL(page.url()).pathname, '/contact/');
+    assert.equal(new URL(page.url()).pathname, '/services/secondary-processes/');
     assert.equal(new URL(page.url()).hash, '#rfq-form');
     await page.goto(`${baseUrl}/services/secondary-processes/`);
 

@@ -65,7 +65,7 @@ test('Quality 七项主题、能力边界、锚点和响应式布局', async () 
     const reportLink = await page.locator('.document-preview').getAttribute('href');
     assert.equal((await page.request.get(`${baseUrl}${reportLink}`)).status(), 200);
     assert.doesNotMatch(await page.locator('main').innerText(), /±0\.01/);
-    assert.equal(await page.locator('main a[href="/contact/#rfq-form"]').count(), 2);
+    assert.equal(await page.locator('main a[href="#rfq-form"]').count(), 2);
     assert.equal(await page.locator('.breadcrumbs [aria-current="page"]').innerText(), 'Quality');
     assert.match(await page.title(), /Quality & Inspection/);
     assert.match(await page.locator('link[rel="canonical"]').getAttribute('href'), /\/quality\/$/);

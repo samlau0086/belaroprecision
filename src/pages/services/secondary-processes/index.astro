@@ -1,18 +1,19 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Header from '../../../components/Header.astro';
+import RfqSection from '../../../components/RfqSection.astro';
 import Footer from '../../../components/Footer.astro';
 import SectionHeading from '../../../components/SectionHeading.astro';
 import ProcessImage from '../../../components/ProcessImage.astro';
 ---
 
 <BaseLayout title="Secondary Processes for CNC Machined Parts" description="Grinding, heat treatment, surface finishing and other secondary process support coordinated through Belaro Precision's Dongguan and Shenzhen supplier network.">
-  <Header />
+  <Header quoteHref="#rfq-form" />
   <main>
     <section class="page-hero secondary-hero">
       <div class="container">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/services/">Capabilities</a><span aria-hidden="true">/</span><span aria-current="page">Secondary Processes</span></nav>
-        <div class="secondary-media-grid"><div><span class="eyebrow eyebrow-light">SECONDARY PROCESS SUPPORT / DONGGUAN &amp; SHENZHEN</span><h1>Beyond machining.<br/><em>Coordinated around your part.</em></h1><p>Belaro can coordinate grinding, heat treatment, surface finishing and other required secondary processes through the manufacturing ecosystems and supplier networks in Dongguan and Shenzhen.</p><div class="hero-actions"><a class="button button-orange" href="/contact/#rfq-form">Discuss your requirements <span aria-hidden="true">↗</span></a><a class="text-link text-link-light" href="#processes">Explore processes <span aria-hidden="true">↓</span></a></div></div><ProcessImage loading="eager" name="secondary-processes" alt="Grinding, anodizing, coating, heat treatment, blasting and polishing process examples" width={1586} height={992} /></div>
+        <div class="secondary-media-grid"><div><span class="eyebrow eyebrow-light">SECONDARY PROCESS SUPPORT / DONGGUAN &amp; SHENZHEN</span><h1>Beyond machining.<br/><em>Coordinated around your part.</em></h1><p>Belaro can coordinate grinding, heat treatment, surface finishing and other required secondary processes through the manufacturing ecosystems and supplier networks in Dongguan and Shenzhen.</p><div class="hero-actions"><a class="button button-orange" href="#rfq-form">Discuss your requirements <span aria-hidden="true">↗</span></a><a class="text-link text-link-light" href="#processes">Explore processes <span aria-hidden="true">↓</span></a></div></div><ProcessImage loading="eager" name="secondary-processes" alt="Grinding, anodizing, coating, heat treatment, blasting and polishing process examples" width={1586} height={992} /></div>
       </div>
     </section>
 
@@ -26,9 +27,10 @@ import ProcessImage from '../../../components/ProcessImage.astro';
 
     <section class="section"><div class="container secondary-faq"><SectionHeading eyebrow="BEFORE YOU ENQUIRE" title="Secondary process questions"/><div class="faq-list"><details><summary>Are all secondary processes completed in-house?</summary><p>No. Belaro's core offering is CNC machining. Grinding, heat treatment, surface finishing and other secondary processes may be coordinated through suitable suppliers in the Dongguan and Shenzhen manufacturing network, with scope confirmed per project.</p></details><details><summary>Can you manage machining and finishing as one requirement?</summary><p>Yes, the complete process route can be reviewed from one drawing and RFQ. The quotation will clarify the included operations, specifications, inspection and delivery scope.</p></details><details><summary>What information should I add to the drawing?</summary><p>State the process specification, final dimensions, surface or hardness requirements, masking areas, acceptance criteria and any documents needed with the order.</p></details><details><summary>Can you provide certificates or test records?</summary><p>List the exact records required in your enquiry. Availability and format depend on the selected process, supplier and agreed project scope.</p></details></div></div></section>
 
-    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">COMPLETE PROCESS REQUIREMENT</span><h2>Let’s review the route<br/><em>for your finished part.</em></h2><p>Send the drawing, process specifications, quantity and requested records for a project-specific review.</p></div><a class="button button-orange button-large" href="/contact/#rfq-form">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
+    <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">COMPLETE PROCESS REQUIREMENT</span><h2>Let’s review the route<br/><em>for your finished part.</em></h2><p>Send the drawing, process specifications, quantity and requested records for a project-specific review.</p></div><a class="button button-orange button-large" href="#rfq-form">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
+    <RfqSection description="Include the material condition, required treatments, protected surfaces and final acceptance criteria." />
   </main>
-  <Footer />
+  <Footer quoteHref="#rfq-form" />
 </BaseLayout>
 
 <style>

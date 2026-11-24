@@ -96,7 +96,7 @@ test('CNC Turning 配图：图位、等比显示、背景文字与响应式布�
       }
     }
     await page.getByRole('link', { name: 'Request a Turning Quote' }).first().click();
-    assert.equal(new URL(page.url()).pathname, '/contact/');
+    assert.equal(new URL(page.url()).pathname, '/services/cnc-turning/');
     assert.equal(new URL(page.url()).hash, '#rfq-form');
     await page.waitForFunction(() => document.querySelector('[name=process]')?.value === 'CNC Turning');
     assert.equal(await page.locator('[name=process]').inputValue(), 'CNC Turning');
