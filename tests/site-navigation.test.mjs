@@ -99,6 +99,10 @@ test('公共导航：桌面与手机吸顶、首屏阈值、返回顶部、菜�
       // 浏览器可能为菜单内的目标调整页面滚动，返回按钮测试重新定位。
       await page.evaluate(() => window.scrollTo(0, innerHeight + 1));
       await button.waitFor({ state: 'visible' });
+      if (width === 1440) {
+        await button.hover();
+        await page.waitForFunction(() => getComputedStyle(document.querySelector('[data-back-to-top]')).borderTopColor === 'rgb(255, 255, 255)');
+      }
       await button.focus();
       await page.keyboard.press('Enter');
       await page.waitForFunction(() => scrollY === 0);
@@ -172,6 +176,32 @@ test('公共导航：桌面与手机吸顶、首屏阈值、返回顶部、菜�
       assert.equal(await page.locator('[data-back-to-top]').count(), 1, '公共布局应只渲染一个按钮');
     }
     assert.deepEqual(errors, []);
+
+    // 使用触屏上下文和单次 tap，避免仅缩小桌面视窗而漏测移动端交互。
+    const touchPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    await touchPage.route('**/*', route => route.request().url().startsWith(baseUrl) ? route.continue() : route.abort());
+    for (const reducedMotion of ['no-preference', 'reduce']) {
+      await touchPage.emulateMedia({ reducedMotion });
+      await touchPage.goto(baseUrl);
+      assert.equal(await touchPage.evaluate(() => matchMedia('(hover: none)').matches), true);
+      const touchButton = touchPage.locator('[data-back-to-top]');
+      for (let attempt = 0; attempt < 2; attempt++) {
+        await touchPage.evaluate(() => window.scrollTo({ top: innerHeight + 100, behavior: 'instant' }));
+        await touchButton.waitFor({ state: 'visible' });
+        const borderColor = await touchButton.evaluate(el => getComputedStyle(el).borderTopColor);
+        if (attempt === 1) {
+          // 首次操作直接轻触；再次操作额外验证兼容性 hover 不会改变边框。
+          await touchButton.hover();
+          await touchPage.waitForTimeout(250);
+          assert.equal(await touchButton.evaluate(el => getComputedStyle(el).borderTopColor), borderColor, '触屏悬停不应改变橙色边框');
+        }
+        await touchButton.tap();
+        await touchPage.waitForFunction(() => scrollY === 0);
+        await touchButton.waitFor({ state: 'hidden' });
+        assert.equal(await touchPage.locator('.site-header .brand').evaluate(el => el === document.activeElement), true, '单次触摸后焦点应返回品牌入口');
+      }
+    }
+    await touchPage.close();
 
     const noScript = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
     await noScript.route('**/*', route => route.request().url().startsWith(baseUrl) ? route.continue() : route.abort());
