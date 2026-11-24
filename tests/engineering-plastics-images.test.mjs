@@ -89,9 +89,39 @@ test('工程塑料配图：图位、等比、背景、响应式和同页 RFQ', a
       assert.equal(new URL(page.url()).hash, '#rfq-form');
     }
     await page.goto(base + '/materials/titanium-cnc-machining/');
-    assert.equal(await page.locator('.material-illustration').count(), 0);
-    assert.equal(await page.locator('main img').count(), 2);
-    assert.equal(await page.locator('.inspection-image').count(), 1);
+    assert.equal(await page.locator('.material-illustration').count(), 12);
+    assert.equal(await page.locator('main img').count(), 13);
+    assert.equal(await page.locator('.inspection-image').count(), 0);
+    const titaniumDoc = await readFile('docs/image-requirements/titanium-cnc-machining.md', 'utf8');
+    const titaniumNames = [...titaniumDoc.matchAll(/文件名：.([^\s]+)\.webp/g)].map(match => match[1]);
+    assert.equal(titaniumNames.length, 13);
+    for (const name of titaniumNames) assert.equal(await page.locator('main img[src*="' + name + '"]').count(), 1, name);
+    assert.equal(await page.locator('main img.hero-photo').getAttribute('loading'), 'eager');
+    assert.equal(await page.locator('main img.hero-photo').evaluate(node => getComputedStyle(node).objectFit), 'cover');
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const img of await page.locator('main img').all()) {
+        await img.scrollIntoViewIfNeeded();
+        await img.evaluate(node => node.decode());
+        const metrics = await img.evaluate(node => {
+          const rect = node.getBoundingClientRect();
+          return {
+            width: rect.width,
+            height: rect.height,
+            ratio: Number(node.getAttribute('width')) / Number(node.getAttribute('height')),
+            fit: getComputedStyle(node).objectFit,
+            hero: node.classList.contains('hero-photo'),
+          };
+        });
+        assert.ok(metrics.width > 0 && metrics.height > 0);
+        if (metrics.hero) assert.equal(metrics.fit, 'cover');
+        else {
+          assert.equal(metrics.fit, 'contain');
+          assert.ok(Math.abs(metrics.height - metrics.width / metrics.ratio) < 1, width + 'px Titanium 图片不变形');
+        }
+      }
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, width + 'px Titanium 横向溢出');
+    }
     assert.deepEqual(errors, []);
     console.log('工程塑料截图：' + screenshots);
   } finally {

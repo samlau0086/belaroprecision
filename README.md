@@ -166,10 +166,10 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 | Stainless Steel | [stainless-steel-cnc-machining.md](docs/image-requirements/stainless-steel-cnc-machining.md) | 16（全部已接入） |
 | Brass | [brass-cnc-machining.md](docs/image-requirements/brass-cnc-machining.md) | 14 |
 | Carbon & Alloy Steel | [carbon-alloy-steel-cnc-machining.md](docs/image-requirements/carbon-alloy-steel-cnc-machining.md) | 15（全部已接入） |
-| Titanium | [titanium-cnc-machining.md](docs/image-requirements/titanium-cnc-machining.md) | 13 |
+| Titanium | [titanium-cnc-machining.md](docs/image-requirements/titanium-cnc-machining.md) | 13（全部已接入） |
 | Engineering Plastics | [engineering-plastics-cnc-machining.md](docs/image-requirements/engineering-plastics-cnc-machining.md) | 16 |
 
-共 92 个图位，其中铝材 18 张、不锈钢 16 张、黄铜 14 张及碳钢/合金钢 15 张已接入，工程塑料 16 张已接入，钛材 13 项为待生成、待审核、待接入需求。2026 年 11 月 22 日将用户提供的 Brass WebP 复制到 `src/assets/images/materials/brass/`，并新增 `src/pages/materials/brass-cnc-machining/index.astro`，用于黄铜 Hero、能力、三类典型零件、四种加工工艺、质检、三类表面处理和生产包装；Hero 作为背景图，正文使用 Astro 响应式图片并保持自然比例。图片仅作 AI 外观与工艺示意，不证明牌号、含铅量、无铅合规、气密性、实际设备或镀层能力。
+共 92 个图位，其中铝材 18 张、不锈钢 16 张、黄铜 14 张及碳钢/合金钢 15 张已接入，工程塑料 16 张及钛材 13 张已接入。2026 年 11 月 22 日将用户提供的 Brass WebP 复制到 `src/assets/images/materials/brass/`，并新增 `src/pages/materials/brass-cnc-machining/index.astro`，用于黄铜 Hero、能力、三类典型零件、四种加工工艺、质检、三类表面处理和生产包装；Hero 作为背景图，正文使用 Astro 响应式图片并保持自然比例。图片仅作外观与工艺语境示意，不证明牌号、含铅量、无铅合规、气密性、实际设备或镀层能力。
 
 2026 年 11 月 23 日将用户提供的 Carbon & Alloy Steel 15 张 WebP 复制到 `src/assets/images/materials/carbon-alloy-steel/`（保留原始 `webp/`），新增独立材料页。15 张图分别用于 Hero、加工能力、三类零件、五类工艺、CMM/硬度检验、表面外观概念、运输保护与生产托盘；Hero 等比覆盖为背景，正文使用 Astro 响应式图像并自然高度展示。配图仅为 AI 几何与工艺语境示意，不证明材料牌号、热处理、硬度、表面处理、尺寸验收或设备能力。
 
@@ -177,7 +177,7 @@ Passivation、bead blasting、polishing 作为供应商网络协调的项目评�
 
 不锈钢图片接入验证：`npm run build` 通过，生成 21 页；`node --test tests/stainless-steel-cnc-machining.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs tests/aluminum-cnc-machining.test.mjs`，4 项全部通过。覆盖 16 图的章节与顺序、响应式属性、加载策略、解码、320–1920px 十种宽度、图片容器、内链、SEO、菜单、FAQ 和询价定位。已复核 390px 与 1440px 截图，本地开发页面返回 HTTP 200，`git diff --check` 通过；未配置独立类型检查或 ESLint 命令，未执行这两项。未部署、未提交真实询盘。
 
-文档覆盖 Hero、加工能力、典型零件、各 CNC 工艺、质检、相关表面处理和生产包装，提供具体工件提示词、英文 SEO 文件名、Alt、比例与验收要求。铝材文档记录交付映射与实际画面偏差，原提示词保留用于后续替换。材料牌号不通过外观区分，FAQ 与 RFQ 默认不增加装饰图。
+2026 年 11 月 24 日将 Titanium WebP 接入 `src/assets/images/materials/titanium/`，由 `src/data/titanium-images.ts` 提供 13 个图位映射；Hero 作为背景图按比例覆盖，正文图片按比例完整展示，另保留一张同图位备用原图。文档覆盖 Hero、加工能力、典型零件、各 CNC 工艺、质检、相关表面处理和生产包装，提供具体工件提示词、英文 SEO 文件名、Alt、比例与验收要求。铝材文档记录交付映射与实际画面偏差，原提示词保留用于后续替换。材料牌号不通过外观区分，FAQ 与 RFQ 默认不增加装饰图。
 
 本次图片接入验证：`npm run build` 通过，生成 21 页；`node --test tests/aluminum-cnc-machining.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs` 三项全部通过，覆盖 18 张图片映射、响应式属性、解码、320–1920px 十种宽度、菜单、SEO、FAQ 及询价定位。新增图注字号已按全站标准修正为 16px。已复核 390px 与 1440px 截图，本地开发路由返回 HTTP 200；未部署、未提交真实询盘。项目无独立类型检查或 ESLint 脚本，本次未执行这两项。
 

@@ -8,9 +8,14 @@ import ProcessImage from './ProcessImage.astro';
 import { images } from '../data/images';
 import type { MaterialPage } from '../data/material-pages';
 import { engineeringPlasticsImages } from '../data/engineering-plastics-images';
+import { titaniumImages } from '../data/titanium-images';
 interface Props { material: MaterialPage }
 const { material } = Astro.props;
-const illustrations = material.slug === 'engineering-plastics-cnc-machining' ? engineeringPlasticsImages : {};
+const illustrations = material.slug === 'engineering-plastics-cnc-machining'
+  ? engineeringPlasticsImages
+  : material.slug === 'titanium-cnc-machining'
+    ? titaniumImages
+    : {};
 const heroIllustration = illustrations.hero;
 ---
 <BaseLayout title={`${material.name} CNC Machining for OEM Components`} description={material.description}>
