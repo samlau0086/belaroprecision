@@ -113,8 +113,10 @@ test('构建期正文保留排版，移除脚本、事件和危险 URL', () => {
 
 test('评论提交支持顶层评论与层级回复', async () => {
   const requests = [];
+  const headers = [];
   const fetchImpl = async (endpoint, init) => {
     requests.push(JSON.parse(init.body));
+    headers.push(init.headers);
     return response({ data: { createComment: { success: true, comment: { databaseId: 99 } } } });
   };
 
@@ -123,7 +125,7 @@ test('评论提交支持顶层评论与层级回复', async () => {
     author: 'Alex',
     authorEmail: 'alex@example.com',
     content: 'Useful guide.',
-  }, fetchImpl);
+  }, fetchImpl, 'verification-token');
   await submitBlogComment('https://cms.example/graphql', {
     commentOn: 10,
     parent: 99,
@@ -135,6 +137,8 @@ test('评论提交支持顶层评论与层级回复', async () => {
   assert.equal(requests[0].query, createCommentMutation);
   assert.equal(requests[0].variables.input.parent, undefined);
   assert.equal(requests[1].variables.input.parent, 99);
+  assert.equal(headers[0]['X-Turnstile-Token'], 'verification-token');
+  assert.equal(headers[1]['X-Turnstile-Token'], undefined);
 });
 
 test('评论树按 parent 组装，孤立回复保留为根评论', () => {

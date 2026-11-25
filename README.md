@@ -379,6 +379,8 @@ Blog 列表在浏览器端请求该地址，并在响应期间显示骨架屏。
 
 评论的 up/down vote 由 `wordpress/mu-plugins/belaro-blog-graphql.php` 提供：插件注册文章级批量字段 `Post.belaroCommentVotes(visitorToken)` 与 `belaroVoteComment` mutation，并创建 `wp_belaro_comment_votes`（表前缀以实际 WordPress 配置为准）。正文、评论与投票使用独立查询；后台未安装投票插件或暂时缺少投票字段时，文章和评论仍正常显示，仅禁用投票按钮并给出状态说明。浏览器在 `localStorage` 生成随机 token，服务端仅保存加盐 HMAC，允许同一 token 对同一评论创建、切换或清除一票。该机制不等同账号身份，清理存储或更换浏览器可获得新 token；生产仍需使用 Cloudflare/WAF 限速、日志监控和反滥用策略，不能把投票结果视为强身份验证数据。
 
+评论成功提交后，姓名和邮箱保存在浏览器 `localStorage` 的 `belaro.blog-contact` 中供后续填写，不保存正文；清除该网站浏览器数据即可移除，存储不可用时仍可提交。评论与 RFQ 共享 Turnstile 配置及服务端 Siteverify 校验，分别使用 `comment` 和 `rfq` action；启用时评论请求通过 `X-Turnstile-Token` 传递令牌，WordPress 在 `createComment` 解析前校验。上线需同时重新构建前端并更新 WordPress 的 `belaro-graphql-upload.php` MU 插件，前后端启停配置须一致；未配置 Secret 时沿用现有关闭验证行为。
+
 部署 WordPress 时必须同时复制 `belaro-graphql-upload.php` 与 `belaro-blog-graphql.php` 到 `wp-content/mu-plugins/`，确认运行账户有建表权限，并在 GraphQL schema 中检查 `createComment`、`belaroCommentVotes` 和 `belaroVoteComment`。生产站点还需允许官网 Origin 跨域访问 JSON GraphQL POST。本轮已确认生产 GraphQL 可读取文章正文和评论，但当前 schema 缺少 `belaroCommentVotes`；在 MU 插件部署并验证前，前端会按上述规则只禁用投票。
 
 站点域名分别存在于 `src/config.ts` 的 `site.domain` 和 `astro.config.mjs` 的 `site`，当前均为 `https://belaroprecision.com`；更换域名时应同步维护。所有这些静态配置更改后均须重新构建部署。

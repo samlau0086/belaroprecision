@@ -1,4 +1,6 @@
 <?php
+namespace GraphQL\Error { class UserError extends \Exception {} }
+namespace {
 // 使用 WordPress 函数替身验证插件分支，不连接真实后台或 Cloudflare。
 define('ABSPATH', __DIR__);
 $scenario = $argv[1] ?? 'disabled';
@@ -22,11 +24,11 @@ function wp_remote_post($url, $options) {
 function is_wp_error($response) { global $scenario; return $scenario === 'network-error'; }
 function wp_remote_retrieve_response_code($response) { return 200; }
 function wp_remote_retrieve_body($response) {
-    global $scenario;
+    global $scenario, $action;
     return json_encode([
         'success' => $scenario !== 'invalid',
         'hostname' => $scenario === 'wrong-hostname' ? 'other.example.com' : 'example.com',
-        'action' => $scenario === 'wrong-action' ? 'other' : 'rfq',
+        'action' => $scenario === 'wrong-action' ? 'other' : ($action ?? 'rfq'),
     ]);
 }
 require __DIR__ . '/../wordpress/mu-plugins/belaro-graphql-upload.php';
@@ -40,3 +42,14 @@ if (in_array($scenario, ['disabled', 'blank', 'missing-token', 'missing-hostname
     throw new RuntimeException('不应调用外部验证服务：' . $scenario);
 }
 echo '通过：' . $scenario . PHP_EOL;
+$action = 'comment';
+$comment_allowed = true;
+try {
+    $filters['graphql_pre_resolve_field'](null, null, [], null, null, 'RootMutation', 'createComment');
+} catch (\GraphQL\Error\UserError $error) {
+    $comment_allowed = false;
+}
+if ($comment_allowed !== $allowed) throw new \RuntimeException('评论验证失败：' . $scenario);
+$filters['graphql_pre_resolve_field'](null, null, [], null, null, 'RootMutation', 'otherMutation');
+echo '评论通过：' . $scenario . PHP_EOL;
+}

@@ -15,7 +15,7 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
 
 <BaseLayout title={`${title} | Belaro Precision`} description={post ? plainText(post.excerpt).slice(0, 160) : 'Manufacturing insights and practical guides from Belaro Precision.'}>
   <Header />
-  <main class="article-page" data-article-root data-endpoint={endpoint} data-prerendered={Boolean(post)}>
+  <main class="article-page" data-article-root data-endpoint={endpoint} data-prerendered={Boolean(post)} data-turnstile-sitekey={gravityForms.turnstileSiteKey}>
     <div class="article-shell">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <a href="/">Home</a><span aria-hidden="true">/</span><a href="/blog/">Blog</a><span aria-hidden="true">/</span><span aria-current="page">Article</span>
@@ -53,6 +53,7 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
           </div>
           <label>Comment<textarea name="content" rows="6" maxlength="5000" required></textarea></label>
           <p class="form-note">Your email address will not be published. Comments may be held for moderation.</p>
+          <div data-comment-turnstile></div>
           <p class="form-status" data-form-status role="status" aria-live="polite"></p>
           <button class="submit-comment" type="submit">Post comment</button>
         </form>
@@ -76,6 +77,37 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
   const formStatus = root?.querySelector('[data-form-status]');
   const formTitle = root?.querySelector('[data-form-title]');
   const cancelReply = root?.querySelector('[data-cancel-reply]');
+  const submit = form?.querySelector('[type="submit"]');
+  const siteKey = root?.dataset.turnstileSitekey?.trim() || '';
+  let verificationToken = '';
+  let widgetId;
+  let submitting = false;
+  const updateSubmit = () => { if (submit) submit.disabled = submitting || Boolean(siteKey && !verificationToken); };
+  if (form) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('belaro.blog-contact') || '{}');
+      if (typeof saved.author === 'string') form.elements.author.value = saved.author;
+      if (typeof saved.authorEmail === 'string') form.elements.authorEmail.value = saved.authorEmail;
+    } catch { /* 浏览器禁用存储时仍允许提交。 */ }
+    updateSubmit();
+    if (siteKey) {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.addEventListener('load', () => {
+        if (!window.turnstile) { formStatus.textContent = 'Verification is unavailable. Please reload and try again.'; return; }
+        widgetId = window.turnstile.render(form.querySelector('[data-comment-turnstile]'), {
+          sitekey: siteKey, action: 'comment', theme: 'light',
+          callback: token => { verificationToken = token; updateSubmit(); },
+          'expired-callback': () => { verificationToken = ''; updateSubmit(); },
+          'error-callback': () => { verificationToken = ''; updateSubmit(); formStatus.textContent = 'Verification failed. Please try again.'; },
+        });
+      });
+      script.addEventListener('error', () => { formStatus.textContent = 'Verification is unavailable. Please reload and try again.'; });
+      document.head.append(script);
+    }
+  }
   const encodedSlug = window.location.pathname.match(/^\/blog\/article\/([^/]+)\/?$/)?.[1] || new URLSearchParams(window.location.search).get('slug') || '';
   let slug = '';
   try {
@@ -293,8 +325,9 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
 
           form.addEventListener('submit', async event => {
             event.preventDefault();
-            const submit = form.querySelector('[type="submit"]');
-            submit.disabled = true;
+            if (submitting || (siteKey && !verificationToken)) return;
+            submitting = true;
+            updateSubmit();
             formStatus.textContent = 'Submitting comment...';
             const values = new FormData(form);
             try {
@@ -304,9 +337,10 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
                 author: values.get('author'),
                 authorEmail: values.get('authorEmail'),
                 content: values.get('content'),
-              });
+              }, fetch, verificationToken);
               const savedName = values.get('author');
               const savedEmail = values.get('authorEmail');
+              try { localStorage.setItem('belaro.blog-contact', JSON.stringify({ author: savedName, authorEmail: savedEmail })); } catch { /* 存储失败不影响已提交的评论。 */ }
               form.reset();
               form.elements.author.value = savedName;
               form.elements.authorEmail.value = savedEmail;
@@ -314,8 +348,12 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
               formStatus.textContent = 'Your comment was submitted and may be awaiting moderation.';
             } catch (error) {
               formStatus.textContent = error instanceof Error ? error.message : 'Comment submission failed. Please try again.';
-              submit.disabled = false;
               return;
+            } finally {
+              verificationToken = '';
+              if (siteKey && widgetId !== undefined) window.turnstile?.reset(widgetId);
+              submitting = false;
+              updateSubmit();
             }
             try {
               const refreshed = await fetchBlogPost(root.dataset.endpoint, slug, visitorToken);
@@ -325,8 +363,6 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
               }
             } catch {
               formStatus.textContent = 'Your comment was submitted and may be awaiting moderation. The comment list could not be refreshed.';
-            } finally {
-              submit.disabled = false;
             }
           });
           cancelReply.addEventListener('click', clearReplyTarget);
@@ -377,7 +413,7 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
   .comments-list :global(.comment-actions) { display: flex; align-items: center; gap: .35rem; min-height: 34px; }
   .comments-list :global(.vote-button) { display: inline-flex; align-items: center; gap: .25rem; min-width: 38px; min-height: 34px; padding: .25rem .45rem; border: 1px solid transparent; background: transparent; color: #5c6c7d; cursor: pointer; }
   .comments-list :global(.vote-button svg) { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .comments-list :global(.vote-button[aria-pressed="true"]) { border-color: #cf7621; color: #a95412; background: #fff5eb; }
+  .comments-list :global(.vote-button[aria-pressed="true"]) { color: #a95412; }
   .comments-list :global(.vote-button:hover), .comments-list :global(.reply-button:hover), .cancel-reply:hover { color: #a95412; }
   .comments-list :global(.reply-button), .cancel-reply { min-height: 34px; padding: .25rem .55rem; border: 0; background: transparent; color: #526477; font: inherit; font-size: .85rem; cursor: pointer; }
   .comment-form { margin-top: 3rem; padding: 1.5rem; border: 1px solid #d8dfe6; background: #fff; }

@@ -30,21 +30,13 @@ add_filter('graphql_is_valid_http_content_type', static function ($valid, $conte
         && $_SERVER['HTTP_GRAPHQL_REQUIRE_PREFLIGHT'] === '1';
 }, 10, 2);
 
-// 未配置服务端密钥时停用验证；一旦配置，仍必须验证 Token，不能由客户端绕过。
-add_filter('graphql_request_data', static function ($data) {
-    if (!is_array($data) || !isset($data['query']) || !is_string($data['query'])) {
-        return $data;
-    }
-
-    if (!preg_match('/\bmutation\b/i', $data['query']) || !preg_match('/\bsubmitGfForm\b/', $data['query'])) {
-        return $data;
-    }
-
+// RFQ 和评论共用密钥与验证逻辑，但使用不同 action 防止令牌跨用途复用。
+function belaro_verify_turnstile($action) {
     $token = isset($_SERVER['HTTP_X_TURNSTILE_TOKEN']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_X_TURNSTILE_TOKEN'])) : '';
     $secret = defined('BELARO_TURNSTILE_SECRET_KEY') ? BELARO_TURNSTILE_SECRET_KEY : '';
     $hostname = defined('BELARO_TURNSTILE_HOSTNAME') ? BELARO_TURNSTILE_HOSTNAME : '';
     if (trim($secret) === '') {
-        return $data;
+        return true;
     }
     $verified = false;
 
@@ -60,11 +52,22 @@ add_filter('graphql_request_data', static function ($data) {
                 && !empty($result['success'])
                 && isset($result['hostname'], $result['action'])
                 && hash_equals($hostname, (string) $result['hostname'])
-                && hash_equals('rfq', (string) $result['action']);
+                && hash_equals($action, (string) $result['action']);
         }
     }
 
-    if (!$verified) {
+    return $verified;
+}
+
+// 未配置服务端密钥时停用验证；一旦配置，仍必须验证 Token，不能由客户端绕过。
+add_filter('graphql_request_data', static function ($data) {
+    if (!is_array($data) || !isset($data['query']) || !is_string($data['query'])) {
+        return $data;
+    }
+    if (!preg_match('/\bmutation\b/i', $data['query']) || !preg_match('/\bsubmitGfForm\b/', $data['query'])) {
+        return $data;
+    }
+    if (!belaro_verify_turnstile('rfq')) {
         // Replace the operation so the caller cannot accidentally save an RFQ.
         $data['query'] = 'query { __typename }';
         unset($data['variables'], $data['operationName']);
@@ -72,3 +75,10 @@ add_filter('graphql_request_data', static function ($data) {
 
     return $data;
 }, 1);
+
+add_filter('graphql_pre_resolve_field', static function ($result, $source, $args, $context, $info, $type_name, $field_key) {
+    if (strtolower($type_name) === 'rootmutation' && $field_key === 'createComment' && !belaro_verify_turnstile('comment')) {
+        throw new \GraphQL\Error\UserError('Comment verification failed. Please try again.');
+    }
+    return $result;
+}, 10, 7);

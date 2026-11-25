@@ -19,7 +19,8 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
     try {
       const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
       const relative = pathname.endsWith('/') ? `${pathname}index.html` : pathname;
-      const body = await readFile(join(process.cwd(), 'dist', relative));
+      let body = await readFile(join(process.cwd(), 'dist', relative));
+      if (relative === '/blog/article/hello-world/index.html') body = Buffer.from(body.toString().replace(/data-turnstile-sitekey(?:="[^"]*")?/, 'data-turnstile-sitekey="test-site-key"'));
       res.setHeader('Content-Type', contentTypes[extname(relative)] || 'application/octet-stream');
       res.end(body);
     } catch {
@@ -38,9 +39,10 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/*', route => route.request().url().startsWith(baseUrl) ? route.continue() : route.fallback());
+    await page.route('https://challenges.cloudflare.com/turnstile/v0/api.js**', route => route.fulfill({ contentType: 'application/javascript', body: 'window.turnstile = { render: (el, options) => { window.testTurnstile = options; return "widget"; }, reset: () => { window.testTurnstileResets = (window.testTurnstileResets || 0) + 1; } };' }));
     await page.route('**/graphql', async route => {
       const request = JSON.parse(route.request().postData());
-      requests.push(request);
+      requests.push({ ...request, headers: route.request().headers() });
       if (request.query.includes('BlogIndex')) {
         await new Promise(resolve => setTimeout(resolve, 600));
         await route.fulfill({ json: { data: {
@@ -124,20 +126,34 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
     await page.getByRole('button', { name: 'Upvote comment' }).first().click();
     assert.equal(await page.getByRole('button', { name: 'Upvote comment' }).first().getAttribute('aria-pressed'), 'true');
     assert.equal(await page.getByRole('button', { name: 'Upvote comment' }).first().locator('span').innerText(), '3');
+    const selectedStyle = await page.getByRole('button', { name: 'Upvote comment' }).first().evaluate(el => ({ color: getComputedStyle(el).color, background: getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopColor }));
+    assert.equal(selectedStyle.color, 'rgb(169, 84, 18)');
+    assert.equal(selectedStyle.background, 'rgba(0, 0, 0, 0)');
+    assert.equal(selectedStyle.border, 'rgba(0, 0, 0, 0)');
 
     await page.getByRole('button', { name: 'Reply' }).first().click();
     await page.getByLabel('Name').fill('Taylor');
     await page.getByLabel('Email').fill('taylor@example.com');
     await page.getByRole('textbox', { name: 'Comment', exact: true }).fill('This is a reply.');
+    await page.waitForFunction(() => window.testTurnstile);
+    assert.equal(await page.getByRole('button', { name: 'Post comment' }).isDisabled(), true);
+    await page.evaluate(() => window.testTurnstile.callback('test-token'));
+    await page.evaluate(() => window.testTurnstile['expired-callback']());
+    assert.equal(await page.getByRole('button', { name: 'Post comment' }).isDisabled(), true);
+    await page.evaluate(() => window.testTurnstile.callback('test-token'));
     await page.getByRole('button', { name: 'Post comment' }).click();
     await page.getByText('Your comment was submitted and may be awaiting moderation.').waitFor();
     const commentRequest = requests.find(request => request.query.includes('CreateBlogComment'));
     assert.equal(commentRequest.variables.input.parent, 21);
     assert.equal(commentRequest.variables.input.commentOn, 10);
+    assert.equal(commentRequest.headers['x-turnstile-token'], 'test-token');
+    assert.equal(await page.evaluate(() => window.testTurnstileResets), 1);
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.reload();
     await page.getByRole('heading', { level: 1, name: 'CNC Guide' }).waitFor();
+    assert.equal(await page.getByLabel('Name').inputValue(), 'Taylor');
+    assert.equal(await page.getByLabel('Email').inputValue(), 'taylor@example.com');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     if (process.env.BLOG_SCREENSHOT_DIR) {
       await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, 'blog-article-desktop.png'), fullPage: true });
@@ -149,7 +165,7 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
     assert.equal(await page.getByRole('heading', { level: 1, name: 'CNC Guide' }).count(), 1);
     assert.equal(await page.getByText('Useful article.').count(), 1);
     assert.equal(await page.getByRole('button', { name: 'Upvote comment' }).first().isDisabled(), true);
-    assert.equal(await page.getByRole('button', { name: 'Post comment' }).isEnabled(), true);
+    assert.equal(await page.getByRole('button', { name: 'Post comment' }).isDisabled(), true);
   } finally {
     await browser?.close();
     await new Promise(resolve => server.close(resolve));

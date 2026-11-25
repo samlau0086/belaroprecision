@@ -84,10 +84,10 @@ export const voteCommentMutation = `
   }
 `;
 
-async function requestGraphQL(endpoint, query, variables, fetchImpl) {
+async function requestGraphQL(endpoint, query, variables, fetchImpl, token = '') {
   const response = await fetchImpl(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(token ? { 'X-Turnstile-Token': token } : {}) },
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(15000),
   });
@@ -131,7 +131,7 @@ export function attachCommentVotes(comments, summaries) {
   }));
 }
 
-export async function submitBlogComment(endpoint, input, fetchImpl = fetch) {
+export async function submitBlogComment(endpoint, input, fetchImpl = fetch, turnstileToken = '') {
   const commentOn = Number(input?.commentOn);
   const content = String(input?.content || '').trim();
   const author = String(input?.author || '').trim();
@@ -142,7 +142,7 @@ export async function submitBlogComment(endpoint, input, fetchImpl = fetch) {
   }
   const mutationInput = { commentOn, content, author, authorEmail };
   if (Number.isInteger(parent) && parent > 0) mutationInput.parent = parent;
-  const data = await requestGraphQL(endpoint, createCommentMutation, { input: mutationInput }, fetchImpl);
+  const data = await requestGraphQL(endpoint, createCommentMutation, { input: mutationInput }, fetchImpl, turnstileToken);
   if (!data?.createComment?.success) throw new Error('WordPress did not accept the comment');
   return data.createComment.comment || null;
 }
