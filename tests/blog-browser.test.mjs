@@ -30,6 +30,7 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
   const baseUrl = `http://127.0.0.1:${server.address().port}`;
   const requests = [];
   let browser;
+  let votingUnavailable = false;
 
   try {
     browser = await chromium.launch({ headless: true });
@@ -41,11 +42,12 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
       const request = JSON.parse(route.request().postData());
       requests.push(request);
       if (request.query.includes('BlogIndex')) {
+        await new Promise(resolve => setTimeout(resolve, 600));
         await route.fulfill({ json: { data: {
           categories: { nodes: [{ databaseId: 3, name: 'Manufacturing', slug: 'manufacturing' }] },
           posts: { nodes: [{
             databaseId: 10,
-            slug: 'cnc-guide',
+            slug: 'hello-world',
             title: 'CNC Guide',
             uri: '/cnc-guide/',
             date: '2026-11-25T08:00:00Z',
@@ -54,6 +56,10 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
             categories: { nodes: [{ databaseId: 3, name: 'Manufacturing', slug: 'manufacturing' }] },
           }] },
         } } });
+      } else if (request.query.includes('BlogVotes')) {
+        await route.fulfill({ json: votingUnavailable
+          ? { errors: [{ message: 'Cannot query field "belaroCommentVotes" on type "Post".' }] }
+          : { data: { post: { belaroCommentVotes: [{ commentId: 21, up: 2, down: 0, score: 2, viewerVote: '' }] } } } });
       } else if (request.query.includes('CreateBlogComment')) {
         await route.fulfill({ json: { data: { createComment: { success: true, comment: { databaseId: 23 } } } } });
       } else if (request.query.includes('VoteBlogComment')) {
@@ -61,7 +67,7 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
       } else {
         await route.fulfill({ json: { data: { post: {
           databaseId: 10,
-          slug: 'cnc-guide',
+          slug: 'hello-world',
           title: 'CNC Guide',
           content: '<h2>Drawing review</h2><p>Confirm the current revision.</p><img src="javascript:alert(1)" onerror="alert(2)"><script>alert(3)</script>',
           excerpt: '<p>A practical guide.</p>',
@@ -81,17 +87,32 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
       }
     });
     await page.goto(`${baseUrl}/blog/`);
-    const articleLink = page.getByRole('link', { name: 'CNC Guide' });
+    await page.locator('[data-blog-grid][aria-busy="true"]').waitFor();
+    assert.equal(await page.locator('.blog-skeleton').count(), 3);
+    const articleLink = page.getByRole('link', { name: 'CNC Guide', exact: true });
     await articleLink.waitFor();
-    assert.equal(await articleLink.getAttribute('href'), '/blog/article/?slug=cnc-guide');
+    assert.equal(await articleLink.getAttribute('href'), '/blog/article/hello-world/');
     assert.equal((await articleLink.getAttribute('href')).includes('belaroprecision.local'), false);
+    assert.equal(await page.locator('.blog-skeleton').count(), 0);
+    assert.equal(await page.locator('.blog-card').evaluate(el => getComputedStyle(el).borderTopStyle), 'solid');
+    assert.equal(await page.getByRole('button', { name: 'All articles' }).evaluate(el => getComputedStyle(el).minHeight), '46px');
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    if (process.env.BLOG_SCREENSHOT_DIR) await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, 'blog-list-mobile.png'), fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    if (process.env.BLOG_SCREENSHOT_DIR) await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, 'blog-list-desktop.png'), fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
 
-    await page.goto(`${baseUrl}/blog/article/?slug=cnc-guide`);
+    const staticHtml = await (await fetch(`${baseUrl}/blog/article/hello-world/`)).text();
+    assert.match(staticHtml, /data-prerendered="true"/);
+    assert.match(staticHtml, /Welcome to WordPress/);
+    assert.match(staticHtml, /rel="canonical" href="https:\/\/belaroprecision.com\/blog\/article\/hello-world\/?"/);
+    await page.goto(`${baseUrl}/blog/article/hello-world/`);
     await page.getByRole('heading', { level: 1, name: 'CNC Guide' }).waitFor();
     assert.equal(await page.getByText('Thanks for sharing.').count(), 1);
     assert.equal(await page.locator('.comment').count(), 2);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.equal(await page.getByRole('button', { name: 'Upvote comment' }).count(), 2);
+    await page.getByRole('button', { name: 'Upvote comment' }).first().waitFor({ state: 'visible' });
     assert.equal(await page.locator('.article-content script').count(), 0);
     assert.equal(await page.locator('.article-content').getByText('alert(3)').count(), 0);
     assert.equal(await page.locator('.article-content img').getAttribute('src'), null);
@@ -122,6 +143,13 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
       await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, 'blog-article-desktop.png'), fullPage: true });
     }
     assert.deepEqual(errors, []);
+    votingUnavailable = true;
+    await page.reload();
+    await page.getByText('Voting is currently unavailable. You can still join the discussion.').waitFor();
+    assert.equal(await page.getByRole('heading', { level: 1, name: 'CNC Guide' }).count(), 1);
+    assert.equal(await page.getByText('Useful article.').count(), 1);
+    assert.equal(await page.getByRole('button', { name: 'Upvote comment' }).first().isDisabled(), true);
+    assert.equal(await page.getByRole('button', { name: 'Post comment' }).isEnabled(), true);
   } finally {
     await browser?.close();
     await new Promise(resolve => server.close(resolve));

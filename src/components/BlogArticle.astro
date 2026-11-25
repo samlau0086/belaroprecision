@@ -1,0 +1,402 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import { gravityForms } from '../config';
+import { plainText } from '../lib/blog.mjs';
+import { sanitizeBlogHtml } from '../lib/blog-html.mjs';
+
+const endpoint = gravityForms.graphqlUrl;
+const { post } = Astro.props;
+const title = post ? plainText(post.title) : 'Article';
+const image = post?.featuredImage?.node;
+const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUrl : undefined;
+---
+
+<BaseLayout title={`${title} | Belaro Precision`} description={post ? plainText(post.excerpt).slice(0, 160) : 'Manufacturing insights and practical guides from Belaro Precision.'}>
+  <Header />
+  <main class="article-page" data-article-root data-endpoint={endpoint} data-prerendered={Boolean(post)}>
+    <div class="article-shell">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span aria-hidden="true">/</span><a href="/blog/">Blog</a><span aria-hidden="true">/</span><span aria-current="page">Article</span>
+      </nav>
+
+      <p class="article-status" data-article-status role="status" aria-live="polite">{post ? '' : 'Loading article...'}</p>
+      <article data-article hidden={!post}>
+        <header class="article-header">
+          <p class="article-categories" data-article-categories>{post?.categories?.nodes?.map(category => category.name).join(' · ')}</p>
+          <h1 data-article-title>{post ? title : ''}</h1>
+          <time data-article-date datetime={post?.date}>{post?.date ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(post.date)) : ''}</time>
+        </header>
+        <img class="article-featured" data-article-image src={imageUrl} alt={image?.altText || ''} hidden={!imageUrl} />
+        <div class="article-content" data-article-content set:html={post ? sanitizeBlogHtml(post.content) : ''}></div>
+      </article>
+
+      <section class="comments-section" data-comments-section hidden aria-labelledby="comments-title">
+        <div class="comments-heading">
+          <div><p class="section-label">Discussion</p><h2 id="comments-title">Comments</h2></div>
+          <span data-comment-count></span>
+        </div>
+        <p class="comments-empty" data-comments-empty hidden>No comments yet. Start the conversation.</p>
+        <p class="voting-status" data-voting-status role="status"></p>
+        <div class="comments-list" data-comments-list></div>
+
+        <form class="comment-form" data-comment-form>
+          <div class="comment-form-heading">
+            <div><p class="section-label">Join the discussion</p><h3 data-form-title>Leave a comment</h3></div>
+            <button class="cancel-reply" type="button" data-cancel-reply hidden>Cancel reply</button>
+          </div>
+          <input type="hidden" name="parent" value="" />
+          <div class="comment-fields">
+            <label>Name<input name="author" type="text" autocomplete="name" maxlength="80" required /></label>
+            <label>Email<input name="authorEmail" type="email" autocomplete="email" maxlength="200" required /></label>
+          </div>
+          <label>Comment<textarea name="content" rows="6" maxlength="5000" required></textarea></label>
+          <p class="form-note">Your email address will not be published. Comments may be held for moderation.</p>
+          <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+          <button class="submit-comment" type="submit">Post comment</button>
+        </form>
+      </section>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<script>
+  import { articlePath, attachCommentVotes, buildCommentTree, fetchBlogPost, fetchBlogVotes, plainText, submitBlogComment, voteBlogComment } from '../lib/blog.mjs';
+
+  const root = document.querySelector('[data-article-root]');
+  const status = root?.querySelector('[data-article-status]');
+  const articleElement = root?.querySelector('[data-article]');
+  const commentsSection = root?.querySelector('[data-comments-section]');
+  const commentsList = root?.querySelector('[data-comments-list]');
+  const commentsEmpty = root?.querySelector('[data-comments-empty]');
+  const commentCount = root?.querySelector('[data-comment-count]');
+  const form = root?.querySelector('[data-comment-form]');
+  const formStatus = root?.querySelector('[data-form-status]');
+  const formTitle = root?.querySelector('[data-form-title]');
+  const cancelReply = root?.querySelector('[data-cancel-reply]');
+  const encodedSlug = window.location.pathname.match(/^\/blog\/article\/([^/]+)\/?$/)?.[1] || new URLSearchParams(window.location.search).get('slug') || '';
+  let slug = '';
+  try {
+    slug = decodeURIComponent(encodedSlug);
+  } catch {
+    slug = '';
+  }
+  let votingAvailable = false;
+
+  const getVisitorToken = () => {
+    const key = 'belaro_blog_visitor';
+    try {
+      const stored = localStorage.getItem(key);
+      if (/^[a-zA-Z0-9_-]{32,128}$/.test(stored || '')) return stored;
+      const bytes = crypto.getRandomValues(new Uint8Array(24));
+      const token = Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('');
+      localStorage.setItem(key, token);
+      return token;
+    } catch {
+      return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`.padEnd(32, '0');
+    }
+  };
+  const visitorToken = getVisitorToken();
+
+  const appendSafeHtml = (container, source) => {
+    const parsed = new DOMParser().parseFromString(String(source || ''), 'text/html');
+    const allowedTags = new Set([
+      'A', 'BLOCKQUOTE', 'BR', 'CODE', 'DEL', 'DIV', 'EM', 'FIGCAPTION', 'FIGURE',
+      'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'IMG', 'LI', 'OL', 'P', 'PRE', 'S',
+      'STRONG', 'SUB', 'SUP', 'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH', 'THEAD',
+      'TR', 'U', 'UL',
+    ]);
+    const blockedTags = new Set(['BUTTON', 'EMBED', 'FORM', 'IFRAME', 'INPUT', 'MATH', 'OBJECT', 'SCRIPT', 'STYLE', 'SVG']);
+    const allowedAttributes = new Set(['alt', 'colspan', 'height', 'href', 'rel', 'rowspan', 'src', 'target', 'title', 'width']);
+    const elements = [...parsed.body.querySelectorAll('*')];
+    for (const element of elements) {
+      if (!allowedTags.has(element.tagName)) {
+        if (blockedTags.has(element.tagName)) element.remove();
+        else element.replaceWith(...element.childNodes);
+        continue;
+      }
+      for (const attribute of [...element.attributes]) {
+        if (!allowedAttributes.has(attribute.name.toLowerCase())) element.removeAttribute(attribute.name);
+      }
+      for (const attributeName of ['href', 'src']) {
+        const value = element.getAttribute(attributeName);
+        if (!value) continue;
+        try {
+          const url = new URL(value, window.location.origin);
+          const allowedProtocols = attributeName === 'href' ? ['http:', 'https:', 'mailto:', 'tel:'] : ['http:', 'https:'];
+          if (!allowedProtocols.includes(url.protocol)) element.removeAttribute(attributeName);
+        } catch {
+          element.removeAttribute(attributeName);
+        }
+      }
+      if (element instanceof HTMLAnchorElement) {
+        const target = element.getAttribute('href');
+        if (target && /^https?:\/\//i.test(target)) {
+          element.target = '_blank';
+          element.rel = 'noopener noreferrer';
+        }
+      }
+      if (element instanceof HTMLImageElement) element.loading = 'lazy';
+    }
+    container.replaceChildren(...parsed.body.childNodes);
+  };
+
+  const icon = direction => direction === 'up'
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v12M15 5.9 14 10h5.8a2 2 0 0 1 1.9 2.6l-2.3 7A2 2 0 0 1 17.5 21H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h2.8L10 2.5A2 2 0 0 1 12 2a3 3 0 0 1 3 3.9Z"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V2M9 18.1l1-4.1H4.2a2 2 0 0 1-1.9-2.6l2.3-7A2 2 0 0 1 6.5 3H20a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2.8L14 21.5a2 2 0 0 1-2 .5 3 3 0 0 1-3-3.9Z"/></svg>';
+
+  const setReplyTarget = (commentId, authorName) => {
+    if (!form || !formTitle || !cancelReply) return;
+    form.elements.parent.value = String(commentId);
+    formTitle.textContent = `Reply to ${authorName}`;
+    cancelReply.hidden = false;
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    form.elements.content.focus({ preventScroll: true });
+  };
+
+  const clearReplyTarget = () => {
+    if (!form || !formTitle || !cancelReply) return;
+    form.elements.parent.value = '';
+    formTitle.textContent = 'Leave a comment';
+    cancelReply.hidden = true;
+  };
+
+  const createVoteButton = (comment, direction) => {
+    const button = document.createElement('button');
+    const label = direction === 'up' ? 'Upvote' : 'Downvote';
+    const summary = comment.belaroVotes || { up: 0, down: 0, viewerVote: '' };
+    button.type = 'button';
+    button.disabled = !votingAvailable;
+    button.className = 'vote-button';
+    button.title = label;
+    button.setAttribute('aria-label', `${label} comment`);
+    button.setAttribute('aria-pressed', String(summary.viewerVote === direction));
+    button.innerHTML = `${icon(direction)}<span>${direction === 'up' ? summary.up : summary.down}</span>`;
+    button.addEventListener('click', async () => {
+      const group = button.closest('.comment-actions');
+      const buttons = group?.querySelectorAll('.vote-button');
+      buttons?.forEach(voteButton => { voteButton.disabled = true; });
+      const selected = button.getAttribute('aria-pressed') === 'true';
+      try {
+        const next = await voteBlogComment(root.dataset.endpoint, {
+          commentId: comment.databaseId,
+          direction: selected ? 'clear' : direction,
+          visitorToken,
+        });
+        comment.belaroVotes = next;
+        if (buttons?.length === 2) {
+          buttons[0].setAttribute('aria-pressed', String(next.viewerVote === 'up'));
+          buttons[0].querySelector('span').textContent = String(next.up);
+          buttons[1].setAttribute('aria-pressed', String(next.viewerVote === 'down'));
+          buttons[1].querySelector('span').textContent = String(next.down);
+        }
+      } catch {
+        if (formStatus) formStatus.textContent = 'Voting is temporarily unavailable.';
+      } finally {
+        buttons?.forEach(voteButton => { voteButton.disabled = false; });
+      }
+    });
+    return button;
+  };
+
+  const renderComment = comment => {
+    const item = document.createElement('article');
+    item.className = 'comment';
+    const header = document.createElement('header');
+    const author = document.createElement('strong');
+    author.textContent = plainText(comment.author?.node?.name) || 'Anonymous';
+    const date = document.createElement('time');
+    if (comment.date && !Number.isNaN(Date.parse(comment.date))) {
+      date.dateTime = comment.date;
+      date.textContent = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(comment.date));
+    }
+    header.append(author, date);
+    const content = document.createElement('div');
+    content.className = 'comment-content';
+    appendSafeHtml(content, comment.content);
+    const actions = document.createElement('div');
+    actions.className = 'comment-actions';
+    actions.append(createVoteButton(comment, 'up'), createVoteButton(comment, 'down'));
+    const reply = document.createElement('button');
+    reply.type = 'button';
+    reply.className = 'reply-button';
+    reply.textContent = 'Reply';
+    reply.addEventListener('click', () => setReplyTarget(comment.databaseId, author.textContent));
+    actions.append(reply);
+    item.append(header, content, actions);
+    comment.children.forEach(child => item.append(renderComment(child)));
+    return item;
+  };
+
+  const renderComments = comments => {
+    if (!commentsList || !commentsEmpty || !commentCount) return;
+    const trees = buildCommentTree(comments);
+    commentsList.replaceChildren(...trees.map(comment => renderComment(comment)));
+    commentsEmpty.hidden = comments.length !== 0;
+    commentCount.textContent = `${comments.length} ${comments.length === 1 ? 'comment' : 'comments'}`;
+  };
+
+  const loadVotes = async comments => {
+    const message = root?.querySelector('[data-voting-status]');
+    try {
+      const summaries = await fetchBlogVotes(root.dataset.endpoint, slug, visitorToken);
+      votingAvailable = true;
+      if (message) message.textContent = '';
+      renderComments(attachCommentVotes(comments, summaries));
+    } catch {
+      votingAvailable = false;
+      if (message) message.textContent = 'Voting is currently unavailable. You can still join the discussion.';
+      renderComments(comments);
+    }
+  };
+
+  if (root && status && articleElement && commentsSection && form && formStatus && cancelReply) {
+    if (!/^[a-z0-9][a-z0-9-]*$/i.test(slug)) {
+      status.textContent = 'This article link is invalid.';
+    } else {
+      try {
+        const post = await fetchBlogPost(root.dataset.endpoint, slug, visitorToken);
+        if (!post) {
+          status.textContent = 'Article not found.';
+        } else {
+          const title = plainText(post.title) || 'Article';
+          articleElement.querySelector('[data-article-title]').textContent = title;
+          articleElement.querySelector('[data-article-categories]').textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ');
+          const date = articleElement.querySelector('[data-article-date]');
+          if (post.date && !Number.isNaN(Date.parse(post.date))) {
+            date.dateTime = post.date;
+            date.textContent = new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(post.date));
+          }
+          const image = articleElement.querySelector('[data-article-image]');
+          const imageUrl = post.featuredImage?.node?.sourceUrl;
+          if (imageUrl && /^https?:\/\//i.test(imageUrl)) {
+            image.src = imageUrl;
+            image.alt = post.featuredImage.node.altText || '';
+            image.hidden = false;
+          }
+          appendSafeHtml(articleElement.querySelector('[data-article-content]'), post.content);
+          document.title = `${title} | Belaro Precision`;
+          const description = plainText(post.excerpt).slice(0, 160);
+          if (description) document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+          const canonical = new URL(document.querySelector('link[rel="canonical"]')?.getAttribute('href') || window.location.href);
+          canonical.pathname = articlePath(post.slug);
+          canonical.search = '';
+          document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical.href);
+          if (window.location.search.includes('slug=')) window.location.replace(articlePath(post.slug));
+          status.textContent = '';
+          articleElement.hidden = false;
+          commentsSection.hidden = false;
+          renderComments(post.comments);
+          void loadVotes(post.comments);
+
+          form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const submit = form.querySelector('[type="submit"]');
+            submit.disabled = true;
+            formStatus.textContent = 'Submitting comment...';
+            const values = new FormData(form);
+            try {
+              await submitBlogComment(root.dataset.endpoint, {
+                commentOn: post.databaseId,
+                parent: values.get('parent'),
+                author: values.get('author'),
+                authorEmail: values.get('authorEmail'),
+                content: values.get('content'),
+              });
+              const savedName = values.get('author');
+              const savedEmail = values.get('authorEmail');
+              form.reset();
+              form.elements.author.value = savedName;
+              form.elements.authorEmail.value = savedEmail;
+              clearReplyTarget();
+              formStatus.textContent = 'Your comment was submitted and may be awaiting moderation.';
+            } catch (error) {
+              formStatus.textContent = error instanceof Error ? error.message : 'Comment submission failed. Please try again.';
+              submit.disabled = false;
+              return;
+            }
+            try {
+              const refreshed = await fetchBlogPost(root.dataset.endpoint, slug, visitorToken);
+              if (refreshed) {
+                renderComments(refreshed.comments);
+                void loadVotes(refreshed.comments);
+              }
+            } catch {
+              formStatus.textContent = 'Your comment was submitted and may be awaiting moderation. The comment list could not be refreshed.';
+            } finally {
+              submit.disabled = false;
+            }
+          });
+          cancelReply.addEventListener('click', clearReplyTarget);
+        }
+      } catch {
+        status.textContent = root.dataset.prerendered === 'true'
+          ? 'The discussion could not be loaded. The article is still available below.'
+          : 'This article is temporarily unavailable. Please try again later.';
+      }
+    }
+  }
+</script>
+
+<style>
+  .article-page { min-height: 70vh; background: #f6f8fa; padding: 2rem 1.25rem 5rem; }
+  .article-shell { max-width: 860px; margin: 0 auto; }
+  .breadcrumbs { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 2.5rem; color: #687788; font-size: .9rem; }
+  .breadcrumbs a { color: #3f5369; }
+  .article-status { min-height: 1.5rem; color: #536273; }
+  .article-status:empty { display: none; }
+  .voting-status { color: #687788; font-size: .85rem; }
+  .article-header { margin-bottom: 2rem; }
+  .article-categories, .section-label { margin: 0 0 .65rem; color: #a95412; font-size: .78rem; font-weight: 700; text-transform: uppercase; }
+  .article-header h1 { margin: 0 0 1rem; color: #10233d; font-size: 4rem; line-height: 1.08; overflow-wrap: anywhere; }
+  .article-header time { color: #687788; }
+  .article-featured { display: block; width: 100%; max-height: 520px; margin: 0 0 2.5rem; object-fit: cover; }
+  .article-featured[hidden] { display: none; }
+  .article-content { color: #26384a; font-size: 1.08rem; line-height: 1.8; }
+  .article-content :global(h2), .article-content :global(h3) { color: #10233d; line-height: 1.25; }
+  .article-content :global(h2) { margin: 2.6rem 0 1rem; font-size: 1.85rem; }
+  .article-content :global(h3) { margin: 2rem 0 .8rem; font-size: 1.35rem; }
+  .article-content :global(img) { max-width: 100%; height: auto; }
+  .article-content :global(a) { color: #a95412; }
+  .article-content :global(blockquote) { margin: 2rem 0; padding-left: 1.25rem; border-left: 3px solid #cf7621; color: #536273; }
+  .comments-section { margin-top: 4rem; padding-top: 3rem; border-top: 1px solid #ccd5de; }
+  .comments-heading, .comment-form-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+  .comments-heading h2, .comment-form h3 { margin: 0; color: #10233d; }
+  .comments-heading > span { color: #687788; font-size: .9rem; }
+  .comments-list { margin-top: 2rem; }
+  .comments-empty { color: #687788; }
+  .comments-list :global(.comment) { padding: 1.25rem 0 1.25rem 1rem; border-top: 1px solid #d8dfe6; border-left: 2px solid #d8dfe6; }
+  .comments-list :global(.comment .comment) { margin-left: 1.5rem; }
+  .comments-list :global(.comment > header) { display: flex; flex-wrap: wrap; align-items: baseline; gap: .75rem; }
+  .comments-list :global(.comment > header strong) { color: #10233d; }
+  .comments-list :global(.comment > header time) { color: #748292; font-size: .8rem; }
+  .comments-list :global(.comment-content) { color: #3b4c5e; line-height: 1.65; }
+  .comments-list :global(.comment-content p) { margin: .7rem 0; }
+  .comments-list :global(.comment-actions) { display: flex; align-items: center; gap: .35rem; min-height: 34px; }
+  .comments-list :global(.vote-button) { display: inline-flex; align-items: center; gap: .25rem; min-width: 38px; min-height: 34px; padding: .25rem .45rem; border: 1px solid transparent; background: transparent; color: #5c6c7d; cursor: pointer; }
+  .comments-list :global(.vote-button svg) { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .comments-list :global(.vote-button[aria-pressed="true"]) { border-color: #cf7621; color: #a95412; background: #fff5eb; }
+  .comments-list :global(.vote-button:hover), .comments-list :global(.reply-button:hover), .cancel-reply:hover { color: #a95412; }
+  .comments-list :global(.reply-button), .cancel-reply { min-height: 34px; padding: .25rem .55rem; border: 0; background: transparent; color: #526477; font: inherit; font-size: .85rem; cursor: pointer; }
+  .comment-form { margin-top: 3rem; padding: 1.5rem; border: 1px solid #d8dfe6; background: #fff; }
+  .comment-form-heading { margin-bottom: 1.25rem; }
+  .comment-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .comment-form label { display: grid; gap: .45rem; margin-bottom: 1rem; color: #26384a; font-weight: 600; }
+  .comment-form input, .comment-form textarea { width: 100%; border: 1px solid #aeb9c5; border-radius: 3px; padding: .75rem; color: #17293d; font: inherit; }
+  .comment-form textarea { resize: vertical; }
+  .comment-form input:focus, .comment-form textarea:focus, .article-shell :global(button:focus-visible) { outline: 3px solid #f2a34a; outline-offset: 2px; }
+  .form-note, .form-status { color: #687788; font-size: .85rem; }
+  .form-status { min-height: 1.3rem; }
+  .submit-comment { min-height: 44px; padding: .65rem 1.1rem; border: 1px solid #cf7621; border-radius: 3px; background: #cf7621; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+  .submit-comment:disabled, .comments-list :global(.vote-button:disabled) { opacity: .55; cursor: wait; }
+  @media (max-width: 620px) {
+    .article-page { padding-inline: 1rem; }
+    .article-header h1 { font-size: 2.25rem; }
+    .comments-list :global(.comment) { padding-left: .75rem; }
+    .comments-list :global(.comment .comment) { margin-left: .55rem; }
+    .comment-fields { grid-template-columns: 1fr; gap: 0; }
+    .comment-form { padding: 1.1rem; }
+  }
+</style>

@@ -4,9 +4,9 @@
 
 面向工业 OEM 客户的响应式英文 B2B 网站，使用 Astro 和原生 CSS，包含企业展示页面和 RFQ（询价）表单。开发文档使用简体中文，网站页面仍使用英文。
 
-网站采用静态输出；浏览器通过 GraphQL 向独立的 WordPress 服务提交询价，并读取 Blog 文章、分类和评论。当前仓库不包含完整 WordPress 站点、数据库或后台管理系统，仅包含配套 MU 插件；Blog 投票插件会在 WordPress 数据库中创建独立评论投票表。制造、报价、检验和交付流程属于页面介绍内容，不代表本仓库实现了相应业务系统，也不构成对企业实际能力的验证。
+网站采用静态输出；构建时通过 GraphQL 从独立 WordPress 服务生成 Blog 文章详情页，浏览器继续读取文章列表、公开评论和投票，并通过同一端点提交询价与评论。当前仓库不包含完整 WordPress 站点、数据库或后台管理系统，仅包含配套 MU 插件；Blog 投票插件会在 WordPress 数据库中创建独立评论投票表。制造、报价、检验和交付流程属于页面介绍内容，不代表本仓库实现了相应业务系统，也不构成对企业实际能力的验证。
 
-本说明于 **2026 年 11 月 4 日**根据工作区代码和配置核查。原文中的历史联调记录保留于后文，并单独标注其验证边界。**2026 年 11 月 5 日**新增 Machined Parts 分类展示页、全站入口与询价预填流程，相关验证记录见第 10 节。
+本说明于 **2026 年 11 月 4 日**根据工作区代码和配置核查。原文中的历史联调记录保留于后文，并单独标注其验证边界。**2026 年 11 月 25 日**完成 Blog 静态 slug 详情页、构建期正文清理、列表骨架屏与评论投票降级处理，相关验证记录见第 10 节。
 
 ## 2. 技术栈与依赖
 
@@ -18,7 +18,7 @@
 | 包管理器 | npm，存在 `package-lock.json`，锁文件格式为 3 |
 | 样式 | 原生全局 CSS、组件局部样式、CSS 自定义属性；未使用 UI 框架 |
 | 国旗与电话区号 | `flag-icons`：声明 `^7.6.0`、锁定 `7.6.0`；`libphonenumber-js`：声明 `^1.13.15`、锁定 `1.13.15` |
-| Agent Markdown 构建 | `linkedom` 提取页面正文，`turndown` 将 HTML 转为 Markdown；仅在构建和测试阶段使用 |
+| 构建期 HTML 处理 | `linkedom` 用于 Blog 正文白名单清理和 Agent Markdown 正文提取，`turndown` 将 HTML 转为 Markdown；仅在构建和测试阶段使用 |
 | TypeScript 配置 | 继承 `astro/tsconfigs/strict`，定义 `@/*` 到 `src/*` 的别名；TypeScript `5.9.3` 为间接依赖 |
 | 外部后台 | WordPress、Gravity Forms、WPGraphQL、WPGraphQL for Gravity Forms；附件还需要 WPGraphQL Upload |
 | 测试 | Node.js 内置 `node:test`、`node:assert/strict`；浏览器测试使用 Playwright 和 Chromium |
@@ -77,8 +77,9 @@
 | `/quality/` | 图纸与材料确认、公差可行性、检测方法与环节、文件范围、首件/抽检/全检约定、偏差处理、包装标识七项质量说明；设备与文件能力按项目核实，没有在线检验管理功能 |
 | `/about/` | 法定英文名称、沙井所在地、业务身份、自有加工与外协范围、车间/设备/团队资料说明、OEM 订单配合、外协管理约定、邮箱与 WhatsApp、质量评审与 FAQ |
 | `/contact/` | 询价字段、国家搜索、电话区号、材料自定义输入、单附件上传、Turnstile 与 GraphQL 提交 |
-| `/blog/` | 通过公开 WPGraphQL 查询最多 12 篇已发布文章和分类，支持前端分类筛选；文章卡片进入本站详情页 |
-| `/blog/article/?slug=...` | 按 WordPress slug 在浏览器读取文章正文、分类、最多 100 条公开评论与投票汇总，支持层级回复和 up/down vote |
+| `/blog/` | 通过公开 WPGraphQL 查询最多 12 篇已发布文章和分类，加载时显示骨架屏，支持前端分类筛选；文章卡片进入本站详情页 |
+| `/blog/article/<slug>/` | 构建时按 WordPress slug 生成可索引的文章标题、摘要、Canonical 与安全清理后的正文；浏览器读取最多 100 条公开评论及独立投票汇总，支持层级回复和 up/down vote |
+| `/blog/article/?slug=...` | 旧链接兼容入口，成功取得文章后替换为 `/blog/article/<slug>/`；新链接不再使用查询参数 |
 | `/privacy-policy/` | 询价数据、技术文件、第三方服务、跨境处理、保留与权利请求说明 |
 | `/cookie-policy/` | 浏览器存储、字体/图片请求、安全服务及当前未启用广告与统计标签的说明 |
 | `/terms-of-use/` | 网站使用、按图评审、询价与订单边界、图纸权属及定制件商业条款说明 |
@@ -344,7 +345,7 @@ npm run preview
 
 | 配置项 | 位置 | 用途及要求 |
 | --- | --- | --- |
-| `PUBLIC_GRAPHQL_URL` | 静态站点构建环境或根目录 `.env` | 公开 WordPress GraphQL 地址，供 RFQ 与 Blog 使用；本地留空时沿用 `.local` 开发地址，GitHub 自动部署必须设置正式 HTTPS 地址 |
+| `PUBLIC_GRAPHQL_URL` | 静态站点构建环境或根目录 `.env` | 公开 WordPress GraphQL 地址，供 RFQ 与 Blog 使用；未配置时默认 `https://wp.belaroprecision.com/graphql`，各部署环境仍应显式设置并确认可访问 |
 | `PUBLIC_TURNSTILE_SITE_KEY` | 静态站点构建环境或根目录 `.env` | Turnstile 公开 Site Key，会写入产物；为空或仅空白时不启用人机验证，表单仍可提交 |
 | `PUBLIC_GTM_ID` | 静态站点构建环境或根目录 `.env` | 可选 GTM Web 容器 ID（`GTM-...`）；默认空白不加载 GTM；设置前完成同意管理及隐私政策更新 |
 | `PUBLIC_LIVECHAT_ENABLED` | GitHub Variables、Pages 构建变量或根目录 `.env` | 仅支持 `true` / `false`；留空默认启用，停用必须填 `false` |
@@ -366,19 +367,19 @@ PUBLIC_GTM_ID=
 
 在 `src/config.ts` 中配置 `gravityForms`：
 
-- `graphqlUrl`：优先使用 `PUBLIC_GRAPHQL_URL`，未配置或空白时使用 `https://belaroprecision.local/graphql`；生产必须配置正式后台地址并重新构建。
-
-Blog 页面在浏览器端请求该地址。`/blog/` 读取文章与分类，文章卡片进入本站 `/blog/article/?slug=...`，详情页再按 WordPress slug 读取正文和最多 100 条公开评论，不跳转 WordPress 原站。固定详情路由避免静态构建依赖 WordPress 在线状态，但页面 Title、Description 和 Canonical 需要在浏览器取得文章后更新；如后续要求完整的构建期 SEO，应改为可稳定枚举 slug 的静态动态路由或 SSR。
-
-评论表单使用 WPGraphQL 自带的 `createComment` mutation，支持顶层评论和 `parent` 层级回复。WordPress 必须启用文章评论、允许符合站点策略的匿名评论，并配置评论审核与反垃圾措施；访客邮箱只提交到 WordPress，不在页面展示。提交成功后页面重新读取公开评论，处于待审核状态的评论不会立即显示。
-
-评论的 up/down vote 由 `wordpress/mu-plugins/belaro-blog-graphql.php` 提供：插件注册文章级批量字段 `Post.belaroCommentVotes(visitorToken)` 与 `belaroVoteComment` mutation，并创建 `wp_belaro_comment_votes`（表前缀以实际 WordPress 配置为准）。浏览器在 `localStorage` 生成随机 token，服务端仅保存加盐 HMAC，允许同一 token 对同一评论创建、切换或清除一票。该机制不等同账号身份，清理存储或更换浏览器可获得新 token；生产仍需使用 Cloudflare/WAF 限速、日志监控和反滥用策略，不能把投票结果视为强身份验证数据。
-
-部署 WordPress 时必须同时复制 `belaro-graphql-upload.php` 与 `belaro-blog-graphql.php` 到 `wp-content/mu-plugins/`，确认运行账户有建表权限，并在 GraphQL schema 中检查 `createComment`、`belaroCommentVotes` 和 `belaroVoteComment`。生产站点还需允许官网 Origin 跨域访问 JSON GraphQL POST。当前代码和模拟测试已覆盖请求结构，实际后台字段、评论权限、建表、CORS 与生产联调状态仍需在部署环境验证。
+- `graphqlUrl`：优先使用 `PUBLIC_GRAPHQL_URL`，未配置或空白时使用 `https://wp.belaroprecision.com/graphql`；修改后必须重新构建。
 - `formId`：当前为 `1`，切换后台表单时应同步复核所有字段映射。
 - `fields`：配置数据库字段 `id` 和 `type`；支持 `text`、`name`、`email`、`file`、`consent`、`checkbox`、`checkboxes`。单项 Checkbox 使用 `inputId` 和 `choiceValue`；多项 Checkbox 使用 `choices` 数组，逐项配置 `inputId` 和 `value`。Consent 使用 `type: 'consent'`。
 - `uploadsEnabled`：当前为 `true`；部署时须先安装 WPGraphQL Upload，并确认存在 `fileUploadValues` 输入。
 - `turnstileSiteKey`：来自 `PUBLIC_TURNSTILE_SITE_KEY`，只能使用公开 Site Key。
+
+Blog 列表在浏览器端请求该地址，并在响应期间显示骨架屏。构建过程会分页枚举全部已发布文章，为每个 slug 生成 `/blog/article/<slug>/`，将标题、摘要、Canonical 和白名单清理后的正文直接写入静态 HTML；旧 `/blog/article/?slug=...` 仍兼容并会替换为干净路径。新增、删除或修改 WordPress 文章后必须重新构建发布，构建环境也必须能访问 GraphQL；枚举失败会阻断构建，避免发布缺失文章的站点。生成的详情页会自动进入现有 Sitemap 和 Agent Markdown 流程。
+
+评论表单使用 WPGraphQL 自带的 `createComment` mutation，支持顶层评论和 `parent` 层级回复。WordPress 必须启用文章评论、允许符合站点策略的匿名评论，并配置评论审核与反垃圾措施；访客邮箱只提交到 WordPress，不在页面展示。提交成功后页面重新读取公开评论，处于待审核状态的评论不会立即显示。
+
+评论的 up/down vote 由 `wordpress/mu-plugins/belaro-blog-graphql.php` 提供：插件注册文章级批量字段 `Post.belaroCommentVotes(visitorToken)` 与 `belaroVoteComment` mutation，并创建 `wp_belaro_comment_votes`（表前缀以实际 WordPress 配置为准）。正文、评论与投票使用独立查询；后台未安装投票插件或暂时缺少投票字段时，文章和评论仍正常显示，仅禁用投票按钮并给出状态说明。浏览器在 `localStorage` 生成随机 token，服务端仅保存加盐 HMAC，允许同一 token 对同一评论创建、切换或清除一票。该机制不等同账号身份，清理存储或更换浏览器可获得新 token；生产仍需使用 Cloudflare/WAF 限速、日志监控和反滥用策略，不能把投票结果视为强身份验证数据。
+
+部署 WordPress 时必须同时复制 `belaro-graphql-upload.php` 与 `belaro-blog-graphql.php` 到 `wp-content/mu-plugins/`，确认运行账户有建表权限，并在 GraphQL schema 中检查 `createComment`、`belaroCommentVotes` 和 `belaroVoteComment`。生产站点还需允许官网 Origin 跨域访问 JSON GraphQL POST。本轮已确认生产 GraphQL 可读取文章正文和评论，但当前 schema 缺少 `belaroCommentVotes`；在 MU 插件部署并验证前，前端会按上述规则只禁用投票。
 
 站点域名分别存在于 `src/config.ts` 的 `site.domain` 和 `astro.config.mjs` 的 `site`，当前均为 `https://belaroprecision.com`；更换域名时应同步维护。所有这些静态配置更改后均须重新构建部署。
 
@@ -555,13 +556,14 @@ Production 补图与布局调整（2026 年 11 月 24 日）：Approve the order
 
 ## 10. 测试与质量检查
 
-### Blog 详情、层级评论与投票验证（2026 年 11 月 25 日）
+### Blog 静态详情、层级评论与投票验证（2026 年 11 月 25 日）
 
-- `node --test tests/blog.test.mjs` 的 7 项数据层测试通过，覆盖文章列表与详情查询、GraphQL 异常、层级回复、评论树和投票 mutation。
-- `npm run build` 通过，共生成 25 个静态页面，包含 `/blog/` 与 `/blog/article/`。
-- `node --test tests/blog-browser.test.mjs` 通过，使用模拟 GraphQL 覆盖本站文章链接、两层评论、回复 parent、up/down 图标投票、正文 HTML 清理，以及 390px、1440px 下无横向溢出。
+- `node --test tests/blog.test.mjs` 的 9 项数据层测试通过，覆盖列表与详情查询、静态文章分页枚举、SEO 路径、正文白名单清理、GraphQL 异常、评论树、层级回复、投票独立查询和投票 mutation。
+- `npm run build` 通过，共生成 26 个静态页面，包含 `/blog/`、兼容入口 `/blog/article/` 与真实后台文章 `/blog/article/hello-world/`；构建产物已核对标题、摘要、正式域名 Canonical 和预渲染正文。
+- `node --test tests/blog-browser.test.mjs` 通过，使用模拟 GraphQL 覆盖三张骨架卡、列表样式作用域、干净文章链接、两层评论、回复 parent、up/down 图标投票、正文 HTML 清理、投票字段缺失降级，以及 390px、1440px 下无横向溢出。
+- 已复核 Blog 列表和详情页的 390px、1440px 截图，未发现文字、控件或页面横向溢出。
 - 使用 Local 自带 PHP 8.2.29 执行 `php -l wordpress/mu-plugins/belaro-blog-graphql.php`，语法检查通过。
-- 浏览器测试未连接真实 WordPress，也未验证生产 CORS、匿名评论权限、审核、数据库建表或 WAF 限速；MU 插件部署后仍需完成真实后台联调。
+- 本轮只对真实 WordPress 执行只读查询和静态构建，未向生产提交评论或投票；生产匿名评论权限、审核、数据库建表、CORS 与 WAF 限速仍需在 MU 插件部署后完成联调。
 
 ### 全站最小字号验证
 

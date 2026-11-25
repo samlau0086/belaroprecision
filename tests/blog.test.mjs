@@ -2,16 +2,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   blogPostQuery,
+  blogVotesQuery,
   blogQuery,
   buildCommentTree,
   createCommentMutation,
   fetchBlogData,
   fetchBlogPost,
+  fetchBlogVotes,
+  fetchPublishedBlogPosts,
+  attachCommentVotes,
+  articlePath,
   plainText,
   submitBlogComment,
   voteBlogComment,
   voteCommentMutation,
 } from '../src/lib/blog.mjs';
+import { sanitizeBlogHtml } from '../src/lib/blog-html.mjs';
 
 const sampleData = {
   categories: { nodes: [{ databaseId: 3, name: 'Manufacturing', slug: 'manufacturing' }] },
@@ -59,7 +65,7 @@ test('摘要清理 HTML、常见实体并合并空白字符', () => {
   assert.equal(plainText(null), 'null');
 });
 
-test('文章详情请求携带 slug 与访客 token，并解析评论', async () => {
+test('文章正文查询不依赖投票插件，单独加载并合并投票', async () => {
   let request;
   const post = {
     databaseId: 10,
@@ -74,10 +80,35 @@ test('文章详情请求携带 slug 与访客 token，并解析评论', async ()
 
   assert.deepEqual(JSON.parse(request.init.body), {
     query: blogPostQuery,
-    variables: { slug: 'cnc-guide', visitorToken: 'a'.repeat(32) },
+    variables: { slug: 'cnc-guide' },
   });
-  assert.deepEqual(result.comments[0].belaroVotes, post.belaroCommentVotes[0]);
+  assert.equal(blogPostQuery.includes('belaroCommentVotes'), false);
+  const summaries = await fetchBlogVotes('https://cms.example/graphql', 'cnc-guide', 'a'.repeat(32), async (_, init) => {
+    assert.equal(JSON.parse(init.body).query, blogVotesQuery);
+    return response({ data: { post } });
+  });
+  assert.deepEqual(attachCommentVotes(result.comments, summaries)[0].belaroVotes, post.belaroCommentVotes[0]);
+  await assert.rejects(fetchBlogVotes('https://cms.example/graphql', 'cnc-guide', 'a'.repeat(32), async () => response({ errors: [{ message: 'Cannot query field belaroCommentVotes' }] })), /belaroCommentVotes/);
   await assert.rejects(fetchBlogPost('https://cms.example/graphql', '../bad', 'a'.repeat(32)), /valid article slug/);
+});
+
+test('静态文章路由分页读取全部已发布文章，并拒绝失败或停滞分页', async () => {
+  const cursors = [];
+  const posts = await fetchPublishedBlogPosts('https://cms.example/graphql', async (_, init) => {
+    const { variables } = JSON.parse(init.body);
+    cursors.push(variables.after);
+    return response({ data: { posts: { nodes: [{ slug: variables.after ? 'second' : 'first' }], pageInfo: { hasNextPage: !variables.after, endCursor: 'next' } } } });
+  });
+  assert.deepEqual(cursors, [null, 'next']);
+  assert.deepEqual(posts.map(post => articlePath(post.slug)), ['/blog/article/first/', '/blog/article/second/']);
+  await assert.rejects(fetchPublishedBlogPosts('', async () => response({ data: { posts: { nodes: [], pageInfo: { hasNextPage: true, endCursor: null } } } })), /did not advance/);
+});
+
+test('构建期正文保留排版，移除脚本、事件和危险 URL', () => {
+  const html = sanitizeBlogHtml('<h2>Review</h2><p onclick="alert(1)">Text</p><script>alert(2)</script><a href="javascript:alert(3)">Link</a><img src="https://cms.example/image.jpg" onerror="alert(4)">');
+  assert.match(html, /<h2>Review<\/h2>/);
+  assert.match(html, /https:\/\/cms.example\/image.jpg/);
+  assert.doesNotMatch(html, /script|onclick|onerror|javascript:|alert/);
 });
 
 test('评论提交支持顶层评论与层级回复', async () => {

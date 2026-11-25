@@ -14,14 +14,11 @@ export const blogQuery = `
 `;
 
 export const blogPostQuery = `
-  query BlogPost($slug: ID!, $visitorToken: String!) {
+  query BlogPost($slug: ID!) {
     post(id: $slug, idType: SLUG) {
       databaseId slug title content excerpt date modified
       featuredImage { node { sourceUrl altText } }
       categories { nodes { databaseId name slug } }
-      belaroCommentVotes(visitorToken: $visitorToken) {
-        commentId up down score viewerVote
-      }
       comments(first: 100) {
         nodes {
           databaseId content date parentDatabaseId
@@ -31,6 +28,44 @@ export const blogPostQuery = `
     }
   }
 `;
+
+export const blogVotesQuery = `
+  query BlogVotes($slug: ID!, $visitorToken: String!) {
+    post(id: $slug, idType: SLUG) {
+      belaroCommentVotes(visitorToken: $visitorToken) { commentId up down score viewerVote }
+    }
+  }
+`;
+
+export function articlePath(slug) {
+  return `/blog/article/${encodeURIComponent(String(slug))}/`;
+}
+
+export async function fetchPublishedBlogPosts(endpoint, fetchImpl = fetch) {
+  const posts = [];
+  let after = null;
+  do {
+    const data = await requestGraphQL(endpoint, `
+      query BlogStaticPosts($after: String) {
+        posts(first: 100, after: $after, where: { status: PUBLISH }) {
+          nodes {
+            databaseId slug title content excerpt date modified
+            featuredImage { node { sourceUrl altText } }
+            categories { nodes { databaseId name slug } }
+          }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    `, { after }, fetchImpl);
+    if (!Array.isArray(data?.posts?.nodes) || !data.posts.pageInfo) throw new Error('WordPress article routes are incomplete');
+    posts.push(...data.posts.nodes);
+    if (!data.posts.pageInfo.hasNextPage) break;
+    const next = data.posts.pageInfo.endCursor;
+    if (!next || next === after) throw new Error('WordPress article pagination did not advance');
+    after = next;
+  } while (true);
+  return posts;
+}
 
 export const createCommentMutation = `
   mutation CreateBlogComment($input: CreateCommentInput!) {
@@ -54,6 +89,7 @@ async function requestGraphQL(endpoint, query, variables, fetchImpl) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, variables }),
+    signal: AbortSignal.timeout(15000),
   });
   if (!response.ok) throw new Error(`WordPress returned HTTP ${response.status}`);
   const result = await response.json();
@@ -75,15 +111,24 @@ export async function fetchBlogData(endpoint, fetchImpl = fetch) {
 export async function fetchBlogPost(endpoint, slug, visitorToken, fetchImpl = fetch) {
   const normalizedSlug = String(slug || '').trim();
   if (!/^[a-z0-9][a-z0-9-]*$/i.test(normalizedSlug)) throw new Error('A valid article slug is required');
-  const data = await requestGraphQL(endpoint, blogPostQuery, { slug: normalizedSlug, visitorToken }, fetchImpl);
+  const data = await requestGraphQL(endpoint, blogPostQuery, { slug: normalizedSlug }, fetchImpl);
   if (!data?.post) return null;
   if (!Array.isArray(data.post.comments?.nodes)) throw new Error('WordPress comment response is incomplete');
-  const votes = new Map((data.post.belaroCommentVotes || []).map(summary => [Number(summary.commentId), summary]));
-  const comments = data.post.comments.nodes.map(comment => ({
+  return { ...data.post, comments: data.post.comments.nodes };
+}
+
+export async function fetchBlogVotes(endpoint, slug, visitorToken, fetchImpl = fetch) {
+  const data = await requestGraphQL(endpoint, blogVotesQuery, { slug, visitorToken }, fetchImpl);
+  if (!Array.isArray(data?.post?.belaroCommentVotes)) throw new Error('WordPress voting is unavailable');
+  return data.post.belaroCommentVotes;
+}
+
+export function attachCommentVotes(comments, summaries) {
+  const votes = new Map(summaries.map(summary => [Number(summary.commentId), summary]));
+  return comments.map(comment => ({
     ...comment,
     belaroVotes: votes.get(Number(comment.databaseId)) || { up: 0, down: 0, score: 0, viewerVote: '' },
   }));
-  return { ...data.post, comments };
 }
 
 export async function submitBlogComment(endpoint, input, fetchImpl = fetch) {

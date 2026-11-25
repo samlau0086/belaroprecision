@@ -26,7 +26,7 @@ export const liveChat = resolveLiveChatConfig({
 
 // Public settings only: never add WordPress passwords or API secrets here.
 export const gravityForms = {
-  graphqlUrl: (import.meta.env.PUBLIC_GRAPHQL_URL || '').trim() || 'https://belaroprecision.local/graphql',
+  graphqlUrl: (import.meta.env.PUBLIC_GRAPHQL_URL || '').trim() || 'https://wp.belaroprecision.com/graphql',
   formId: 1,
   // Actual database field IDs in form 1; recheck when switching forms.
   fields: {
