@@ -89,13 +89,19 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
       }
     });
     await page.goto(`${baseUrl}/blog/`);
-    await page.locator('[data-blog-grid][aria-busy="true"]').waitFor();
-    assert.equal(await page.locator('.blog-skeleton').count(), 3);
-    const articleLink = page.getByRole('link', { name: 'CNC Guide', exact: true });
+    const articleLink = page.locator('.blog-card h2 a').first();
     await articleLink.waitFor();
     assert.equal(await articleLink.getAttribute('href'), '/blog/article/hello-world/');
     assert.equal((await articleLink.getAttribute('href')).includes('belaroprecision.local'), false);
     assert.equal(await page.locator('.blog-skeleton').count(), 0);
+    assert.equal(requests.some(request => request.query.includes('BlogIndex')), false);
+    const categoryFilter = page.locator('[data-category-filter]').nth(1);
+    if (await categoryFilter.count()) {
+      await categoryFilter.click();
+      assert.equal(await categoryFilter.getAttribute('aria-pressed'), 'true');
+      assert.equal(await page.locator('.blog-card:visible').count(), 1);
+      await page.getByRole('button', { name: 'All articles' }).click();
+    }
     assert.equal(await page.locator('.blog-card').evaluate(el => getComputedStyle(el).borderTopStyle), 'solid');
     assert.equal(await page.getByRole('button', { name: 'All articles' }).evaluate(el => getComputedStyle(el).minHeight), '46px');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
@@ -105,6 +111,15 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
     await page.setViewportSize({ width: 390, height: 844 });
 
     const staticHtml = await (await fetch(`${baseUrl}/blog/article/hello-world/`)).text();
+    const indexHtml = await (await fetch(`${baseUrl}/blog/`)).text();
+    assert.match(indexHtml, /class="blog-card"/);
+    assert.match(indexHtml, /\/blog\/article\/hello-world\//);
+    const noJs = await browser.newContext({ javaScriptEnabled: false });
+    const noJsPage = await noJs.newPage();
+    await noJsPage.goto(`${baseUrl}/blog/`);
+    assert.equal(await noJsPage.locator('.blog-card:visible').count(), 1);
+    assert.equal(await noJsPage.locator('[data-blog-filters]').isHidden(), true);
+    await noJs.close();
     assert.match(staticHtml, /data-prerendered="true"/);
     assert.match(staticHtml, /Welcome to WordPress/);
     assert.match(staticHtml, /rel="canonical" href="https:\/\/belaroprecision.com\/blog\/article\/hello-world\/?"/);

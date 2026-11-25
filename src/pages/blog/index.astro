@@ -3,13 +3,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { gravityForms } from '../../config';
+import { articlePath, fetchPublishedBlogPosts, plainText } from '../../lib/blog.mjs';
 
-const endpoint = gravityForms.graphqlUrl;
+const posts = (await fetchPublishedBlogPosts(gravityForms.graphqlUrl)).slice(0, 12);
+const categories = [...new Map(posts.flatMap(post => post.categories?.nodes || []).map(category => [category.databaseId, category])).values()];
+const imageUrl = post => {
+  try {
+    const url = new URL(post.featuredImage?.node?.sourceUrl);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  } catch { return ''; }
+};
 ---
 
 <BaseLayout title="Blog | Belaro Precision" description="Insights, updates, and practical guides from Belaro Precision.">
   <Header />
-  <main class="blog-page" data-blog-root data-endpoint={endpoint}>
+  <main class="blog-page" data-blog-root>
     <section class="blog-heading" aria-labelledby="blog-title">
       <div class="heading-inner">
         <nav class="blog-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><span aria-current="page">Blog</span></nav>
@@ -19,11 +27,29 @@ const endpoint = gravityForms.graphqlUrl;
       </div>
     </section>
     <section class="blog-content" aria-label="Articles">
-      <div class="blog-toolbar"><h2>Latest articles</h2><span data-blog-count></span></div>
-      <div class="blog-filters" data-blog-filters role="group" aria-label="Filter by category" hidden></div>
-      <p class="blog-status" data-blog-status role="status" aria-live="polite"></p>
-      <div class="blog-grid" data-blog-grid aria-busy="true" aria-label="Loading articles">
-        {[1, 2, 3].map(() => <div class="blog-skeleton" aria-hidden="true"><div class="skeleton-media skeleton" /><div class="skeleton-body"><div class="skeleton skeleton-label" /><div class="skeleton skeleton-title" /><div class="skeleton skeleton-line" /><div class="skeleton skeleton-line short" /></div></div>)}
+      <div class="blog-toolbar"><h2>Latest articles</h2><span data-blog-count>{posts.length} {posts.length === 1 ? 'article' : 'articles'}</span></div>
+      {categories.length > 0 && <div class="blog-filters" data-blog-filters role="group" aria-label="Filter by category" hidden>
+        <button type="button" data-category-filter="all" aria-pressed="true">All articles</button>
+        {categories.map(category => <button type="button" data-category-filter={String(category.databaseId)} aria-pressed="false">{category.name}</button>)}
+      </div>}
+      <p class="blog-status" data-blog-status role="status" aria-live="polite">{posts.length ? '' : 'No articles yet.'}</p>
+      <div class="blog-grid" data-blog-grid>
+        {posts.map(post => {
+          const image = imageUrl(post);
+          const title = plainText(post.title) || 'Article';
+          const validSlug = /^[a-z0-9][a-z0-9-]*$/i.test(post.slug || '');
+          const validDate = post.date && !Number.isNaN(Date.parse(post.date));
+          return <article class="blog-card" data-blog-card data-categories={(post.categories?.nodes || []).map(category => category.databaseId).join(',')}>
+            {validSlug && <a class:list={['blog-card-media', { 'is-fallback': !image }]} href={articlePath(post.slug)} tabindex="-1" aria-hidden="true"><img src={image || '/images/machined-parts/machined-block-main.webp'} alt={image ? post.featuredImage.node.altText || '' : ''} loading="lazy" /></a>}
+            <div class="blog-card-body">
+              <p class="blog-card-category">{(post.categories?.nodes || []).map(category => category.name).join(' · ')}</p>
+              <h2>{validSlug ? <a href={articlePath(post.slug)}>{title}</a> : title}</h2>
+              {validDate && <time class="blog-card-date" datetime={post.date}>{new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(post.date))}</time>}
+              <p class="blog-card-excerpt">{plainText(post.excerpt)}</p>
+              {validSlug && <a class="blog-card-read" href={articlePath(post.slug)} aria-label={`Read article: ${title}`}>Read article<span aria-hidden="true">↗</span></a>}
+            </div>
+          </article>;
+        })}
       </div>
     </section>
   </main>
@@ -31,116 +57,24 @@ const endpoint = gravityForms.graphqlUrl;
 </BaseLayout>
 
 <script>
-  import { articlePath, fetchBlogData, plainText } from '../../lib/blog.mjs';
-
   const root = document.querySelector('[data-blog-root]');
-  const filterContainer = root?.querySelector('[data-blog-filters]');
+  const filters = root?.querySelectorAll('[data-category-filter]');
+  const cards = root?.querySelectorAll('[data-blog-card]');
+  const count = root?.querySelector('[data-blog-count]');
   const status = root?.querySelector('[data-blog-status]');
-  const grid = root?.querySelector('[data-blog-grid]');
 
-  if (root && filterContainer && status && grid) {
-    try {
-      const { categories, posts } = await fetchBlogData(root.dataset.endpoint);
-      const availableIds = new Set(posts.flatMap(post => (post.categories?.nodes || []).map(category => category.databaseId)));
-      const filters = [{ databaseId: 'all', name: 'All articles' }, ...categories.filter(category => availableIds.has(category.databaseId))];
-      let activeCategory = 'all';
-
-      const render = () => {
-        filterContainer.replaceChildren();
-        filters.forEach(category => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.textContent = category.name;
-          button.setAttribute('aria-pressed', String(String(category.databaseId) === activeCategory));
-          button.addEventListener('click', () => {
-            activeCategory = String(category.databaseId);
-            render();
-          });
-          filterContainer.append(button);
-        });
-
-        const visiblePosts = activeCategory === 'all' ? posts : posts.filter(post => (post.categories?.nodes || []).some(category => String(category.databaseId) === activeCategory));
-        grid.replaceChildren();
-        visiblePosts.forEach(post => {
-          const article = document.createElement('article');
-          article.className = 'blog-card';
-          const media = document.createElement('a');
-          media.className = 'blog-card-media';
-          media.href = articlePath(post.slug);
-          media.tabIndex = -1;
-          media.setAttribute('aria-hidden', 'true');
-          const imageUrl = post.featuredImage?.node?.sourceUrl;
-          let hasImage = false;
-          if (imageUrl) {
-            try {
-              const parsed = new URL(imageUrl);
-              if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
-                const image = document.createElement('img');
-                image.src = parsed.href;
-                image.alt = post.featuredImage.node.altText || '';
-                image.loading = 'lazy';
-                media.append(image);
-                hasImage = true;
-              }
-            } catch { /* 忽略无效的 WordPress 图片地址 */ }
-          }
-          if (!hasImage) {
-            media.classList.add('is-fallback');
-            const image = document.createElement('img');
-            image.src = '/images/machined-parts/machined-block-main.webp';
-            image.alt = '';
-            image.loading = 'lazy';
-            media.append(image);
-          }
-          article.append(media);
-          const body = document.createElement('div');
-          body.className = 'blog-card-body';
-          const categoriesLabel = document.createElement('p');
-          categoriesLabel.className = 'blog-card-category';
-          categoriesLabel.textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ');
-          const title = document.createElement('h2');
-          const link = document.createElement('a');
-          if (/^[a-z0-9][a-z0-9-]*$/i.test(post.slug || '')) {
-            link.href = articlePath(post.slug);
-            link.textContent = plainText(post.title) || 'Read article';
-            title.append(link);
-          } else title.textContent = plainText(post.title) || 'Article';
-          const date = document.createElement('time');
-          date.className = 'blog-card-date';
-          if (post.date && !Number.isNaN(Date.parse(post.date))) {
-            date.dateTime = post.date;
-            date.textContent = new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(post.date));
-          }
-          const excerpt = document.createElement('p');
-          excerpt.className = 'blog-card-excerpt';
-          excerpt.textContent = plainText(post.excerpt);
-          const read = document.createElement('a');
-          read.className = 'blog-card-read';
-          read.href = articlePath(post.slug);
-          read.textContent = 'Read article';
-          read.setAttribute('aria-label', `Read article: ${plainText(post.title)}`);
-          const arrow = document.createElement('span');
-          arrow.textContent = '↗';
-          arrow.setAttribute('aria-hidden', 'true');
-          read.append(arrow);
-          body.append(categoriesLabel, title, date, excerpt, read);
-          article.append(body);
-          grid.append(article);
-        });
-        status.textContent = visiblePosts.length ? '' : 'No articles in this category yet.';
-        root.querySelector('[data-blog-count]').textContent = `${visiblePosts.length} ${visiblePosts.length === 1 ? 'article' : 'articles'}`;
-      };
-
-      filterContainer.hidden = categories.length === 0;
-      render();
-    } catch {
-      grid.replaceChildren();
-      status.textContent = 'Articles are temporarily unavailable. Please try again later.';
-    } finally {
-      grid.setAttribute('aria-busy', 'false');
-      grid.removeAttribute('aria-label');
-    }
-  }
+  if (filters?.length) root.querySelector('[data-blog-filters]').hidden = false;
+  filters?.forEach(button => button.addEventListener('click', () => {
+    const category = button.dataset.categoryFilter;
+    let visible = 0;
+    filters.forEach(filter => filter.setAttribute('aria-pressed', String(filter === button)));
+    cards?.forEach(card => {
+      card.hidden = category !== 'all' && !card.dataset.categories.split(',').includes(category);
+      if (!card.hidden) visible++;
+    });
+    if (count) count.textContent = `${visible} ${visible === 1 ? 'article' : 'articles'}`;
+    if (status) status.textContent = visible ? '' : 'No articles in this category yet.';
+  }));
 </script>
 
 <style>
@@ -164,6 +98,7 @@ const endpoint = gravityForms.graphqlUrl;
   .blog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.75rem; }
   .blog-grid :global(.blog-card), .blog-skeleton { overflow: hidden; border: 1px solid #e3e8ee; border-radius: 6px; background: #fff; }
   .blog-grid :global(.blog-card) { transition: border-color .2s, box-shadow .2s; }
+  .blog-grid :global(.blog-card[hidden]) { display: none; }
   .blog-grid :global(.blog-card:hover) { border-color: #c6cfd7; box-shadow: 0 8px 24px #1723380a; }
   .blog-grid :global(.blog-card-media) { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: #f4f6f8; border-bottom: 1px solid #e3e8ee; }
   .blog-grid :global(.blog-card-media img) { width: 100%; height: 100%; object-fit: cover; }
@@ -177,15 +112,6 @@ const endpoint = gravityForms.graphqlUrl;
   .blog-grid :global(.blog-card-read) { display: flex; align-items: center; justify-content: space-between; min-height: 36px; border-top: 1px solid #e3e8ee; padding-top: 1rem; font-size: .85rem; font-weight: 700; }
   .blog-grid :global(.blog-card-read span) { color: #b84b15; font-size: 1.25rem; }
   .blog-content :global(a:focus-visible), .blog-content :global(button:focus-visible) { outline: 2px solid #f47b35; outline-offset: 4px; }
-  .skeleton { background: #e8edf1; animation: skeleton-pulse 1.4s ease-in-out infinite alternate; border-radius: 3px; }
-  .skeleton-media { aspect-ratio: 16 / 10; border-radius: 0; }
-  .skeleton-body { padding: 1.5rem; }
-  .skeleton-label { width: 30%; height: .7rem; margin-bottom: 1.3rem; }
-  .skeleton-title { width: 80%; height: 1.5rem; margin-bottom: 1.7rem; }
-  .skeleton-line { height: .85rem; margin-bottom: .85rem; }
-  .skeleton-line.short { width: 65%; }
-  @keyframes skeleton-pulse { to { opacity: .45; } }
-  @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
   @media (max-width: 800px) { .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 560px) { .blog-grid { grid-template-columns: 1fr; } .blog-heading h1 { font-size: 2.5rem; } .blog-heading { padding-bottom: 2.5rem; } .blog-content { padding-top: 2rem; } }
 </style>
