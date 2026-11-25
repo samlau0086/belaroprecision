@@ -4,7 +4,7 @@
 
 面向工业 OEM 客户的响应式英文 B2B 网站，使用 Astro 和原生 CSS，包含企业展示页面和 RFQ（询价）表单。开发文档使用简体中文，网站页面仍使用英文。
 
-网站采用静态输出；浏览器通过 GraphQL 向独立的 WordPress 服务提交询价。当前仓库不包含完整 WordPress 站点、数据库或后台管理系统，仅包含一个配套 MU 插件。制造、报价、检验和交付流程属于页面介绍内容，不代表本仓库实现了相应业务系统，也不构成对企业实际能力的验证。
+网站采用静态输出；浏览器通过 GraphQL 向独立的 WordPress 服务提交询价，并读取 Blog 文章、分类和评论。当前仓库不包含完整 WordPress 站点、数据库或后台管理系统，仅包含配套 MU 插件；Blog 投票插件会在 WordPress 数据库中创建独立评论投票表。制造、报价、检验和交付流程属于页面介绍内容，不代表本仓库实现了相应业务系统，也不构成对企业实际能力的验证。
 
 本说明于 **2026 年 11 月 4 日**根据工作区代码和配置核查。原文中的历史联调记录保留于后文，并单独标注其验证边界。**2026 年 11 月 5 日**新增 Machined Parts 分类展示页、全站入口与询价预填流程，相关验证记录见第 10 节。
 
@@ -23,7 +23,7 @@
 | 外部后台 | WordPress、Gravity Forms、WPGraphQL、WPGraphQL for Gravity Forms；附件还需要 WPGraphQL Upload |
 | 测试 | Node.js 内置 `node:test`、`node:assert/strict`；浏览器测试使用 Playwright 和 Chromium |
 
-项目没有独立的 Node.js 后端框架、SSR 适配器、ORM、数据库连接配置、Migration 或站内用户认证。WordPress 用作表单后台；展示内容直接写在 Astro 文件中，未实现从 CMS 动态读取页面内容。RFQ 使用匿名请求，代码设置 `credentials: 'omit'`，不携带 WordPress 登录凭证。
+项目没有独立的 Node.js 后端框架、SSR 适配器、ORM、数据库连接配置或站内用户认证。WordPress 用作表单和 Blog 内容后台；除 Blog 文章、分类与评论外，展示内容直接写在 Astro 文件中。RFQ 和 Blog 均使用公开匿名 GraphQL 请求，不携带 WordPress 登录凭证。评论投票表由 WordPress MU 插件通过 `dbDelta` 按版本创建，不由 Astro 直接连接。
 
 ## 3. 目录结构
 
@@ -77,6 +77,8 @@
 | `/quality/` | 图纸与材料确认、公差可行性、检测方法与环节、文件范围、首件/抽检/全检约定、偏差处理、包装标识七项质量说明；设备与文件能力按项目核实，没有在线检验管理功能 |
 | `/about/` | 法定英文名称、沙井所在地、业务身份、自有加工与外协范围、车间/设备/团队资料说明、OEM 订单配合、外协管理约定、邮箱与 WhatsApp、质量评审与 FAQ |
 | `/contact/` | 询价字段、国家搜索、电话区号、材料自定义输入、单附件上传、Turnstile 与 GraphQL 提交 |
+| `/blog/` | 通过公开 WPGraphQL 查询最多 12 篇已发布文章和分类，支持前端分类筛选；文章卡片进入本站详情页 |
+| `/blog/article/?slug=...` | 按 WordPress slug 在浏览器读取文章正文、分类、最多 100 条公开评论与投票汇总，支持层级回复和 up/down vote |
 | `/privacy-policy/` | 询价数据、技术文件、第三方服务、跨境处理、保留与权利请求说明 |
 | `/cookie-policy/` | 浏览器存储、字体/图片请求、安全服务及当前未启用广告与统计标签的说明 |
 | `/terms-of-use/` | 网站使用、按图评审、询价与订单边界、图纸权属及定制件商业条款说明 |
@@ -342,7 +344,7 @@ npm run preview
 
 | 配置项 | 位置 | 用途及要求 |
 | --- | --- | --- |
-| `PUBLIC_GRAPHQL_URL` | 静态站点构建环境或根目录 `.env` | 公开 WordPress GraphQL 地址；本地留空时沿用 `.local` 开发地址，GitHub 自动部署必须设置正式 HTTPS 地址 |
+| `PUBLIC_GRAPHQL_URL` | 静态站点构建环境或根目录 `.env` | 公开 WordPress GraphQL 地址，供 RFQ 与 Blog 使用；本地留空时沿用 `.local` 开发地址，GitHub 自动部署必须设置正式 HTTPS 地址 |
 | `PUBLIC_TURNSTILE_SITE_KEY` | 静态站点构建环境或根目录 `.env` | Turnstile 公开 Site Key，会写入产物；为空或仅空白时不启用人机验证，表单仍可提交 |
 | `PUBLIC_GTM_ID` | 静态站点构建环境或根目录 `.env` | 可选 GTM Web 容器 ID（`GTM-...`）；默认空白不加载 GTM；设置前完成同意管理及隐私政策更新 |
 | `PUBLIC_LIVECHAT_ENABLED` | GitHub Variables、Pages 构建变量或根目录 `.env` | 仅支持 `true` / `false`；留空默认启用，停用必须填 `false` |
@@ -365,6 +367,14 @@ PUBLIC_GTM_ID=
 在 `src/config.ts` 中配置 `gravityForms`：
 
 - `graphqlUrl`：优先使用 `PUBLIC_GRAPHQL_URL`，未配置或空白时使用 `https://belaroprecision.local/graphql`；生产必须配置正式后台地址并重新构建。
+
+Blog 页面在浏览器端请求该地址。`/blog/` 读取文章与分类，文章卡片进入本站 `/blog/article/?slug=...`，详情页再按 WordPress slug 读取正文和最多 100 条公开评论，不跳转 WordPress 原站。固定详情路由避免静态构建依赖 WordPress 在线状态，但页面 Title、Description 和 Canonical 需要在浏览器取得文章后更新；如后续要求完整的构建期 SEO，应改为可稳定枚举 slug 的静态动态路由或 SSR。
+
+评论表单使用 WPGraphQL 自带的 `createComment` mutation，支持顶层评论和 `parent` 层级回复。WordPress 必须启用文章评论、允许符合站点策略的匿名评论，并配置评论审核与反垃圾措施；访客邮箱只提交到 WordPress，不在页面展示。提交成功后页面重新读取公开评论，处于待审核状态的评论不会立即显示。
+
+评论的 up/down vote 由 `wordpress/mu-plugins/belaro-blog-graphql.php` 提供：插件注册文章级批量字段 `Post.belaroCommentVotes(visitorToken)` 与 `belaroVoteComment` mutation，并创建 `wp_belaro_comment_votes`（表前缀以实际 WordPress 配置为准）。浏览器在 `localStorage` 生成随机 token，服务端仅保存加盐 HMAC，允许同一 token 对同一评论创建、切换或清除一票。该机制不等同账号身份，清理存储或更换浏览器可获得新 token；生产仍需使用 Cloudflare/WAF 限速、日志监控和反滥用策略，不能把投票结果视为强身份验证数据。
+
+部署 WordPress 时必须同时复制 `belaro-graphql-upload.php` 与 `belaro-blog-graphql.php` 到 `wp-content/mu-plugins/`，确认运行账户有建表权限，并在 GraphQL schema 中检查 `createComment`、`belaroCommentVotes` 和 `belaroVoteComment`。生产站点还需允许官网 Origin 跨域访问 JSON GraphQL POST。当前代码和模拟测试已覆盖请求结构，实际后台字段、评论权限、建表、CORS 与生产联调状态仍需在部署环境验证。
 - `formId`：当前为 `1`，切换后台表单时应同步复核所有字段映射。
 - `fields`：配置数据库字段 `id` 和 `type`；支持 `text`、`name`、`email`、`file`、`consent`、`checkbox`、`checkboxes`。单项 Checkbox 使用 `inputId` 和 `choiceValue`；多项 Checkbox 使用 `choices` 数组，逐项配置 `inputId` 和 `value`。Consent 使用 `type: 'consent'`。
 - `uploadsEnabled`：当前为 `true`；部署时须先安装 WPGraphQL Upload，并确认存在 `fileUploadValues` 输入。
@@ -378,7 +388,7 @@ PUBLIC_GTM_ID=
 
 RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅空白）时，前端不加载 Turnstile 脚本、不展示验证组件、不发送验证 Header，允许普通和附件提交；姓名、邮箱等字段校验及防重复提交保持生效。需要启用时，在 Cloudflare 控制台中打开 Turnstile，创建组件，添加正式前端域名（如 `belaroprecision.com`；若使用 `www`，也需加入对应域名），选择 Managed 模式并取得 Site Key 和 Secret Key。控制台入口名称可能变化，以实际界面为准。
 
-启用时，将 Site Key 配置为前端构建变量，将 Secret Key 和精确前端 hostname 配置为上述 WordPress 常量。停用时，清空前端 Site Key 并重新构建，同时移除或清空后台 Secret Key。服务端独立依据 Secret Key 决定是否验证，不接受客户端传参关闭验证；若后台仍配置 Secret Key，前端无 Site Key 的请求仍会被后台拒绝。复制当前 `wordpress/mu-plugins/belaro-graphql-upload.php` 到后台的 `wp-content/mu-plugins/`。插件仅在服务端 Secret Key 非空时，对查询文本匹配到的 `mutation` 和 `submitGfForm` 请求调用 Turnstile Siteverify，核对 `success`、hostname 和 `rfq` action；启用后缺 hostname、缺失/无效/过期 Token 或验证失败时，将请求替换为 `query { __typename }`，避免执行原提交。该实现依赖查询文本匹配，不能据此认定后台所有调用路径都已完成安全审计。WordPress 需能向 Cloudflare 发起 HTTPS 请求；CORS 需允许 `X-Turnstile-Token`。上线前验证有效、缺失、无效和过期 Token 的真实行为。
+启用时，将 Site Key 配置为前端构建变量，将 Secret Key 和精确前端 hostname 配置为上述 WordPress 常量。停用时，清空前端 Site Key 并重新构建，同时移除或清空后台 Secret Key。服务端独立依据 Secret Key 决定是否验证，不接受客户端传参关闭验证；若后台仍配置 Secret Key，前端无 Site Key 的请求仍会被后台拒绝。复制仓库 `wordpress/mu-plugins/` 下的两个 PHP 文件到后台同名目录。上传兼容插件仅在服务端 Secret Key 非空时，对查询文本匹配到的 `mutation` 和 `submitGfForm` 请求调用 Turnstile Siteverify，核对 `success`、hostname 和 `rfq` action；启用后缺 hostname、缺失/无效/过期 Token 或验证失败时，将请求替换为 `query { __typename }`，避免执行原提交。该实现依赖查询文本匹配，不能据此认定后台所有调用路径都已完成安全审计。WordPress 需能向 Cloudflare 发起 HTTPS 请求；CORS 需允许 `X-Turnstile-Token`。上线前验证有效、缺失、无效和过期 Token 的真实行为。
 
 移动端 RFQ 搜索下拉根据浏览器可视区域调整位置和列表高度，以适应软键盘；国家同步电话区号时不转移输入焦点。真实 iPhone Safari 的软键盘行为仍需设备验收。
 
@@ -544,6 +554,14 @@ Production 新增配图接入：用户 `webp/` 的 3 张同名图片原样复制
 Production 补图与布局调整（2026 年 11 月 24 日）：Approve the order、Part documentation、Quantity profile 复用现有图纸评审与分隔批次素材，实际展示增至 11 图，不新增图片文件。流程区采用桌面四列、中屏两列、手机单列，资料区采用桌面两列、手机单列；同排图片框对齐，原图等比完整显示。详见 [Production 补充接入记录](docs/image-requirements/production.md#5-实际接入记录)。
 
 ## 10. 测试与质量检查
+
+### Blog 详情、层级评论与投票验证（2026 年 11 月 25 日）
+
+- `node --test tests/blog.test.mjs` 的 7 项数据层测试通过，覆盖文章列表与详情查询、GraphQL 异常、层级回复、评论树和投票 mutation。
+- `npm run build` 通过，共生成 25 个静态页面，包含 `/blog/` 与 `/blog/article/`。
+- `node --test tests/blog-browser.test.mjs` 通过，使用模拟 GraphQL 覆盖本站文章链接、两层评论、回复 parent、up/down 图标投票、正文 HTML 清理，以及 390px、1440px 下无横向溢出。
+- 使用 Local 自带 PHP 8.2.29 执行 `php -l wordpress/mu-plugins/belaro-blog-graphql.php`，语法检查通过。
+- 浏览器测试未连接真实 WordPress，也未验证生产 CORS、匿名评论权限、审核、数据库建表或 WAF 限速；MU 插件部署后仍需完成真实后台联调。
 
 ### 全站最小字号验证
 

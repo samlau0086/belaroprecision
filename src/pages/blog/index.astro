@@ -1,0 +1,132 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { gravityForms } from '../../config';
+
+const endpoint = gravityForms.graphqlUrl;
+---
+
+<BaseLayout title="Blog | Belaro Precision" description="Insights, updates, and practical guides from Belaro Precision." canonicalPath="/blog/">
+  <Header />
+  <main class="blog-page" data-blog-root data-endpoint={endpoint}>
+    <section class="blog-heading" aria-labelledby="blog-title">
+      <p class="blog-eyebrow">Belaro Precision</p>
+      <h1 id="blog-title">Blog</h1>
+      <p>Insights, updates, and practical guides for OEM manufacturing.</p>
+    </section>
+    <section class="blog-content" aria-label="Articles">
+      <div class="blog-filters" data-blog-filters aria-label="Filter by category" hidden></div>
+      <p class="blog-status" data-blog-status role="status" aria-live="polite">Loading articles...</p>
+      <div class="blog-grid" data-blog-grid></div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<script>
+  import { fetchBlogData, plainText } from '../../lib/blog.mjs';
+
+  const root = document.querySelector('[data-blog-root]');
+  const filterContainer = root?.querySelector('[data-blog-filters]');
+  const status = root?.querySelector('[data-blog-status]');
+  const grid = root?.querySelector('[data-blog-grid]');
+
+  if (root && filterContainer && status && grid) {
+    try {
+      const { categories, posts } = await fetchBlogData(root.dataset.endpoint);
+      const availableIds = new Set(posts.flatMap(post => (post.categories?.nodes || []).map(category => category.databaseId)));
+      const filters = [{ databaseId: 'all', name: 'All articles' }, ...categories.filter(category => availableIds.has(category.databaseId))];
+      let activeCategory = 'all';
+
+      const render = () => {
+        filterContainer.replaceChildren();
+        filters.forEach(category => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = category.name;
+          button.setAttribute('aria-pressed', String(String(category.databaseId) === activeCategory));
+          button.addEventListener('click', () => {
+            activeCategory = String(category.databaseId);
+            render();
+          });
+          filterContainer.append(button);
+        });
+
+        const visiblePosts = activeCategory === 'all' ? posts : posts.filter(post => (post.categories?.nodes || []).some(category => String(category.databaseId) === activeCategory));
+        grid.replaceChildren();
+        visiblePosts.forEach(post => {
+          const article = document.createElement('article');
+          article.className = 'blog-card';
+          const imageUrl = post.featuredImage?.node?.sourceUrl;
+          if (imageUrl) {
+            try {
+              const parsed = new URL(imageUrl);
+              if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+                const image = document.createElement('img');
+                image.src = parsed.href;
+                image.alt = post.featuredImage.node.altText || '';
+                image.loading = 'lazy';
+                article.append(image);
+              }
+            } catch { /* 忽略无效的 WordPress 图片地址 */ }
+          }
+          const body = document.createElement('div');
+          body.className = 'blog-card-body';
+          const categoriesLabel = document.createElement('p');
+          categoriesLabel.className = 'blog-card-category';
+          categoriesLabel.textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ');
+          const title = document.createElement('h2');
+          const link = document.createElement('a');
+          if (/^[a-z0-9][a-z0-9-]*$/i.test(post.slug || '')) {
+            link.href = `/blog/article/?slug=${encodeURIComponent(post.slug)}`;
+            link.textContent = plainText(post.title) || 'Read article';
+            title.append(link);
+          } else title.textContent = plainText(post.title) || 'Article';
+          const date = document.createElement('time');
+          date.className = 'blog-card-date';
+          if (post.date && !Number.isNaN(Date.parse(post.date))) {
+            date.dateTime = post.date;
+            date.textContent = new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(post.date));
+          }
+          const excerpt = document.createElement('p');
+          excerpt.className = 'blog-card-excerpt';
+          excerpt.textContent = plainText(post.excerpt);
+          body.append(categoriesLabel, title, date, excerpt);
+          article.append(body);
+          grid.append(article);
+        });
+        status.textContent = visiblePosts.length ? '' : 'No articles in this category yet.';
+      };
+
+      filterContainer.hidden = categories.length === 0;
+      render();
+    } catch {
+      status.textContent = 'Articles are temporarily unavailable. Please try again later.';
+    }
+  }
+</script>
+
+<style>
+  .blog-page { min-height: 65vh; background: #f6f8fa; }
+  .blog-heading { padding: clamp(3rem, 8vw, 6rem) max(1.25rem, calc((100% - 1180px) / 2)); background: #10233d; color: #fff; }
+  .blog-eyebrow { margin: 0 0 .75rem; color: #f2a34a; font-size: .8rem; font-weight: 700; text-transform: uppercase; }
+  .blog-heading h1 { margin: 0; font-size: clamp(2.25rem, 5vw, 4rem); line-height: 1.1; }
+  .blog-heading > p:last-child { max-width: 42rem; margin: 1rem 0 0; color: #d5deea; font-size: 1.05rem; }
+  .blog-content { max-width: 1180px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .blog-filters { display: flex; flex-wrap: wrap; gap: .65rem; margin-bottom: 1.75rem; }
+  .blog-filters button { min-height: 44px; padding: .55rem 1rem; border: 1px solid #cbd3dc; border-radius: 4px; background: #fff; color: #25364a; font: inherit; cursor: pointer; }
+  .blog-filters button[aria-pressed="true"] { border-color: #cf7621; background: #cf7621; color: #fff; }
+  .blog-status { min-height: 1.5rem; color: #536273; }
+  .blog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+  .blog-card { overflow: hidden; border: 1px solid #e0e5ea; border-radius: 4px; background: #fff; }
+  .blog-card > img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #e8edf1; }
+  .blog-card-body { padding: 1.25rem; }
+  .blog-card-category, .blog-card-date { color: #687788; font-size: .82rem; }
+  .blog-card h2 { margin: .65rem 0; font-size: 1.25rem; line-height: 1.35; }
+  .blog-card h2 a { color: #10233d; text-decoration: none; }
+  .blog-card h2 a:hover { color: #a95412; text-decoration: underline; }
+  .blog-card-excerpt { color: #4b5968; line-height: 1.65; }
+  @media (max-width: 800px) { .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .blog-grid { grid-template-columns: 1fr; } }
+</style>

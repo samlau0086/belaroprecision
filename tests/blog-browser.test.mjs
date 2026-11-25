@@ -1,0 +1,129 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { extname, join } from 'node:path';
+import { chromium } from 'playwright';
+
+const contentTypes = {
+  '.css': 'text/css',
+  '.js': 'text/javascript',
+  '.html': 'text/html',
+  '.webp': 'image/webp',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon',
+};
+
+test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_000 }, async () => {
+  const server = createServer(async (req, res) => {
+    try {
+      const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+      const relative = pathname.endsWith('/') ? `${pathname}index.html` : pathname;
+      const body = await readFile(join(process.cwd(), 'dist', relative));
+      res.setHeader('Content-Type', contentTypes[extname(relative)] || 'application/octet-stream');
+      res.end(body);
+    } catch {
+      res.writeHead(404).end();
+    }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const baseUrl = `http://127.0.0.1:${server.address().port}`;
+  const requests = [];
+  let browser;
+
+  try {
+    browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.route('**/*', route => route.request().url().startsWith(baseUrl) ? route.continue() : route.fallback());
+    await page.route('**/graphql', async route => {
+      const request = JSON.parse(route.request().postData());
+      requests.push(request);
+      if (request.query.includes('BlogIndex')) {
+        await route.fulfill({ json: { data: {
+          categories: { nodes: [{ databaseId: 3, name: 'Manufacturing', slug: 'manufacturing' }] },
+          posts: { nodes: [{
+            databaseId: 10,
+            slug: 'cnc-guide',
+            title: 'CNC Guide',
+            uri: '/cnc-guide/',
+            date: '2026-11-25T08:00:00Z',
+            excerpt: '<p>A practical guide.</p>',
+            featuredImage: null,
+            categories: { nodes: [{ databaseId: 3, name: 'Manufacturing', slug: 'manufacturing' }] },
+          }] },
+        } } });
+      } else if (request.query.includes('CreateBlogComment')) {
+        await route.fulfill({ json: { data: { createComment: { success: true, comment: { databaseId: 23 } } } } });
+      } else if (request.query.includes('VoteBlogComment')) {
+        await route.fulfill({ json: { data: { belaroVoteComment: { up: 3, down: 0, score: 3, viewerVote: 'up' } } } });
+      } else {
+        await route.fulfill({ json: { data: { post: {
+          databaseId: 10,
+          slug: 'cnc-guide',
+          title: 'CNC Guide',
+          content: '<h2>Drawing review</h2><p>Confirm the current revision.</p><img src="javascript:alert(1)" onerror="alert(2)"><script>alert(3)</script>',
+          excerpt: '<p>A practical guide.</p>',
+          date: '2026-11-25T08:00:00Z',
+          modified: '2026-11-25T08:00:00Z',
+          featuredImage: null,
+          categories: { nodes: [{ databaseId: 3, name: 'Manufacturing', slug: 'manufacturing' }] },
+          belaroCommentVotes: [
+            { commentId: 21, up: 2, down: 0, score: 2, viewerVote: '' },
+            { commentId: 22, up: 0, down: 1, score: -1, viewerVote: '' },
+          ],
+          comments: { nodes: [
+            { databaseId: 21, content: '<p>Useful article.</p>', date: '2026-11-25T09:00:00Z', parentDatabaseId: 0, author: { node: { name: 'Alex' } } },
+            { databaseId: 22, content: '<p>Thanks for sharing.</p>', date: '2026-11-25T10:00:00Z', parentDatabaseId: 21, author: { node: { name: 'Sam' } } },
+          ] },
+        } } } });
+      }
+    });
+    await page.goto(`${baseUrl}/blog/`);
+    const articleLink = page.getByRole('link', { name: 'CNC Guide' });
+    await articleLink.waitFor();
+    assert.equal(await articleLink.getAttribute('href'), '/blog/article/?slug=cnc-guide');
+    assert.equal((await articleLink.getAttribute('href')).includes('belaroprecision.local'), false);
+
+    await page.goto(`${baseUrl}/blog/article/?slug=cnc-guide`);
+    await page.getByRole('heading', { level: 1, name: 'CNC Guide' }).waitFor();
+    assert.equal(await page.getByText('Thanks for sharing.').count(), 1);
+    assert.equal(await page.locator('.comment').count(), 2);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    assert.equal(await page.getByRole('button', { name: 'Upvote comment' }).count(), 2);
+    assert.equal(await page.locator('.article-content script').count(), 0);
+    assert.equal(await page.locator('.article-content').getByText('alert(3)').count(), 0);
+    assert.equal(await page.locator('.article-content img').getAttribute('src'), null);
+    assert.equal(await page.locator('.article-content img').getAttribute('onerror'), null);
+    if (process.env.BLOG_SCREENSHOT_DIR) {
+      await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, 'blog-article-mobile.png'), fullPage: true });
+    }
+
+    await page.getByRole('button', { name: 'Upvote comment' }).first().click();
+    assert.equal(await page.getByRole('button', { name: 'Upvote comment' }).first().getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.getByRole('button', { name: 'Upvote comment' }).first().locator('span').innerText(), '3');
+
+    await page.getByRole('button', { name: 'Reply' }).first().click();
+    await page.getByLabel('Name').fill('Taylor');
+    await page.getByLabel('Email').fill('taylor@example.com');
+    await page.getByRole('textbox', { name: 'Comment', exact: true }).fill('This is a reply.');
+    await page.getByRole('button', { name: 'Post comment' }).click();
+    await page.getByText('Your comment was submitted and may be awaiting moderation.').waitFor();
+    const commentRequest = requests.find(request => request.query.includes('CreateBlogComment'));
+    assert.equal(commentRequest.variables.input.parent, 21);
+    assert.equal(commentRequest.variables.input.commentOn, 10);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.reload();
+    await page.getByRole('heading', { level: 1, name: 'CNC Guide' }).waitFor();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    if (process.env.BLOG_SCREENSHOT_DIR) {
+      await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, 'blog-article-desktop.png'), fullPage: true });
+    }
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser?.close();
+    await new Promise(resolve => server.close(resolve));
+  }
+});
