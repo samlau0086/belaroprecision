@@ -1,0 +1,89 @@
+---
+import { sanitizeBlogHtml } from '../lib/blog-html.mjs';
+
+const { blocks = [] } = Astro.props;
+const option = value => Array.isArray(value) ? value[0] : value;
+const safeUrl = (value, image = false) => {
+  if (typeof value !== 'string' || !value.trim()) return undefined;
+  try {
+    const url = new URL(value, 'https://belaroprecision.com');
+    return (image ? ['http:', 'https:'] : ['http:', 'https:', 'mailto:', 'tel:']).includes(url.protocol) ? value : undefined;
+  } catch { return undefined; }
+};
+const knownTypes = new Set(['RichText', 'Heading', 'Image', 'MediaText', 'Callout', 'SpecTable', 'CallToAction'].map(type => `ArticleContentContentBlocks${type}Layout`));
+for (const block of blocks) {
+  if (!knownTypes.has(block?.__typename)) console.warn(`未知的文章内容模块: ${block?.__typename || '未提供类型'}`);
+}
+---
+
+{blocks.map(block => {
+  const type = block?.__typename;
+  const image = block?.image?.node;
+  const imageUrl = safeUrl(image?.sourceUrl, true);
+  const linkUrl = safeUrl(block?.link?.url);
+  const headingLevel = option(block?.level) === 'h3' ? 'h3' : 'h2';
+  const Heading = headingLevel;
+  return (
+    <>
+      {type === 'ArticleContentContentBlocksRichTextLayout' && <div class="rich-text" set:html={sanitizeBlogHtml(block.content)} />}
+      {type === 'ArticleContentContentBlocksHeadingLayout' && <Heading>{block.text}</Heading>}
+      {type === 'ArticleContentContentBlocksImageLayout' && imageUrl && (
+        <figure class:list={['article-image', { wide: option(block.width) === 'wide' }]}>
+          <img src={imageUrl} alt={image?.altText || ''} loading="lazy" />
+          {block.caption && <figcaption>{block.caption}</figcaption>}
+        </figure>
+      )}
+      {type === 'ArticleContentContentBlocksMediaTextLayout' && (
+        <section class:list={['media-text', { reverse: option(block.imagePosition) === 'right' }]}>
+          {imageUrl && <img src={imageUrl} alt={image?.altText || ''} loading="lazy" />}
+          <div>{block.heading && <h2>{block.heading}</h2>}<div set:html={sanitizeBlogHtml(block.content)} /></div>
+        </section>
+      )}
+      {type === 'ArticleContentContentBlocksCalloutLayout' && (
+        <aside class="callout">
+          {option(block.variant) === 'quote' ? <blockquote>{block.content}</blockquote> : <p>{block.content}</p>}
+          {block.attribution && <p class="attribution">{block.attribution}</p>}
+        </aside>
+      )}
+      {type === 'ArticleContentContentBlocksSpecTableLayout' && (
+        <div class="spec-table">
+          {block.heading && <h2>{block.heading}</h2>}
+          <table><tbody>{(block.rows || []).map(row => <tr><th scope="row">{row.label}</th><td>{row.value}</td></tr>)}</tbody></table>
+        </div>
+      )}
+      {type === 'ArticleContentContentBlocksCallToActionLayout' && (
+        <section class="article-cta">
+          {block.heading && <h2>{block.heading}</h2>}
+          {block.description && <p>{block.description}</p>}
+          {linkUrl && block.link?.title && <a href={linkUrl} target={block.link.target === '_blank' ? '_blank' : undefined} rel={block.link.target === '_blank' ? 'noopener noreferrer' : undefined}>{block.link.title}</a>}
+        </section>
+      )}
+    </>
+  );
+})}
+
+<style>
+  .article-image { margin: 2.5rem 0; }
+  .article-image img { display: block; width: 100%; height: auto; }
+  .article-image figcaption { margin-top: .6rem; color: #687788; font-size: .9rem; }
+  .article-image.wide { margin-inline: -3rem; }
+  .media-text { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 2rem; margin: 2.5rem 0; }
+  .media-text img { display: block; width: 100%; height: auto; }
+  .media-text.reverse img { order: 2; }
+  .media-text h2, .spec-table h2, .article-cta h2 { margin-top: 0; }
+  .callout { margin: 2.5rem 0; padding: 1.25rem 1.5rem; border-left: 3px solid #cf7621; background: #eaf0f2; }
+  .callout p, .callout blockquote { margin: 0; }
+  .callout blockquote { padding: 0; border: 0; }
+  .callout .attribution { margin-top: .75rem; color: #536273; font-size: .9rem; }
+  .spec-table { margin: 2.5rem 0; overflow-x: auto; }
+  .spec-table table { width: 100%; border-collapse: collapse; text-align: left; }
+  .spec-table th, .spec-table td { padding: .8rem; border-bottom: 1px solid #ccd5de; vertical-align: top; }
+  .spec-table th { width: 40%; }
+  .article-cta { margin: 2.5rem 0; padding: 1.5rem; background: #eaf0f2; }
+  .article-cta a { display: inline-block; padding: .6rem 1rem; background: #a95412; color: #fff; font-weight: 700; text-decoration: none; }
+  @media (max-width: 620px) {
+    .article-image.wide { margin-inline: 0; }
+    .media-text { grid-template-columns: 1fr; gap: 1rem; }
+    .media-text.reverse img { order: 0; }
+  }
+</style>

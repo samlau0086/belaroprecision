@@ -375,6 +375,8 @@ PUBLIC_GTM_ID=
 
 Blog 列表在构建期读取已发布文章，最多展示前 12 篇及其分类，卡片直接写入静态 HTML，访问时不请求列表 GraphQL；分类筛选在浏览器本地进行，无 JavaScript 时仍可阅读全部卡片。列表和详情路由分别使用分页查询，构建过程为每个 slug 生成 `/blog/article/<slug>/`，将标题、摘要、Canonical 和白名单清理后的正文直接写入静态 HTML；旧 `/blog/article/?slug=...` 仍兼容并会替换为干净路径。新增、删除或修改 WordPress 文章及分类后必须重新构建发布，构建环境也必须能访问 GraphQL；枚举失败会阻断构建，避免发布缺失文章的站点。生成的详情页会自动进入现有 Sitemap 和 Agent Markdown 流程。
 
+文章详情在构建时读取 ACF PRO 的 `articleContent.contentBlocks`，通过 Astro 模块按顺序呈现富文本、标题、图片、图文组合、提示/引用、参数表和行动引导。字段组须启用 WPGraphQL for ACF 并公开 `articleContent`，Flexible Content 布局及字段名必须与 `src/lib/blog.mjs` 的查询匹配；参数表的参数值 GraphQL 字段为 `value`。后台字段变更需同步修改查询。没有内容模块的旧文章使用 WordPress `content`；有模块的文章不会拼接旧正文，未知布局构建时输出警告且不会自动显示。富文本仍执行 HTML 白名单清理，模块链接和图片地址限制为安全协议。静态文章正文以最近一次构建为准，浏览器读取评论时不会覆盖它；发布、更新或删除文章后仍需重新构建部署。
+
 评论表单使用 WPGraphQL 自带的 `createComment` mutation，支持顶层评论和 `parent` 层级回复。WordPress 必须启用文章评论、允许符合站点策略的匿名评论，并配置评论审核与反垃圾措施；访客邮箱只提交到 WordPress，不在页面展示。提交成功后页面重新读取公开评论，处于待审核状态的评论不会立即显示。
 
 评论的 up/down vote 由 `wordpress/mu-plugins/belaro-blog-graphql.php` 提供：插件注册文章级批量字段 `Post.belaroCommentVotes(visitorToken)` 与 `belaroVoteComment` mutation，并创建 `wp_belaro_comment_votes`（表前缀以实际 WordPress 配置为准）。正文、评论与投票使用独立查询；后台未安装投票插件或暂时缺少投票字段时，文章和评论仍正常显示，仅禁用投票按钮并给出状态说明。浏览器在 `localStorage` 生成随机 token，服务端仅保存加盐 HMAC，允许同一 token 对同一评论创建、切换或清除一票。该机制不等同账号身份，清理存储或更换浏览器可获得新 token；生产仍需使用 Cloudflare/WAF 限速、日志监控和反滥用策略，不能把投票结果视为强身份验证数据。

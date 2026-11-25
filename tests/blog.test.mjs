@@ -12,6 +12,7 @@ import {
   fetchPublishedBlogPosts,
   attachCommentVotes,
   articlePath,
+  articleContentFields,
   plainText,
   submitBlogComment,
   voteBlogComment,
@@ -95,7 +96,10 @@ test('文章正文查询不依赖投票插件，单独加载并合并投票', as
 test('静态文章路由分页读取全部已发布文章，并拒绝失败或停滞分页', async () => {
   const cursors = [];
   const posts = await fetchPublishedBlogPosts('https://cms.example/graphql', async (_, init) => {
-    const { variables } = JSON.parse(init.body);
+    const { query, variables } = JSON.parse(init.body);
+    assert.ok(query.includes(articleContentFields));
+    assert.match(query, /rows\s*\{\s*label\s+value\s*\}/);
+    assert.doesNotMatch(query, /value\s*:\s*va\b/);
     cursors.push(variables.after);
     return response({ data: { posts: { nodes: [{ slug: variables.after ? 'second' : 'first' }], pageInfo: { hasNextPage: !variables.after, endCursor: 'next' } } } });
   });

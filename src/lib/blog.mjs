@@ -13,6 +13,21 @@ export const blogQuery = `
   }
 `;
 
+export const articleContentFields = `
+  articleContent {
+    contentBlocks {
+      __typename
+      ... on ArticleContentContentBlocksRichTextLayout { content }
+      ... on ArticleContentContentBlocksHeadingLayout { text level }
+      ... on ArticleContentContentBlocksImageLayout { image { node { sourceUrl altText } } caption width }
+      ... on ArticleContentContentBlocksMediaTextLayout { heading content image { node { sourceUrl altText } } imagePosition }
+      ... on ArticleContentContentBlocksCalloutLayout { variant content attribution }
+      ... on ArticleContentContentBlocksSpecTableLayout { heading rows { label value } }
+      ... on ArticleContentContentBlocksCallToActionLayout { heading description link { url title target } }
+    }
+  }
+`;
+
 export const blogPostQuery = `
   query BlogPost($slug: ID!) {
     post(id: $slug, idType: SLUG) {
@@ -52,6 +67,7 @@ export async function fetchPublishedBlogPosts(endpoint, fetchImpl = fetch) {
             databaseId slug title content excerpt date modified
             featuredImage { node { sourceUrl altText } }
             categories { nodes { databaseId name slug } }
+            ${articleContentFields}
           }
           pageInfo { hasNextPage endCursor }
         }

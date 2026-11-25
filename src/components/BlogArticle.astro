@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
+import BlogContentBlocks from './BlogContentBlocks.astro';
 import { gravityForms } from '../config';
 import { plainText } from '../lib/blog.mjs';
 import { sanitizeBlogHtml } from '../lib/blog-html.mjs';
@@ -11,6 +12,7 @@ const { post } = Astro.props;
 const title = post ? plainText(post.title) : 'Article';
 const image = post?.featuredImage?.node;
 const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUrl : undefined;
+const blocks = post?.articleContent?.contentBlocks;
 ---
 
 <BaseLayout title={`${title} | Belaro Precision`} description={post ? plainText(post.excerpt).slice(0, 160) : 'Manufacturing insights and practical guides from Belaro Precision.'}>
@@ -29,7 +31,9 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
           <time data-article-date datetime={post?.date}>{post?.date ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(post.date)) : ''}</time>
         </header>
         <img class="article-featured" data-article-image src={imageUrl} alt={image?.altText || ''} hidden={!imageUrl} />
-        <div class="article-content" data-article-content set:html={post ? sanitizeBlogHtml(post.content) : ''}></div>
+        <div class="article-content" data-article-content>
+          {Array.isArray(blocks) && blocks.length > 0 ? <BlogContentBlocks blocks={blocks} /> : <div set:html={post ? sanitizeBlogHtml(post.content) : ''} />}
+        </div>
       </article>
 
       <section class="comments-section" data-comments-section hidden aria-labelledby="comments-title">
@@ -293,30 +297,32 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
         if (!post) {
           status.textContent = 'Article not found.';
         } else {
-          const title = plainText(post.title) || 'Article';
-          articleElement.querySelector('[data-article-title]').textContent = title;
-          articleElement.querySelector('[data-article-categories]').textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ');
-          const date = articleElement.querySelector('[data-article-date]');
-          if (post.date && !Number.isNaN(Date.parse(post.date))) {
-            date.dateTime = post.date;
-            date.textContent = new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(post.date));
+          if (root.dataset.prerendered !== 'true') {
+            const title = plainText(post.title) || 'Article';
+            articleElement.querySelector('[data-article-title]').textContent = title;
+            articleElement.querySelector('[data-article-categories]').textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ');
+            const date = articleElement.querySelector('[data-article-date]');
+            if (post.date && !Number.isNaN(Date.parse(post.date))) {
+              date.dateTime = post.date;
+              date.textContent = new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(post.date));
+            }
+            const image = articleElement.querySelector('[data-article-image]');
+            const imageUrl = post.featuredImage?.node?.sourceUrl;
+            if (imageUrl && /^https?:\/\//i.test(imageUrl)) {
+              image.src = imageUrl;
+              image.alt = post.featuredImage.node.altText || '';
+              image.hidden = false;
+            }
+            appendSafeHtml(articleElement.querySelector('[data-article-content]'), post.content);
+            document.title = `${title} | Belaro Precision`;
+            const description = plainText(post.excerpt).slice(0, 160);
+            if (description) document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+            const canonical = new URL(document.querySelector('link[rel="canonical"]')?.getAttribute('href') || window.location.href);
+            canonical.pathname = articlePath(post.slug);
+            canonical.search = '';
+            document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical.href);
+            if (window.location.search.includes('slug=')) window.location.replace(articlePath(post.slug));
           }
-          const image = articleElement.querySelector('[data-article-image]');
-          const imageUrl = post.featuredImage?.node?.sourceUrl;
-          if (imageUrl && /^https?:\/\//i.test(imageUrl)) {
-            image.src = imageUrl;
-            image.alt = post.featuredImage.node.altText || '';
-            image.hidden = false;
-          }
-          appendSafeHtml(articleElement.querySelector('[data-article-content]'), post.content);
-          document.title = `${title} | Belaro Precision`;
-          const description = plainText(post.excerpt).slice(0, 160);
-          if (description) document.querySelector('meta[name="description"]')?.setAttribute('content', description);
-          const canonical = new URL(document.querySelector('link[rel="canonical"]')?.getAttribute('href') || window.location.href);
-          canonical.pathname = articlePath(post.slug);
-          canonical.search = '';
-          document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical.href);
-          if (window.location.search.includes('slug=')) window.location.replace(articlePath(post.slug));
           status.textContent = '';
           articleElement.hidden = false;
           commentsSection.hidden = false;
