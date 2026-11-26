@@ -9,7 +9,8 @@ import { extname } from 'node:path';
 import { articleContentFields } from '../src/lib/blog.mjs';
 
 // 同时比较视口和容器内的取样，区分视差、固定背景与普通滚动。
-async function assertBackgroundScroll(page, parallax = true) {
+async function assertBackgroundScroll(page) {
+  const motion = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'enabled');
   const widget = page.locator('.fixed-background').first();
   const content = widget.locator('.fixed-background__content');
   await content.evaluate(element => { element.style.visibility = 'hidden'; });
@@ -39,7 +40,7 @@ async function assertBackgroundScroll(page, parallax = true) {
   const containerBefore = await sample({ ...clip, y: bounds.y + 140 });
   if (process.env.BLOG_SCREENSHOT_DIR) {
     await content.evaluate(element => { element.style.removeProperty('visibility'); });
-    await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `parallax-${page.viewportSize().width}-${parallax ? 'enabled' : 'reduced'}-before.png`) });
+    await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `parallax-${page.viewportSize().width}-${motion}-before.png`) });
     await content.evaluate(element => { element.style.visibility = 'hidden'; });
   }
   await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), top - 100);
@@ -47,11 +48,13 @@ async function assertBackgroundScroll(page, parallax = true) {
   const afterBounds = await widget.boundingBox();
   assert.ok(Math.abs(bounds.y - afterBounds.y - 100) < 1, '模块随页面滚动 100px');
   const offsetAfter = await widget.evaluate(element => Number.parseFloat(element.style.getPropertyValue('--background-offset')));
-  assert.ok(Math.abs(offsetAfter - offsetBefore - (parallax ? 50 : 0)) < 1, '背景相对容器的视差位移符合预期');
+  assert.ok(Math.abs(offsetAfter - offsetBefore - 50) < 1, `${motion} 模式下背景相对容器仍产生 50px 视差位移`);
+  const renderedOffset = await widget.evaluate(element => new DOMMatrixReadOnly(getComputedStyle(element, '::before').transform).m42);
+  assert.ok(Math.abs(renderedOffset - offsetAfter) < 1, '实际背景位移与脚本计算一致，未被媒体查询关闭');
   const after = await sample();
   assert.ok(after !== before, '背景实际移动，不是固定在屏幕上');
   const containerAfter = await sample({ ...clip, y: afterBounds.y + 140 });
-  assert.equal(containerAfter !== containerBefore, parallax, `${page.viewportSize().width}px ${parallax ? '容器内图片裁切随滚动改变' : '减少动态效果时图片与容器同步滚动'}`);
+  assert.notEqual(containerAfter, containerBefore, `${page.viewportSize().width}px ${motion} 模式下容器内图片裁切随滚动改变`);
   const image = await widget.evaluate(element => {
     const value = element.style.getPropertyValue('--fixed-background-image');
     element.style.setProperty('--fixed-background-image', 'none');
@@ -61,7 +64,7 @@ async function assertBackgroundScroll(page, parallax = true) {
   await widget.evaluate((element, value) => element.style.setProperty('--fixed-background-image', value), image);
   await content.evaluate(element => { element.style.removeProperty('visibility'); });
   if (process.env.BLOG_SCREENSHOT_DIR) {
-    await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `parallax-${page.viewportSize().width}-${parallax ? 'enabled' : 'reduced'}-after.png`) });
+    await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `parallax-${page.viewportSize().width}-${motion}-after.png`) });
   }
   for (const y of [top - page.viewportSize().height + 40, top + bounds.height - 40]) {
     await page.evaluate(top => window.scrollTo({ top, behavior: 'instant' }), y);
@@ -276,7 +279,11 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
       }
       await page.emulateMedia({ reducedMotion: 'reduce' });
       assert.equal(await page.locator('.fixed-background').first().evaluate(element => getComputedStyle(element, '::before').position), 'absolute');
-      await assertBackgroundScroll(page, false);
+      await assertBackgroundScroll(page);
+      await page.reload();
+      await assertBackgroundScroll(page);
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await assertBackgroundScroll(page);
       const touch = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'no-preference' });
       const touchPage = await touch.newPage();
       await touchPage.goto(`${baseUrl}/post/acf-test/`);
