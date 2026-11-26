@@ -24,6 +24,12 @@ export const articleContentFields = `
       ... on ArticleContentContentBlocksCalloutLayout { variant content attribution }
       ... on ArticleContentContentBlocksSpecTableLayout { heading rows { label value } }
       ... on ArticleContentContentBlocksCallToActionLayout { heading description link { url title target } }
+      ... on ArticleContentContentBlocksFixedBackgroundLayout {
+        heading description buttonType buttonLabel link { url title target }
+        document { node { mediaItemUrl } }
+        backgroundImage { node { sourceUrl altText } }
+        minHeight width
+      }
     }
   }
 `;

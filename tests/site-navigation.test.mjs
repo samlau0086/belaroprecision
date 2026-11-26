@@ -198,7 +198,7 @@ test('公共导航：桌面与手机吸顶、首屏阈值、返回顶部、菜�
         await touchButton.tap();
         await touchPage.waitForFunction(() => scrollY === 0);
         await touchButton.waitFor({ state: 'hidden' });
-        assert.equal(await touchPage.locator('.site-header .brand').evaluate(el => el === document.activeElement), true, '单次触摸后焦点应返回品牌入口');
+        assert.equal(await touchPage.locator('.site-header .brand').evaluate(el => el === document.activeElement), false, '触摸返回顶部不应强制聚焦品牌入口');
       }
     }
     await touchPage.close();

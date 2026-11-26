@@ -89,9 +89,13 @@
 
 首页按九个业务模块组织：首屏定位、采购需求匹配、核心加工服务、代表性零件、加工能力概览、质量与检验、目标应用、合作流程、FAQ 与询价入口。能力概览将 3 轴 CNC 铣削、3+2 定位铣削、联动五轴 CNC 铣削和 CNC 车削作为已确认工艺；材料、尺寸、公差与批量须按图纸和项目要求评审，不在首页展示未经确认的固定范围。Machined Parts 页面使用按类别整理的代表性图片和细节图，作为视觉参考，不宣称为客户案例或库存产品。
 
-全站页头在 PC 和移动端均持续吸顶，并为锚点定位及询价、政策侧栏预留导航高度；移动菜单超出可视高度时可独立滚动。公共布局通过 `BackToTop.astro` 提供右下角返回顶部图标按钮：向下滚动达到一个视窗高度后显示，回到首屏时隐藏，点击平滑返回页顶并将键盘焦点移至品牌链接；系统开启减少动态效果时立即返回。按钮适配手机安全区域，无 JavaScript 时保持隐藏。可执行 `node --test tests/site-navigation.test.mjs` 验证吸顶、菜单、锚点和返回顶部交互。
+全站页头在 PC 和移动端均持续吸顶，并为锚点定位及询价、政策侧栏预留导航高度；移动菜单超出可视高度时可独立滚动。公共布局通过 `BackToTop.astro` 提供右下角返回顶部图标按钮：向下滚动达到一个视窗高度后显示，回到首屏时隐藏，点击平滑返回页顶；触摸和鼠标点击不强制转移焦点，键盘或辅助技术激活则在返回顶部完成后将焦点移至品牌链接。系统开启减少动态效果时立即返回。按钮适配手机安全区域，无 JavaScript 时保持隐藏。可执行 `node --test tests/site-navigation.test.mjs` 验证吸顶、菜单、锚点和返回顶部交互。
 
 返回顶部按钮的悬停变色仅在支持 hover 的精细指针设备上启用，触屏保持橙色边框并通过单次轻触返回顶部，避免第一次轻触仅激活悬停状态。导航回归测试使用独立触屏上下文和 `tap()`，覆盖默认平滑滚动、减少动态效果及重复返回顶部；运行前先执行 `npm run build`。真实手机浏览器仍需在部署后验收。
+
+针对 iPhone Safari 单次点击后未返回顶部的兼容情况，按钮不再在滚动前强制聚焦品牌链接；平滑滚动发起 1.2 秒后若仍未到顶，会回退为立即返回，即使按钮在进入首屏后已隐藏也继续检查。用户再次触摸、按键、滚轮操作或离开页面时会取消待执行的回退，避免干扰后续操作。专项回归执行 `node --test tests/back-to-top.test.mjs`，覆盖单次触摸、平滑滚动无效及中途停滞、键盘焦点与用户取消；在已安装 Playwright WebKit 的环境中，PowerShell 执行 `$env:BACK_TO_TOP_BROWSER='webkit'; node --test tests/back-to-top.test.mjs; Remove-Item Env:BACK_TO_TOP_BROWSER` 可运行 WebKit 对照。这些模拟测试不代替 iPhone 12 Safari 真机验收；项目锁文件仍未声明 Playwright，未新增依赖或配置项。
+
+2026 年 11 月 26 日返回顶部修复验证：Chromium 下执行 `node --test tests/back-to-top.test.mjs tests/site-navigation.test.mjs`，两项通过；WebKit 下执行返回顶部专项测试，一项通过。正常 `npm run build` 因 WordPress GraphQL 连接超时未完成；仅对子进程临时使用本地模拟 GraphQL（空文章与分类）后构建通过，生成 25 页。该模拟产物仅用于本地测试，不作为发布产物，也不代表真实后台联调通过；未进行 iPhone 12 Safari 真机验收或生产部署。
 
 移动菜单在 1100px 及以下打开时，页头下方显示深色半透明遮罩，菜单保持在遮罩上方；页面背景暂停滚动及键盘、鼠标交互，菜单自身仍可滚动。点击遮罩、再次点击菜单按钮、按 Escape 或选择菜单链接均会关闭；遮罩和 Escape 关闭后焦点回到菜单按钮。切回桌面布局或通过浏览器历史恢复页面时自动清理展开状态，关闭菜单后保留页面滚动位置。无 JavaScript 时遮罩保持隐藏，无新增依赖或环境变量。
 
@@ -379,6 +383,43 @@ Blog 列表在构建期读取已发布文章，最多展示前 12 篇；分类�
 文章详情的面包屑按分类名称字母顺序选择首个分类并链接到其归档；首个分类为 Uncategorized 或无有效分类时，直接返回 Blog。
 
 文章详情在构建时读取 ACF PRO 的 `articleContent.contentBlocks`，通过 Astro 模块按顺序呈现富文本、标题、图片、图文组合、提示/引用、参数表和行动引导。字段组须启用 WPGraphQL for ACF 并公开 `articleContent`，Flexible Content 布局及字段名必须与 `src/lib/blog.mjs` 的查询匹配；参数表的参数值 GraphQL 字段为 `value`。后台字段变更需同步修改查询。没有内容模块的旧文章使用 WordPress `content`；有模块的文章不会拼接旧正文，未知布局构建时输出警告且不会自动显示。富文本仍执行 HTML 白名单清理，模块链接和图片地址限制为安全协议。静态文章正文以最近一次构建为准，浏览器读取评论时不会覆盖它；发布、更新或删除文章后仍需重新构建部署。
+
+#### Post ACF 固定背景内容模块
+
+沿用之前为 Post 定义的 ACF PRO Flexible Content 方案，在 **ACF → Field Groups → Blog Article Content → content_blocks** 中手动新增 Layout，不创建 WordPress Widget、Gutenberg Block 或额外插件，不新建字段组。保留原字段组的 Post Type 等于 Post 显示规则和 `articleContent` GraphQL 配置。
+
+Layout 标签为“固定背景”，名称为 `fixed_background`，GraphQL 类型名配置为 `FixedBackground`，开启 GraphQL 显示。添加以下子字段，并保持对应 GraphQL 字段名一致：
+
+| 字段标签 | ACF 字段名 | ACF 类型 | 配置 | GraphQL 字段名 |
+| --- | --- | --- | --- | --- |
+| 标题 | `heading` | Text | 可选 | `heading` |
+| 描述 | `description` | Textarea | 可选；New Lines 为 No Formatting | `description` |
+| 背景图片 | `background_image` | Image | 必填；返回 Image ID | `backgroundImage` |
+| 按钮类型 | `button_type` | Select | `link : 链接`、`document : 文档`；默认 link；返回 Value；关闭多选 | `buttonType` |
+| 按钮文字 | `button_label` | Text | 可选 | `buttonLabel` |
+| 按钮链接 | `link` | Link | 返回 Link Array；条件显示：button_type 等于 link | `link` |
+| 按钮文档 | `document` | File | 返回 File ID；条件显示：button_type 等于 document；允许 pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip | `document` |
+| 容器最小高度 | `min_height` | Number | 必填；默认 480，最小 100，最大 2000，步进 1，后缀 px | `minHeight` |
+| 容器宽度 | `width` | Select | `content : 正文宽度`、`wide : 宽幅`；默认 content；返回 Value；关闭多选 | `width` |
+
+在文章的内容模块中选择“固定背景（Fixed Background）”，可配置：
+
+| 设置 | 类型及行为 |
+| --- | --- |
+| 标题、描述 | 文本与多行文本；描述保留换行，不渲染 HTML |
+| 背景图片 | ACF Image，GraphQL 为 `backgroundImage { node { sourceUrl altText } }` |
+| 按钮类型 | 链接（`link`）或文档（`document`），后台只显示对应字段 |
+| 按钮文字 | 可自定义；留空时链接使用 ACF Link 标题，文档使用 `Download document` |
+| 按钮链接 | ACF Link，支持 URL 和新窗口选项；新窗口带安全 `rel` |
+| 按钮文档 | ACF File，GraphQL 为 `document { node { mediaItemUrl } }`；支持 PDF、Office 文档、TXT 和 ZIP，点击打开文档地址，是否下载由文件服务器决定 |
+| 容器最小高度 | 100–2000 的整数，单位 px，默认 480；内容较长时容器自动增高，前端异常值回退 480px |
+| 容器宽度 | 正文宽度（`content`）或宽幅（`wide`）；宽幅最大 1440px，在窄屏保留页面边距 |
+
+桌面使用 `background-attachment: fixed`，背景图居中覆盖并叠加遮罩保证文字可读；触屏设备和减少动态效果模式使用随内容滚动的背景图，不隐藏图片。未设置有效图片时显示深色底色；不安全的图片、文档和链接协议会被忽略。
+
+**发布顺序：先保存上述 ACF Layout，并在 GraphiQL 中确认 schema 出现 `ArticleContentContentBlocksFixedBackgroundLayout` 及上述字段，再构建部署前端。** 前端查询新增了该布局片段，后台尚未注册类型时构建会失败，不应先部署前端。WordPress 发布或修改模块后仍须重新构建。后台实际字段名不同或已存在同名布局时，先核对字段与 `src/lib/blog.mjs` 一致，不要直接覆盖。当前本地测试使用模拟 GraphQL，不代表已配置或验证真实 ACF 后台。
+
+回归命令：`node --test tests/blog.test.mjs tests/blog-acf.test.mjs`。ACF 测试自动启动模拟 GraphQL 并构建临时站点，验证两类按钮、图片加载、安全协议、高度、宽幅与正文宽度、长内容、旧文章回退和桌面/触屏效果；未安装 Playwright 时仅执行静态检查并输出提示。设置 `BLOG_SCREENSHOT_DIR` 为已有绝对目录可保存响应式截图。
 
 评论表单使用 WPGraphQL 自带的 `createComment` mutation，支持顶层评论和 `parent` 层级回复。WordPress 必须启用文章评论、允许符合站点策略的匿名评论，并配置评论审核与反垃圾措施；访客邮箱只提交到 WordPress，不在页面展示。提交成功后页面重新读取公开评论，处于待审核状态的评论不会立即显示。
 

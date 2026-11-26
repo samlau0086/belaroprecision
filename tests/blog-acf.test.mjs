@@ -6,6 +6,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { extname } from 'node:path';
+import { articleContentFields } from '../src/lib/blog.mjs';
 
 test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全内容', { timeout: 180_000 }, async t => {
   const type = name => `ArticleContentContentBlocks${name}Layout`;
@@ -19,10 +20,23 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
       { __typename: type('SpecTable'), heading: 'Specifications', rows: [{ label: 'Material', value: 'Aluminum' }] },
       { __typename: type('CallToAction'), heading: 'Get a quote', description: 'Contact us', link: { title: 'Request quote', url: '/contact/', target: '_blank' } },
       { __typename: type('CallToAction'), heading: 'Unsafe', link: { title: 'Bad link', url: 'javascript:alert(1)' } },
+      { __typename: type('FixedBackground'), heading: 'Fixed background link', description: 'Drawing review\nFor your next project', buttonType: ['link'], buttonLabel: 'Discuss a project', link: { title: 'Contact', url: '/contact/', target: '_blank' }, backgroundImage: { node: { sourceUrl: '/images/machined-parts/machined-block-main.webp' } }, minHeight: 560, width: ['wide'] },
+      { __typename: type('FixedBackground'), heading: 'Fixed background document', buttonType: 'document', buttonLabel: 'Read the specification', document: { node: { mediaItemUrl: 'https://example.com/specification.pdf' } }, link: { url: '/must-not-use/' }, minHeight: 320, width: 'content' },
+      { __typename: type('FixedBackground'), heading: 'Invalid widget data', buttonType: 'document', document: { node: { mediaItemUrl: 'javascript:alert(2)' } }, backgroundImage: { node: { sourceUrl: 'javascript:alert(3)' } }, minHeight: '480px; color:red', width: 'invalid' },
+      { __typename: type('FixedBackground'), heading: 'Unsafe widget link', buttonType: 'link', buttonLabel: 'Unsafe widget button', link: { url: 'data:text/html,bad' }, minHeight: -20 },
+      { __typename: type('FixedBackground'), heading: 'Long widget content', description: 'LongWord'.repeat(70), buttonType: 'document', document: { node: { mediaItemUrl: '/specification.pdf' } }, minHeight: 100, width: 'wide' },
     ] } },
     { databaseId: 2, slug: 'legacy-test', title: 'Legacy', content: '<p>Old article content</p>', excerpt: '', date: '2026-01-01T00:00:00Z', categories: { nodes: [] }, articleContent: null },
   ];
   const server = createServer((req, res) => {
+    if (req.method !== 'POST') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'content-type',
+      }).end();
+      return;
+    }
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
@@ -53,7 +67,10 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
     for (const text of ['Rich content', 'Section heading', 'Machined part', 'Image caption', 'Media heading', 'Media content', 'A quotation', 'Author', 'Specifications', 'Material', 'Aluminum', 'Get a quote', 'Request quote']) assert.ok(html.includes(text), text);
     assert.match(html, /<h3[^>]*>Section heading<\/h3>/);
     assert.match(html, /href="\/contact\/"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
-    assert.doesNotMatch(html, /Legacy content|bad\(\)|javascript:alert|Bad link/);
+    assert.match(articleContentFields, /on ArticleContentContentBlocksFixedBackgroundLayout/);
+    for (const field of ['buttonType', 'buttonLabel', 'document { node { mediaItemUrl } }', 'backgroundImage { node { sourceUrl altText } }', 'minHeight width']) assert.ok(articleContentFields.includes(field), field);
+    assert.match(html, /href="https:\/\/example.com\/specification.pdf"/);
+    assert.doesNotMatch(html, /Legacy content|bad\(\)|javascript:alert|Bad link|Unsafe widget button|must-not-use|480px; color:red/);
     const legacy = await readFile(join(output, 'post/legacy-test/index.html'), 'utf8');
     assert.ok(legacy.includes('Old article content'));
     const categoryHtml = await readFile(join(output, 'category/dfm-engineering/index.html'), 'utf8');
@@ -74,7 +91,7 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
         const file = join(output, pathname.endsWith('/') ? `${pathname}index.html` : pathname);
         const body = await readFile(file);
-        res.setHeader('Content-Type', ({ '.js': 'text/javascript', '.css': 'text/css', '.html': 'text/html' })[extname(file)] || 'application/octet-stream');
+        res.setHeader('Content-Type', ({ '.js': 'text/javascript', '.css': 'text/css', '.html': 'text/html', '.webp': 'image/webp' })[extname(file)] || 'application/octet-stream');
         res.end(body);
       } catch { res.writeHead(404).end(); }
     });
@@ -87,6 +104,11 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
       const errors = [];
       const graphqlRequests = [];
       page.on('pageerror', error => errors.push(error.message));
+      // 隔离外部客服等脚本，避免第三方界面影响本地模块布局验证。
+      await page.route('**/*', route => {
+        const { hostname } = new URL(route.request().url());
+        return ['127.0.0.1', 'localhost'].includes(hostname) ? route.continue() : route.abort();
+      });
       await page.route('**/graphql', route => {
         const { query } = JSON.parse(route.request().postData());
         graphqlRequests.push(query);
@@ -132,7 +154,7 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
       assert.equal(await noJsPage.locator('[data-blog-card]:visible h2').textContent(), 'ACF article');
       assert.equal(await noJsPage.locator('[data-blog-filters]').isVisible(), true);
       await noJs.close();
-      for (const width of [390, 768, 1440, 2560]) {
+      for (const width of [320, 390, 768, 1440, 2560]) {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(`http://127.0.0.1:${staticServer.address().port}/blog/`);
         const listBounds = await page.locator('.blog-grid').boundingBox();
@@ -145,6 +167,33 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         assert.equal(await page.getByText('Runtime replacement').count(), 0);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
         const articleBounds = await page.locator('.article-content').boundingBox();
+        const widgets = page.locator('.fixed-background');
+        assert.equal(await widgets.count(), 5);
+        const wideBounds = await widgets.nth(0).boundingBox();
+        const contentBounds = await widgets.nth(1).boundingBox();
+        assert.equal(wideBounds.height, 560);
+        assert.equal(contentBounds.height, 320);
+        assert.ok(Math.abs(contentBounds.width - articleBounds.width) < 1, `${width}px 正文宽度`);
+        assert.ok(wideBounds.width >= contentBounds.width, `${width}px 宽幅不窄于正文`);
+        if (width > 1208) assert.ok(wideBounds.width > contentBounds.width, `${width}px 宽幅超出正文`);
+        assert.equal(await widgets.nth(2).evaluate(element => getComputedStyle(element).minHeight), '480px');
+        assert.equal(await widgets.nth(2).evaluate(element => getComputedStyle(element).backgroundImage), 'none');
+        assert.equal(await widgets.nth(3).locator('a').count(), 0);
+        assert.equal((await widgets.nth(4).locator('a').textContent()).trim(), 'Download document');
+        assert.equal(await widgets.nth(0).locator('h2').evaluate(element => getComputedStyle(element).color), 'rgb(255, 255, 255)');
+        assert.equal(await widgets.nth(0).locator('a').evaluate(element => getComputedStyle(element).color), 'rgb(255, 255, 255)');
+        assert.equal(await widgets.nth(0).evaluate(element => getComputedStyle(element).backgroundAttachment), 'fixed');
+        const imageLoaded = await widgets.nth(0).evaluate(async element => {
+          const url = getComputedStyle(element).backgroundImage.slice(5, -2);
+          const image = new Image();
+          image.src = url;
+          await image.decode();
+          return image.naturalWidth > 0;
+        });
+        assert.equal(imageLoaded, true, '背景图成功解码');
+        const longBounds = await widgets.nth(4).boundingBox();
+        assert.ok(longBounds.height >= 100);
+        assert.equal(await widgets.nth(4).evaluate(element => element.scrollWidth <= element.clientWidth), true, '长内容不溢出');
         assert.ok(Math.abs(articleBounds.x - listBounds.x) < 1, `${width}px 左侧对齐`);
         assert.ok(Math.abs(articleBounds.width - listBounds.width) < 1, `${width}px 内容宽度一致`);
         const articleBreadcrumb = await page.locator('.blog-breadcrumb').boundingBox();
@@ -154,6 +203,14 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         assert.deepEqual(await page.locator('.blog-heading h1').evaluate(element => ({ fontSize: getComputedStyle(element).fontSize, lineHeight: getComputedStyle(element).lineHeight })), listHeadingStyle);
         if (process.env.BLOG_SCREENSHOT_DIR) await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `article-width-${width}.png`), fullPage: true });
       }
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      assert.equal(await page.locator('.fixed-background').first().evaluate(element => getComputedStyle(element).backgroundAttachment), 'scroll');
+      const touch = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+      const touchPage = await touch.newPage();
+      await touchPage.goto(`${baseUrl}/post/acf-test/`);
+      assert.equal(await touchPage.locator('.fixed-background').first().evaluate(element => getComputedStyle(element).backgroundAttachment), 'scroll');
+      assert.equal(await touchPage.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      await touch.close();
       assert.deepEqual(errors, []);
     } finally {
       await browser?.close();

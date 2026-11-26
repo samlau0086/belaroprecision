@@ -10,18 +10,48 @@ import { liveChat } from '../config';
 <script>
   const button = document.querySelector<HTMLButtonElement>('[data-back-to-top]');
   if (button) {
+    let pendingReturn = false;
+    let restoreFocus = false;
+    let fallbackTimer: number | undefined;
+    const cancelReturn = () => {
+      window.clearTimeout(fallbackTimer);
+      fallbackTimer = undefined;
+      pendingReturn = false;
+      restoreFocus = false;
+    };
+    const finishReturn = () => {
+      if (!pendingReturn || window.scrollY > 1) return;
+      const shouldFocus = restoreFocus;
+      cancelReturn();
+      // 仅键盘或辅助技术激活时，在滚动结束后恢复焦点，避免干扰触屏滚动。
+      if (shouldFocus) document.querySelector<HTMLAnchorElement>('.site-header .brand')?.focus({ preventScroll: true });
+    };
     const updateVisibility = () => {
       button.hidden = window.scrollY < window.innerHeight;
+      finishReturn();
     };
     window.addEventListener('scroll', updateVisibility, { passive: true });
     window.addEventListener('resize', updateVisibility);
     window.addEventListener('pageshow', updateVisibility);
     updateVisibility();
 
-    button.addEventListener('click', () => {
-      // 返回页头后转移焦点，避免按钮隐藏时丢失键盘操作位置。
-      document.querySelector<HTMLAnchorElement>('.site-header .brand')?.focus({ preventScroll: true });
+    // 用户开始其他操作时取消兜底，避免主动滚动或打开菜单后突然跳顶。
+    for (const type of ['pointerdown', 'touchstart', 'wheel', 'keydown']) {
+      document.addEventListener(type, cancelReturn, { passive: true, capture: true });
+    }
+    window.addEventListener('pagehide', cancelReturn);
+
+    button.addEventListener('click', (event) => {
+      cancelReturn();
+      pendingReturn = true;
+      restoreFocus = event.detail === 0;
+      // 即使滚动已进入首屏、按钮隐藏，仍需保证到达真正的页顶。
+      fallbackTimer = window.setTimeout(() => {
+        if (pendingReturn && window.scrollY > 1) window.scrollTo({ top: 0, behavior: 'instant' });
+        updateVisibility();
+      }, 1200);
       window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+      updateVisibility();
     });
   }
 </script>

@@ -1,5 +1,6 @@
 ---
 import { sanitizeBlogHtml } from '../lib/blog-html.mjs';
+import FixedBackground from './FixedBackground.astro';
 
 const { blocks = [] } = Astro.props;
 const option = value => Array.isArray(value) ? value[0] : value;
@@ -10,7 +11,7 @@ const safeUrl = (value, image = false) => {
     return (image ? ['http:', 'https:'] : ['http:', 'https:', 'mailto:', 'tel:']).includes(url.protocol) ? value : undefined;
   } catch { return undefined; }
 };
-const knownTypes = new Set(['RichText', 'Heading', 'Image', 'MediaText', 'Callout', 'SpecTable', 'CallToAction'].map(type => `ArticleContentContentBlocks${type}Layout`));
+const knownTypes = new Set(['RichText', 'Heading', 'Image', 'MediaText', 'Callout', 'SpecTable', 'CallToAction', 'FixedBackground'].map(type => `ArticleContentContentBlocks${type}Layout`));
 for (const block of blocks) {
   if (!knownTypes.has(block?.__typename)) console.warn(`未知的文章内容模块: ${block?.__typename || '未提供类型'}`);
 }
@@ -25,6 +26,7 @@ for (const block of blocks) {
   const Heading = headingLevel;
   return (
     <>
+      {type === 'ArticleContentContentBlocksFixedBackgroundLayout' && <FixedBackground block={block} />}
       {type === 'ArticleContentContentBlocksRichTextLayout' && <div class="rich-text" set:html={sanitizeBlogHtml(block.content)} />}
       {type === 'ArticleContentContentBlocksHeadingLayout' && <Heading>{block.text}</Heading>}
       {type === 'ArticleContentContentBlocksImageLayout' && imageUrl && (
