@@ -35,6 +35,7 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
   });
   const categorySlugs = ['dfm-engineering', 'cnc-machining'];
   posts.forEach((post, index) => { post.categories.nodes.push({ databaseId: index + 3, name: `Category ${index + 1}`, slug: categorySlugs[index] }); });
+  posts[0].categories.nodes.unshift({ databaseId: 8, name: 'Z category', slug: 'z-category' });
   const output = await mkdtemp(join(tmpdir(), 'belaro-acf-test-'));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   try {
@@ -48,6 +49,7 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
     assert.equal(code, 0, log);
     const html = await readFile(join(output, 'post/acf-test/index.html'), 'utf8');
     assert.match(html, /rel="canonical" href="https:\/\/belaroprecision.com\/post\/acf-test\/"/);
+    assert.match(html, /href="\/category\/dfm-engineering\/"[^>]*>Category 1<\/a>/);
     for (const text of ['Rich content', 'Section heading', 'Machined part', 'Image caption', 'Media heading', 'Media content', 'A quotation', 'Author', 'Specifications', 'Material', 'Aluminum', 'Get a quote', 'Request quote']) assert.ok(html.includes(text), text);
     assert.match(html, /<h3[^>]*>Section heading<\/h3>/);
     assert.match(html, /href="\/contact\/"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);

@@ -4,7 +4,7 @@ import Header from './Header.astro';
 import Footer from './Footer.astro';
 import BlogContentBlocks from './BlogContentBlocks.astro';
 import { gravityForms } from '../config';
-import { articlePath, plainText } from '../lib/blog.mjs';
+import { articleBreadcrumbCategory, articlePath, categoryPath, plainText } from '../lib/blog.mjs';
 import { sanitizeBlogHtml } from '../lib/blog-html.mjs';
 import '../styles/blog-heading.css';
 
@@ -14,6 +14,7 @@ const title = post ? plainText(post.title) : 'Article';
 const image = post?.featuredImage?.node;
 const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUrl : undefined;
 const blocks = post?.articleContent?.contentBlocks;
+const breadcrumbCategory = articleBreadcrumbCategory(post?.categories?.nodes);
 ---
 
 <BaseLayout title={`${title} | Belaro Precision`} canonical={post ? new URL(articlePath(post.slug), Astro.site).href : undefined} description={post ? plainText(post.excerpt).slice(0, 160) : 'Manufacturing insights and practical guides from Belaro Precision.'}>
@@ -26,7 +27,7 @@ const blocks = post?.articleContent?.contentBlocks;
       <header class="blog-heading">
         <div class="heading-inner">
           <nav class="blog-breadcrumb" aria-label="Breadcrumb">
-            <a href="/">Home</a><span aria-hidden="true">/</span><a href="/blog/">Blog</a><span aria-hidden="true">/</span><span aria-current="page">Article</span>
+            <a href="/">Home</a><span aria-hidden="true">/</span><a href="/blog/">Blog</a><span data-breadcrumb-category hidden={!breadcrumbCategory}><span aria-hidden="true">/</span> <a href={breadcrumbCategory ? categoryPath(breadcrumbCategory.slug) : undefined}>{breadcrumbCategory?.name}</a></span><span aria-hidden="true">/</span><span aria-current="page">Article</span>
           </nav>
           <p class="blog-eyebrow" data-article-categories>{post?.categories?.nodes?.map(category => category.name).join(' · ') || 'The Belaro journal'}</p>
           <h1 data-article-title>{post ? title : ''}</h1>
@@ -73,7 +74,7 @@ const blocks = post?.articleContent?.contentBlocks;
 </BaseLayout>
 
 <script>
-  import { articlePath, attachCommentVotes, buildCommentTree, fetchBlogPost, fetchBlogVotes, plainText, submitBlogComment, voteBlogComment } from '../lib/blog.mjs';
+  import { articleBreadcrumbCategory, articlePath, categoryPath, attachCommentVotes, buildCommentTree, fetchBlogPost, fetchBlogVotes, plainText, submitBlogComment, voteBlogComment } from '../lib/blog.mjs';
 
   const root = document.querySelector('[data-article-root]');
   const status = root?.querySelector('[data-article-status]');
@@ -306,6 +307,14 @@ const blocks = post?.articleContent?.contentBlocks;
             const title = plainText(post.title) || 'Article';
             articleElement.querySelector('[data-article-title]').textContent = title;
             articleElement.querySelector('[data-article-categories]').textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ') || 'The Belaro journal';
+            const category = articleBreadcrumbCategory(post.categories?.nodes);
+            const categoryBreadcrumb = articleElement.querySelector('[data-breadcrumb-category]');
+            const categoryLink = categoryBreadcrumb.querySelector('a');
+            categoryBreadcrumb.hidden = !category;
+            if (category) {
+              categoryLink.href = categoryPath(category.slug);
+              categoryLink.textContent = category.name;
+            }
             const date = articleElement.querySelector('[data-article-date]');
             if (post.date && !Number.isNaN(Date.parse(post.date))) {
               date.dateTime = post.date;

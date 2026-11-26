@@ -60,6 +60,15 @@ export function categoryPath(slug) {
   return `/category/${encodeURIComponent(String(slug))}/`;
 }
 
+export function articleBreadcrumbCategory(categories) {
+  const sorted = (Array.isArray(categories) ? categories : [])
+    .filter(category => typeof category?.name === 'string' && category.name.trim() && typeof category.slug === 'string' && category.slug.trim())
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }) || a.slug.localeCompare(b.slug, 'en'));
+  const first = sorted[0];
+  return first && first.name.trim().toLowerCase() !== 'uncategorized' && first.slug.toLowerCase() !== 'uncategorized' ? first : null;
+}
+
 export function blogCategories(posts) {
   return [...new Map(posts.flatMap(post => post.categories?.nodes || []).filter(category => category.slug).map(category => [category.databaseId, category])).values()];
 }

@@ -12,6 +12,7 @@ import {
   fetchPublishedBlogPosts,
   attachCommentVotes,
   articlePath,
+  articleBreadcrumbCategory,
   articleContentFields,
   plainText,
   submitBlogComment,
@@ -30,6 +31,16 @@ const response = (body, options = {}) => ({
   status: 200,
   json: async () => body,
   ...options,
+});
+
+test('文章面包屑按名称选择首个分类，默认分类不生成链接', () => {
+  const categories = [{ name: 'Zinc', slug: 'zinc' }, { name: 'Engineering', slug: 'engineering' }];
+  assert.equal(articleBreadcrumbCategory(categories).slug, 'engineering');
+  assert.equal(categories[0].name, 'Zinc');
+  assert.equal(articleBreadcrumbCategory([{ name: 'Uncategorized', slug: 'uncategorized' }]), null);
+  assert.equal(articleBreadcrumbCategory([{ name: 'Zinc', slug: 'zinc' }, { name: 'Uncategorized', slug: 'uncategorized' }]), null);
+  assert.equal(articleBreadcrumbCategory([]), null);
+  assert.equal(articleBreadcrumbCategory([{ name: '', slug: 'bad' }]), null);
 });
 
 test('Blog GraphQL 请求使用 POST、JSON 且解析分类与文章', async () => {

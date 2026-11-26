@@ -376,6 +376,8 @@ PUBLIC_GTM_ID=
 
 Blog 列表在构建期读取已发布文章，最多展示前 12 篇；分类归档展示对应分类的全部已发布文章。列表、分类归档和文章详情均生成静态 HTML，访问时不请求列表 GraphQL。构建过程为每个文章和已使用的分类分别生成 `/post/<slug>/`、`/category/<slug>/`，并写入 Canonical、Sitemap 和 Agent Markdown。新增、删除或修改 WordPress 文章及分类后必须重新构建发布，构建环境也必须能访问 GraphQL；枚举失败会阻断构建，避免发布缺失文章的站点。
 
+文章详情的面包屑按分类名称字母顺序选择首个分类并链接到其归档；首个分类为 Uncategorized 或无有效分类时，直接返回 Blog。
+
 文章详情在构建时读取 ACF PRO 的 `articleContent.contentBlocks`，通过 Astro 模块按顺序呈现富文本、标题、图片、图文组合、提示/引用、参数表和行动引导。字段组须启用 WPGraphQL for ACF 并公开 `articleContent`，Flexible Content 布局及字段名必须与 `src/lib/blog.mjs` 的查询匹配；参数表的参数值 GraphQL 字段为 `value`。后台字段变更需同步修改查询。没有内容模块的旧文章使用 WordPress `content`；有模块的文章不会拼接旧正文，未知布局构建时输出警告且不会自动显示。富文本仍执行 HTML 白名单清理，模块链接和图片地址限制为安全协议。静态文章正文以最近一次构建为准，浏览器读取评论时不会覆盖它；发布、更新或删除文章后仍需重新构建部署。
 
 评论表单使用 WPGraphQL 自带的 `createComment` mutation，支持顶层评论和 `parent` 层级回复。WordPress 必须启用文章评论、允许符合站点策略的匿名评论，并配置评论审核与反垃圾措施；访客邮箱只提交到 WordPress，不在页面展示。提交成功后页面重新读取公开评论，处于待审核状态的评论不会立即显示。
