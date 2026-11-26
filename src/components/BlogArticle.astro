@@ -6,6 +6,7 @@ import BlogContentBlocks from './BlogContentBlocks.astro';
 import { gravityForms } from '../config';
 import { articlePath, plainText } from '../lib/blog.mjs';
 import { sanitizeBlogHtml } from '../lib/blog-html.mjs';
+import '../styles/blog-heading.css';
 
 const endpoint = gravityForms.graphqlUrl;
 const { post } = Astro.props;
@@ -19,23 +20,27 @@ const blocks = post?.articleContent?.contentBlocks;
   <Header />
   <main class="article-page" data-article-root data-endpoint={endpoint} data-prerendered={Boolean(post)} data-turnstile-sitekey={gravityForms.turnstileSiteKey}>
     <div class="article-shell">
-      <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <a href="/">Home</a><span aria-hidden="true">/</span><a href="/blog/">Blog</a><span aria-hidden="true">/</span><span aria-current="page">Article</span>
-      </nav>
-
       <p class="article-status" data-article-status role="status" aria-live="polite">{post ? '' : 'Loading article...'}</p>
-      <article data-article hidden={!post}>
-        <header class="article-header">
-          <p class="article-categories" data-article-categories>{post?.categories?.nodes?.map(category => category.name).join(' · ')}</p>
+    </div>
+    <article data-article hidden={!post}>
+      <header class="blog-heading">
+        <div class="heading-inner">
+          <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+            <a href="/">Home</a><span aria-hidden="true">/</span><a href="/blog/">Blog</a><span aria-hidden="true">/</span><span aria-current="page">Article</span>
+          </nav>
+          <p class="blog-eyebrow" data-article-categories>{post?.categories?.nodes?.map(category => category.name).join(' · ') || 'The Belaro journal'}</p>
           <h1 data-article-title>{post ? title : ''}</h1>
-          <time data-article-date datetime={post?.date}>{post?.date ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(post.date)) : ''}</time>
-        </header>
+          <time class="blog-intro" data-article-date datetime={post?.date}>{post?.date ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(post.date)) : ''}</time>
+        </div>
+      </header>
+      <div class="article-shell article-body">
         <img class="article-featured" data-article-image src={imageUrl} alt={image?.altText || ''} hidden={!imageUrl} />
         <div class="article-content" data-article-content>
           {Array.isArray(blocks) && blocks.length > 0 ? <BlogContentBlocks blocks={blocks} /> : <div set:html={post ? sanitizeBlogHtml(post.content) : ''} />}
         </div>
-      </article>
-
+      </div>
+    </article>
+    <div class="article-shell">
       <section class="comments-section" data-comments-section hidden aria-labelledby="comments-title">
         <div class="comments-heading">
           <div><p class="section-label">Discussion</p><h2 id="comments-title">Comments</h2></div>
@@ -300,7 +305,7 @@ const blocks = post?.articleContent?.contentBlocks;
           if (root.dataset.prerendered !== 'true') {
             const title = plainText(post.title) || 'Article';
             articleElement.querySelector('[data-article-title]').textContent = title;
-            articleElement.querySelector('[data-article-categories]').textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ');
+            articleElement.querySelector('[data-article-categories]').textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ') || 'The Belaro journal';
             const date = articleElement.querySelector('[data-article-date]');
             if (post.date && !Number.isNaN(Date.parse(post.date))) {
               date.dateTime = post.date;
@@ -383,17 +388,13 @@ const blocks = post?.articleContent?.contentBlocks;
 </script>
 
 <style>
-  .article-page { min-height: 70vh; background: #f6f8fa; padding: 2rem 0 5rem; }
+  .article-page { min-height: 70vh; background: #fff; padding-bottom: 5rem; }
   .article-shell { max-width: 1208px; margin: 0 auto; padding-inline: 1.5rem; }
-  .breadcrumbs { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 2.5rem; color: #687788; font-size: .9rem; }
-  .breadcrumbs a { color: #3f5369; }
+  .article-body { padding-top: 2.5rem; }
   .article-status { min-height: 1.5rem; color: #536273; }
   .article-status:empty { display: none; }
   .voting-status { color: #687788; font-size: .85rem; }
-  .article-header { margin-bottom: 2rem; }
-  .article-categories, .section-label { margin: 0 0 .65rem; color: #a95412; font-size: .78rem; font-weight: 700; text-transform: uppercase; }
-  .article-header h1 { margin: 0 0 1rem; color: #10233d; font-size: 4rem; line-height: 1.08; overflow-wrap: anywhere; }
-  .article-header time { color: #687788; }
+  .section-label { margin: 0 0 .65rem; color: #a95412; font-size: .78rem; font-weight: 700; text-transform: uppercase; }
   .article-featured { display: block; width: 100%; max-height: 520px; margin: 0 0 2.5rem; object-fit: cover; }
   .article-featured[hidden] { display: none; }
   .article-content { color: #26384a; font-size: 1.08rem; line-height: 1.8; }
@@ -434,7 +435,6 @@ const blocks = post?.articleContent?.contentBlocks;
   .submit-comment { min-height: 44px; padding: .65rem 1.1rem; border: 1px solid #cf7621; border-radius: 3px; background: #cf7621; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
   .submit-comment:disabled, .comments-list :global(.vote-button:disabled) { opacity: .55; cursor: wait; }
   @media (max-width: 620px) {
-    .article-header h1 { font-size: 2.25rem; }
     .comments-list :global(.comment) { padding-left: .75rem; }
     .comments-list :global(.comment .comment) { margin-left: .55rem; }
     .comment-fields { grid-template-columns: 1fr; gap: 0; }

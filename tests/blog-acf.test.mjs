@@ -134,14 +134,22 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         await page.setViewportSize({ width, height: 900 });
         await page.goto(`http://127.0.0.1:${staticServer.address().port}/blog/`);
         const listBounds = await page.locator('.blog-grid').boundingBox();
+        const listBreadcrumb = await page.locator('.blog-breadcrumb').boundingBox();
+        const listTitle = await page.locator('.blog-heading h1').boundingBox();
+        const listHeadingStyle = await page.locator('.blog-heading h1').evaluate(element => ({ fontSize: getComputedStyle(element).fontSize, lineHeight: getComputedStyle(element).lineHeight }));
         await page.goto(`http://127.0.0.1:${staticServer.address().port}/post/acf-test/`);
         await page.locator('[data-comments-section]:visible').waitFor();
         assert.equal(await page.getByText('Rich content').count(), 1);
         assert.equal(await page.getByText('Runtime replacement').count(), 0);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
-        const articleBounds = await page.locator('[data-article]').boundingBox();
+        const articleBounds = await page.locator('.article-content').boundingBox();
         assert.ok(Math.abs(articleBounds.x - listBounds.x) < 1, `${width}px 左侧对齐`);
         assert.ok(Math.abs(articleBounds.width - listBounds.width) < 1, `${width}px 内容宽度一致`);
+        const articleBreadcrumb = await page.locator('.blog-breadcrumb').boundingBox();
+        const articleTitle = await page.locator('.blog-heading h1').boundingBox();
+        assert.ok(Math.abs(articleBreadcrumb.x - listBreadcrumb.x) < 1 && Math.abs(articleBreadcrumb.y - listBreadcrumb.y) < 1, `${width}px 面包屑位置一致`);
+        assert.ok(Math.abs(articleTitle.x - listTitle.x) < 1 && Math.abs(articleTitle.y - listTitle.y) < 1, `${width}px 标题位置一致`);
+        assert.deepEqual(await page.locator('.blog-heading h1').evaluate(element => ({ fontSize: getComputedStyle(element).fontSize, lineHeight: getComputedStyle(element).lineHeight })), listHeadingStyle);
         if (process.env.BLOG_SCREENSHOT_DIR) await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `article-width-${width}.png`), fullPage: true });
       }
       assert.deepEqual(errors, []);

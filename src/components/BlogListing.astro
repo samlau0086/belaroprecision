@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
 import { articlePath, categoryPath, plainText } from '../lib/blog.mjs';
+import '../styles/blog-heading.css';
 
 const { posts, categories, category } = Astro.props;
 const displayedPosts = category ? posts.filter(post => (post.categories?.nodes || []).some(item => item.slug === category.slug)) : posts.slice(0, 12);
@@ -70,12 +71,6 @@ const imageUrl = post => {
 
 <style>
   .blog-page { min-height: 65vh; background: #fff; }
-  .blog-heading { background: #f4f6f8; border-bottom: 1px solid #e3e8ee; padding: 1.5rem 1.5rem 3.5rem; }
-  .heading-inner { max-width: 1160px; margin: auto; }
-  .blog-breadcrumb { display: flex; gap: .7rem; color: #687586; font-size: .82rem; margin-bottom: 2.25rem; }
-  .blog-eyebrow { margin: 0 0 .5rem; color: #b84b15; font-size: .75rem; font-weight: 700; text-transform: uppercase; }
-  .blog-heading h1 { margin: 0; font-size: 3.5rem; line-height: 1.15; }
-  .blog-intro { max-width: 42rem; margin: 1rem 0 0; color: #687586; font-size: 1.05rem; }
   .blog-content { max-width: 1208px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
   .blog-toolbar { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
   .blog-toolbar h2 { margin: 0; font-size: 1.45rem; }
@@ -104,5 +99,5 @@ const imageUrl = post => {
   .blog-grid :global(.blog-card-read span) { color: #b84b15; font-size: 1.25rem; }
   .blog-content :global(a:focus-visible), .blog-content :global(button:focus-visible) { outline: 2px solid #f47b35; outline-offset: 4px; }
   @media (max-width: 800px) { .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 560px) { .blog-grid { grid-template-columns: 1fr; } .blog-heading h1 { font-size: 2.5rem; } .blog-heading { padding-bottom: 2.5rem; } .blog-content { padding-top: 2rem; } }
+  @media (max-width: 560px) { .blog-grid { grid-template-columns: 1fr; } .blog-content { padding-top: 2rem; } }
 </style>

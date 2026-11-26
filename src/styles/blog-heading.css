@@ -1,0 +1,7 @@
+.blog-heading { background: #f4f6f8; border-bottom: 1px solid #e3e8ee; padding: 1.5rem 1.5rem 3.5rem; }
+.heading-inner { max-width: 1160px; margin: auto; }
+.blog-breadcrumb { display: flex; flex-wrap: wrap; gap: .7rem; color: #687586; font-size: .82rem; margin-bottom: 2.25rem; }
+.blog-eyebrow { margin: 0 0 .5rem; color: #b84b15; font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+.blog-heading h1 { margin: 0; font-size: 3.5rem; line-height: 1.15; overflow-wrap: anywhere; }
+.blog-intro { display: block; max-width: 42rem; margin: 1rem 0 0; color: #687586; font-size: 1.05rem; }
+@media (max-width: 560px) { .blog-heading h1 { font-size: 2.5rem; } .blog-heading { padding-bottom: 2.5rem; } }
