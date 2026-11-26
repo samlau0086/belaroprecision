@@ -33,7 +33,7 @@ const newTab = !isDocument && block.link?.target === '_blank';
 
 <section
   class:list={['fixed-background', { 'fixed-background--wide': option(block.width) === 'wide' }]}
-  style={{ minHeight: `${minHeight}px`, backgroundImage: backgroundUrl ? `url(${JSON.stringify(backgroundUrl)})` : undefined }}
+  style={{ minHeight: `${minHeight}px`, '--fixed-background-image': backgroundUrl ? `url(${JSON.stringify(backgroundUrl)})` : undefined }}
 >
   <div class="fixed-background__content">
     {block.heading && <h2>{block.heading}</h2>}
@@ -47,8 +47,10 @@ const newTab = !isDocument && block.link?.target === '_blank';
 </section>
 
 <style>
-  .fixed-background { position: relative; isolation: isolate; display: grid; place-items: center; margin: 2.5rem 0; padding: 3rem 1.5rem; background-color: #26384a; background-position: center; background-size: cover; background-attachment: fixed; color: #fff; text-align: center; }
-  .fixed-background::before { content: ''; position: absolute; inset: 0; z-index: -1; background: rgb(0 0 0 / 55%); }
+  /* 裁剪固定背景层，但不创建 transform 包含块，保持背景相对视口固定。 */
+  .fixed-background { position: relative; isolation: isolate; clip-path: inset(0); display: grid; place-items: center; margin: 2.5rem 0; padding: 3rem 1.5rem; background-color: #26384a; color: #fff; text-align: center; }
+  .fixed-background::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-image: var(--fixed-background-image, none); background-position: center; background-size: cover; }
+  .fixed-background::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: rgb(0 0 0 / 55%); }
   .fixed-background--wide { width: min(1440px, calc(100vw - 3rem)); margin-inline: calc((100% - min(1440px, calc(100vw - 3rem))) / 2); }
   .fixed-background .fixed-background__content { min-width: 0; max-width: 720px; overflow-wrap: anywhere; }
   .fixed-background .fixed-background__content h2 { margin: 0 0 1rem; color: #fff; font-size: 2rem; line-height: 1.25; letter-spacing: 0; }
@@ -60,8 +62,8 @@ const newTab = !isDocument && block.link?.target === '_blank';
     .fixed-background { padding: 2rem 1.25rem; }
     .fixed-background .fixed-background__content h2 { font-size: 1.6rem; }
   }
-  /* 触屏浏览器与减少动态效果模式保留背景图，关闭固定滚动效果。 */
-  @media (hover: none), (prefers-reduced-motion: reduce) {
-    .fixed-background { background-attachment: scroll; }
+  /* 仅在用户明确要求减少动态效果时关闭固定滚动效果。 */
+  @media (prefers-reduced-motion: reduce) {
+    .fixed-background::before { position: absolute; }
   }
 </style>

@@ -8,6 +8,50 @@ import { join } from 'node:path';
 import { extname } from 'node:path';
 import { articleContentFields } from '../src/lib/blog.mjs';
 
+// 同一视口区域在滚动后应显示相同背景；关闭图片后必须不同，避免空白误通过。
+async function assertBackgroundScroll(page, fixed = true) {
+  const widget = page.locator('.fixed-background').first();
+  const content = widget.locator('.fixed-background__content');
+  await content.evaluate(element => { element.style.visibility = 'hidden'; });
+  const top = await widget.evaluate(element => element.getBoundingClientRect().top + scrollY);
+  await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), top - 200);
+  const bounds = await widget.boundingBox();
+  const clip = { x: bounds.x + 8, y: 260, width: Math.min(120, bounds.width - 16), height: 60 };
+  // 先截取视口再裁剪，避免 screenshot.clip 使用文档坐标而改变固定背景的取样位置。
+  const sample = async () => {
+    const screenshot = await page.screenshot();
+    return page.evaluate(async ({ data, clip }) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${data}`;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = clip.width;
+      canvas.height = clip.height;
+      const scale = image.naturalWidth / innerWidth;
+      canvas.getContext('2d').drawImage(image, clip.x * scale, clip.y * scale, clip.width * scale, clip.height * scale, 0, 0, clip.width, clip.height);
+      return canvas.toDataURL();
+    }, { data: screenshot.toString('base64'), clip });
+  };
+  const before = await sample();
+  await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), top - 100);
+  const afterBounds = await widget.boundingBox();
+  assert.ok(Math.abs(bounds.y - afterBounds.y - 100) < 1, '模块随页面滚动 100px');
+  const after = await sample();
+  assert.equal(after === before, fixed, `${page.viewportSize().width}px ${fixed ? '滚动后同一视口区域的背景像素保持不变' : '减少动态效果时背景随模块滚动'}`);
+  const image = await widget.evaluate(element => {
+    const value = element.style.getPropertyValue('--fixed-background-image');
+    element.style.setProperty('--fixed-background-image', 'none');
+    return value;
+  });
+  assert.ok(await sample() !== after, '截图中确实存在背景图片');
+  await widget.evaluate((element, value) => element.style.setProperty('--fixed-background-image', value), image);
+  await content.evaluate(element => { element.style.removeProperty('visibility'); });
+  if (process.env.BLOG_SCREENSHOT_DIR) {
+    await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `fixed-background-${page.viewportSize().width}-${fixed ? 'fixed' : 'reduced'}.png`) });
+  }
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+}
+
 test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全内容', { timeout: 180_000 }, async t => {
   const type = name => `ArticleContentContentBlocks${name}Layout`;
   const posts = [
@@ -177,14 +221,14 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         assert.ok(wideBounds.width >= contentBounds.width, `${width}px 宽幅不窄于正文`);
         if (width > 1208) assert.ok(wideBounds.width > contentBounds.width, `${width}px 宽幅超出正文`);
         assert.equal(await widgets.nth(2).evaluate(element => getComputedStyle(element).minHeight), '480px');
-        assert.equal(await widgets.nth(2).evaluate(element => getComputedStyle(element).backgroundImage), 'none');
+        assert.equal(await widgets.nth(2).evaluate(element => getComputedStyle(element, '::before').backgroundImage), 'none');
         assert.equal(await widgets.nth(3).locator('a').count(), 0);
         assert.equal((await widgets.nth(4).locator('a').textContent()).trim(), 'Download document');
         assert.equal(await widgets.nth(0).locator('h2').evaluate(element => getComputedStyle(element).color), 'rgb(255, 255, 255)');
         assert.equal(await widgets.nth(0).locator('a').evaluate(element => getComputedStyle(element).color), 'rgb(255, 255, 255)');
-        assert.equal(await widgets.nth(0).evaluate(element => getComputedStyle(element).backgroundAttachment), 'fixed');
+        assert.equal(await widgets.nth(0).evaluate(element => getComputedStyle(element, '::before').position), 'fixed');
         const imageLoaded = await widgets.nth(0).evaluate(async element => {
-          const url = getComputedStyle(element).backgroundImage.slice(5, -2);
+          const url = getComputedStyle(element, '::before').backgroundImage.slice(5, -2);
           const image = new Image();
           image.src = url;
           await image.decode();
@@ -201,14 +245,22 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         assert.ok(Math.abs(articleBreadcrumb.x - listBreadcrumb.x) < 1 && Math.abs(articleBreadcrumb.y - listBreadcrumb.y) < 1, `${width}px 面包屑位置一致`);
         assert.ok(Math.abs(articleTitle.x - listTitle.x) < 1 && Math.abs(articleTitle.y - listTitle.y) < 1, `${width}px 标题位置一致`);
         assert.deepEqual(await page.locator('.blog-heading h1').evaluate(element => ({ fontSize: getComputedStyle(element).fontSize, lineHeight: getComputedStyle(element).lineHeight })), listHeadingStyle);
+        await assertBackgroundScroll(page);
         if (process.env.BLOG_SCREENSHOT_DIR) await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `article-width-${width}.png`), fullPage: true });
       }
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      assert.equal(await page.locator('.fixed-background').first().evaluate(element => getComputedStyle(element).backgroundAttachment), 'scroll');
+      assert.equal(await page.locator('.fixed-background').first().evaluate(element => getComputedStyle(element, '::before').position), 'absolute');
+      await assertBackgroundScroll(page, false);
       const touch = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
       const touchPage = await touch.newPage();
       await touchPage.goto(`${baseUrl}/post/acf-test/`);
-      assert.equal(await touchPage.locator('.fixed-background').first().evaluate(element => getComputedStyle(element).backgroundAttachment), 'scroll');
+      assert.equal(await touchPage.locator('.fixed-background').first().evaluate(element => getComputedStyle(element, '::before').position), 'fixed');
+      await touchPage.locator('.fixed-background').first().evaluate(async element => {
+        const image = new Image();
+        image.src = getComputedStyle(element, '::before').backgroundImage.slice(5, -2);
+        await image.decode();
+      });
+      await assertBackgroundScroll(touchPage);
       assert.equal(await touchPage.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
       await touch.close();
       assert.deepEqual(errors, []);
