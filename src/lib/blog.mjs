@@ -53,7 +53,15 @@ export const blogVotesQuery = `
 `;
 
 export function articlePath(slug) {
-  return `/blog/article/${encodeURIComponent(String(slug))}/`;
+  return `/post/${encodeURIComponent(String(slug))}/`;
+}
+
+export function categoryPath(slug) {
+  return `/category/${encodeURIComponent(String(slug))}/`;
+}
+
+export function blogCategories(posts) {
+  return [...new Map(posts.flatMap(post => post.categories?.nodes || []).filter(category => category.slug).map(category => [category.databaseId, category])).values()];
 }
 
 export async function fetchPublishedBlogPosts(endpoint, fetchImpl = fetch) {

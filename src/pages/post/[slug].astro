@@ -1,0 +1,13 @@
+---
+import BlogArticle from '../../components/BlogArticle.astro';
+import { gravityForms } from '../../config';
+import { fetchPublishedBlogPosts } from '../../lib/blog.mjs';
+
+export async function getStaticPaths() {
+  const posts = await fetchPublishedBlogPosts(gravityForms.graphqlUrl);
+  return posts.map(post => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props;
+---
+<BlogArticle post={post} />

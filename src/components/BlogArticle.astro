@@ -4,7 +4,7 @@ import Header from './Header.astro';
 import Footer from './Footer.astro';
 import BlogContentBlocks from './BlogContentBlocks.astro';
 import { gravityForms } from '../config';
-import { plainText } from '../lib/blog.mjs';
+import { articlePath, plainText } from '../lib/blog.mjs';
 import { sanitizeBlogHtml } from '../lib/blog-html.mjs';
 
 const endpoint = gravityForms.graphqlUrl;
@@ -15,7 +15,7 @@ const imageUrl = image && /^https?:\/\//i.test(image.sourceUrl) ? image.sourceUr
 const blocks = post?.articleContent?.contentBlocks;
 ---
 
-<BaseLayout title={`${title} | Belaro Precision`} description={post ? plainText(post.excerpt).slice(0, 160) : 'Manufacturing insights and practical guides from Belaro Precision.'}>
+<BaseLayout title={`${title} | Belaro Precision`} canonical={post ? new URL(articlePath(post.slug), Astro.site).href : undefined} description={post ? plainText(post.excerpt).slice(0, 160) : 'Manufacturing insights and practical guides from Belaro Precision.'}>
   <Header />
   <main class="article-page" data-article-root data-endpoint={endpoint} data-prerendered={Boolean(post)} data-turnstile-sitekey={gravityForms.turnstileSiteKey}>
     <div class="article-shell">
@@ -112,7 +112,7 @@ const blocks = post?.articleContent?.contentBlocks;
       document.head.append(script);
     }
   }
-  const encodedSlug = window.location.pathname.match(/^\/blog\/article\/([^/]+)\/?$/)?.[1] || new URLSearchParams(window.location.search).get('slug') || '';
+  const encodedSlug = window.location.pathname.match(/^\/(?:post|blog\/article)\/([^/]+)\/?$/)?.[1] || new URLSearchParams(window.location.search).get('slug') || '';
   let slug = '';
   try {
     slug = decodeURIComponent(encodedSlug);

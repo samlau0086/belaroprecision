@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import { articlePath, categoryPath, plainText } from '../lib/blog.mjs';
+
+const { posts, categories, category } = Astro.props;
+const displayedPosts = category ? posts.filter(post => (post.categories?.nodes || []).some(item => item.slug === category.slug)) : posts.slice(0, 12);
+const imageUrl = post => {
+  try {
+    const url = new URL(post.featuredImage?.node?.sourceUrl);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  } catch { return ''; }
+};
+---
+
+<BaseLayout title={category ? `${category.name} | Blog | Belaro Precision` : 'Blog | Belaro Precision'} description={category ? `Explore ${category.name} articles from Belaro Precision.` : 'Insights, updates, and practical guides from Belaro Precision.'}>
+  <Header />
+  <main class="blog-page" data-blog-root>
+    <section class="blog-heading" aria-labelledby="blog-title">
+      <div class="heading-inner">
+        <nav class="blog-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><span aria-current="page">Blog</span></nav>
+        <p class="blog-eyebrow">The Belaro journal</p>
+        <h1 id="blog-title">{category ? category.name : 'Blog'}</h1>
+        <p class="blog-intro">Ideas, insights, and a closer look at precision manufacturing.</p>
+      </div>
+    </section>
+    <section class="blog-content" aria-label="Articles">
+      <div class="blog-toolbar"><h2>Latest articles</h2><span data-blog-count>{displayedPosts.length} {displayedPosts.length === 1 ? 'article' : 'articles'}</span></div>
+      {categories.length > 0 && <div class="blog-filters" data-blog-filters role="group" aria-label="Filter by category">
+        <a href="/blog/" data-category-filter="" aria-current={!category ? 'page' : undefined}>All articles</a>
+        {categories.map(item => <a href={categoryPath(item.slug)} data-category-filter={item.slug} aria-current={category?.slug === item.slug ? 'page' : undefined}>{item.name}</a>)}
+      </div>}
+      <p class="blog-status" data-blog-status role="status" aria-live="polite">{displayedPosts.length ? '' : 'No articles yet.'}</p>
+      <div class="blog-grid" data-blog-grid>
+        {displayedPosts.map(post => {
+          const image = imageUrl(post);
+          const title = plainText(post.title) || 'Article';
+          const validSlug = /^[a-z0-9][a-z0-9-]*$/i.test(post.slug || '');
+          const validDate = post.date && !Number.isNaN(Date.parse(post.date));
+          return <article class="blog-card" data-blog-card data-categories={(post.categories?.nodes || []).map(category => category.slug).join(',')}>
+            {validSlug && <a class:list={['blog-card-media', { 'is-fallback': !image }]} href={articlePath(post.slug)} tabindex="-1" aria-hidden="true"><img src={image || '/images/machined-parts/machined-block-main.webp'} alt={image ? post.featuredImage.node.altText || '' : ''} loading="lazy" /></a>}
+            <div class="blog-card-body">
+              <p class="blog-card-category">{(post.categories?.nodes || []).map(category => category.name).join(' · ')}</p>
+              <h2>{validSlug ? <a href={articlePath(post.slug)}>{title}</a> : title}</h2>
+              {validDate && <time class="blog-card-date" datetime={post.date}>{new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(post.date))}</time>}
+              <p class="blog-card-excerpt">{plainText(post.excerpt)}</p>
+              {validSlug && <a class="blog-card-read" href={articlePath(post.slug)} aria-label={`Read article: ${title}`}>Read article<span aria-hidden="true">↗</span></a>}
+            </div>
+          </article>;
+        })}
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<script>
+  const url = new URL(window.location.href);
+  const category = url.pathname === '/blog/' && url.searchParams.get('category');
+  if (category) {
+    const link = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-category-filter]')).find(item => item.dataset.categoryFilter === category);
+    if (link) {
+      url.pathname = link.pathname;
+      url.searchParams.delete('category');
+      window.location.replace(url.href);
+    }
+  }
+</script>
+
+<style>
+  .blog-page { min-height: 65vh; background: #fff; }
+  .blog-heading { background: #f4f6f8; border-bottom: 1px solid #e3e8ee; padding: 1.5rem 1.5rem 3.5rem; }
+  .heading-inner { max-width: 1160px; margin: auto; }
+  .blog-breadcrumb { display: flex; gap: .7rem; color: #687586; font-size: .82rem; margin-bottom: 2.25rem; }
+  .blog-eyebrow { margin: 0 0 .5rem; color: #b84b15; font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+  .blog-heading h1 { margin: 0; font-size: 3.5rem; line-height: 1.15; }
+  .blog-intro { max-width: 42rem; margin: 1rem 0 0; color: #687586; font-size: 1.05rem; }
+  .blog-content { max-width: 1208px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+  .blog-toolbar { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+  .blog-toolbar h2 { margin: 0; font-size: 1.45rem; }
+  .blog-toolbar > span { color: #687586; font-size: .85rem; }
+  .blog-filters { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem; border-bottom: 1px solid #e3e8ee; }
+  .blog-filters[hidden] { display: none; }
+  .blog-filters a { display: inline-flex; align-items: center; min-height: 46px; padding: .4rem 0; border-bottom: 2px solid transparent; color: #687586; font: inherit; font-size: .9rem; }
+  .blog-filters a[aria-current="page"] { border-bottom-color: #f47b35; color: #172338; font-weight: 700; }
+  .blog-status { color: #536273; }
+  .blog-status:empty { display: none; }
+  .blog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.75rem; }
+  .blog-grid :global(.blog-card), .blog-skeleton { overflow: hidden; border: 1px solid #e3e8ee; border-radius: 6px; background: #fff; }
+  .blog-grid :global(.blog-card) { transition: border-color .2s, box-shadow .2s; }
+  .blog-grid :global(.blog-card[hidden]) { display: none; }
+  .blog-grid :global(.blog-card:hover) { border-color: #c6cfd7; box-shadow: 0 8px 24px #1723380a; }
+  .blog-grid :global(.blog-card-media) { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: #f4f6f8; border-bottom: 1px solid #e3e8ee; }
+  .blog-grid :global(.blog-card-media img) { width: 100%; height: 100%; object-fit: cover; }
+  .blog-grid :global(.blog-card-media.is-fallback img) { object-fit: contain; padding: 1rem; }
+  .blog-grid :global(.blog-card-body) { padding: 1.5rem; }
+  .blog-grid :global(.blog-card-category) { margin: 0 0 .65rem; color: #b84b15; font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+  .blog-grid :global(.blog-card-date) { color: #687586; font-size: .8rem; }
+  .blog-grid :global(.blog-card h2) { margin: 0 0 .7rem; font-size: 1.4rem; line-height: 1.4; overflow-wrap: anywhere; }
+  .blog-grid :global(.blog-card h2 a:hover) { color: #b84b15; }
+  .blog-grid :global(.blog-card-excerpt) { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: #687586; line-height: 1.7; font-size: .94rem; margin: .9rem 0 1.5rem; }
+  .blog-grid :global(.blog-card-read) { display: flex; align-items: center; justify-content: space-between; min-height: 36px; border-top: 1px solid #e3e8ee; padding-top: 1rem; font-size: .85rem; font-weight: 700; }
+  .blog-grid :global(.blog-card-read span) { color: #b84b15; font-size: 1.25rem; }
+  .blog-content :global(a:focus-visible), .blog-content :global(button:focus-visible) { outline: 2px solid #f47b35; outline-offset: 4px; }
+  @media (max-width: 800px) { .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .blog-grid { grid-template-columns: 1fr; } .blog-heading h1 { font-size: 2.5rem; } .blog-heading { padding-bottom: 2.5rem; } .blog-content { padding-top: 2rem; } }
+</style>

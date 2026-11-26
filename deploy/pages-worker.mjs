@@ -48,6 +48,12 @@ export function createWorker(pages, site) {
       const page = routes.get(path);
       if (!page) return respond('<!doctype html><html lang="en"><title>404 | Belaro Precision</title><h1>Page not found</h1><a href="/">Belaro Precision</a></html>', 404, 'text/html; charset=utf-8');
 
+      const oldArticle = /^\/blog\/article\/([a-zA-Z0-9][a-zA-Z0-9-]*)\/?$/.exec(path);
+      if (oldArticle) {
+        headers.set('Location', `/post/${oldArticle[1]}/${url.search}`);
+        return respond(null, 301, 'text/html; charset=utf-8');
+      }
+
       if (prefersMarkdown(request.headers.get('Accept') || '')) {
         return respond(page.markdown, 200, 'text/markdown; charset=utf-8');
       }

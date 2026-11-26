@@ -104,7 +104,7 @@ test('静态文章路由分页读取全部已发布文章，并拒绝失败或�
     return response({ data: { posts: { nodes: [{ slug: variables.after ? 'second' : 'first' }], pageInfo: { hasNextPage: !variables.after, endCursor: 'next' } } } });
   });
   assert.deepEqual(cursors, [null, 'next']);
-  assert.deepEqual(posts.map(post => articlePath(post.slug)), ['/blog/article/first/', '/blog/article/second/']);
+  assert.deepEqual(posts.map(post => articlePath(post.slug)), ['/post/first/', '/post/second/']);
   await assert.rejects(fetchPublishedBlogPosts('', async () => response({ data: { posts: { nodes: [], pageInfo: { hasNextPage: true, endCursor: null } } } })), /did not advance/);
 });
 

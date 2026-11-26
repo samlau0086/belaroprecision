@@ -77,9 +77,10 @@
 | `/quality/` | 图纸与材料确认、公差可行性、检测方法与环节、文件范围、首件/抽检/全检约定、偏差处理、包装标识七项质量说明；设备与文件能力按项目核实，没有在线检验管理功能 |
 | `/about/` | 法定英文名称、沙井所在地、业务身份、自有加工与外协范围、车间/设备/团队资料说明、OEM 订单配合、外协管理约定、邮箱与 WhatsApp、质量评审与 FAQ |
 | `/contact/` | 询价字段、国家搜索、电话区号、材料自定义输入、单附件上传、Turnstile 与 GraphQL 提交 |
-| `/blog/` | 构建时生成最多 12 篇已发布文章的列表及分类，支持前端分类筛选；文章卡片进入本站详情页 |
-| `/blog/article/<slug>/` | 构建时按 WordPress slug 生成可索引的文章标题、摘要、Canonical 与安全清理后的正文；浏览器读取最多 100 条公开评论及独立投票汇总，支持层级回复和 up/down vote |
-| `/blog/article/?slug=...` | 旧链接兼容入口，成功取得文章后替换为 `/blog/article/<slug>/`；新链接不再使用查询参数 |
+| `/blog/` | 构建时生成最多 12 篇已发布文章的列表及分类链接 |
+| `/category/<slug>/` | 构建时生成分类归档，展示该分类全部已发布文章 |
+| `/post/<slug>/` | 构建时按 WordPress slug 生成可索引的文章标题、摘要、Canonical 与安全清理后的正文；浏览器读取最多 100 条公开评论及独立投票汇总，支持层级回复和 up/down vote |
+| `/blog/article/<slug>/`、`/blog/article/?slug=...` | 旧文章链接兼容入口，分别通过服务器重定向或浏览器替换至新路径 |
 | `/privacy-policy/` | 询价数据、技术文件、第三方服务、跨境处理、保留与权利请求说明 |
 | `/cookie-policy/` | 浏览器存储、字体/图片请求、安全服务及当前未启用广告与统计标签的说明 |
 | `/terms-of-use/` | 网站使用、按图评审、询价与订单边界、图纸权属及定制件商业条款说明 |
@@ -373,7 +374,7 @@ PUBLIC_GTM_ID=
 - `uploadsEnabled`：当前为 `true`；部署时须先安装 WPGraphQL Upload，并确认存在 `fileUploadValues` 输入。
 - `turnstileSiteKey`：来自 `PUBLIC_TURNSTILE_SITE_KEY`，只能使用公开 Site Key。
 
-Blog 列表在构建期读取已发布文章，最多展示前 12 篇及其分类，卡片直接写入静态 HTML，访问时不请求列表 GraphQL；分类筛选在浏览器本地进行，无 JavaScript 时仍可阅读全部卡片。列表和详情路由分别使用分页查询，构建过程为每个 slug 生成 `/blog/article/<slug>/`，将标题、摘要、Canonical 和白名单清理后的正文直接写入静态 HTML；旧 `/blog/article/?slug=...` 仍兼容并会替换为干净路径。新增、删除或修改 WordPress 文章及分类后必须重新构建发布，构建环境也必须能访问 GraphQL；枚举失败会阻断构建，避免发布缺失文章的站点。生成的详情页会自动进入现有 Sitemap 和 Agent Markdown 流程。
+Blog 列表在构建期读取已发布文章，最多展示前 12 篇；分类归档展示对应分类的全部已发布文章。列表、分类归档和文章详情均生成静态 HTML，访问时不请求列表 GraphQL。构建过程为每个文章和已使用的分类分别生成 `/post/<slug>/`、`/category/<slug>/`，并写入 Canonical、Sitemap 和 Agent Markdown。新增、删除或修改 WordPress 文章及分类后必须重新构建发布，构建环境也必须能访问 GraphQL；枚举失败会阻断构建，避免发布缺失文章的站点。
 
 文章详情在构建时读取 ACF PRO 的 `articleContent.contentBlocks`，通过 Astro 模块按顺序呈现富文本、标题、图片、图文组合、提示/引用、参数表和行动引导。字段组须启用 WPGraphQL for ACF 并公开 `articleContent`，Flexible Content 布局及字段名必须与 `src/lib/blog.mjs` 的查询匹配；参数表的参数值 GraphQL 字段为 `value`。后台字段变更需同步修改查询。没有内容模块的旧文章使用 WordPress `content`；有模块的文章不会拼接旧正文，未知布局构建时输出警告且不会自动显示。富文本仍执行 HTML 白名单清理，模块链接和图片地址限制为安全协议。静态文章正文以最近一次构建为准，浏览器读取评论时不会覆盖它；发布、更新或删除文章后仍需重新构建部署。
 
@@ -386,6 +387,8 @@ Blog 列表在构建期读取已发布文章，最多展示前 12 篇及其分�
 部署 WordPress 时必须同时复制 `belaro-graphql-upload.php` 与 `belaro-blog-graphql.php` 到 `wp-content/mu-plugins/`，确认运行账户有建表权限，并在 GraphQL schema 中检查 `createComment`、`belaroCommentVotes` 和 `belaroVoteComment`。生产站点还需允许官网 Origin 跨域访问 JSON GraphQL POST。本轮已确认生产 GraphQL 可读取文章正文和评论，但当前 schema 缺少 `belaroCommentVotes`；在 MU 插件部署并验证前，前端会按上述规则只禁用投票。
 
 站点域名分别存在于 `src/config.ts` 的 `site.domain` 和 `astro.config.mjs` 的 `site`，当前均为 `https://belaroprecision.com`；更换域名时应同步维护。所有这些静态配置更改后均须重新构建部署。
+
+类目链接使用 `/category/<WordPress类目slug>/`，全部文章入口为 `/blog/`。旧 `/blog/?category=<slug>` 在启用 JavaScript 时跳转到分类页，并保留其他查询参数与锚点。旧 `/blog/article/<slug>/` 在仓库提供的 Nginx 和 Pages Worker 配置中返回 301；其他静态托管环境需自行配置同等 HTTP 重定向，生成的旧地址 HTML 提供客户端跳转兜底。旧 `/blog/article/?slug=<slug>` 需要 JavaScript 和可用的 GraphQL 才能跳转。旧链接不加入 Sitemap；发布时应同步更新服务器配置并验证重定向。
 
 ### 7.2 外部服务与 Turnstile 配置
 

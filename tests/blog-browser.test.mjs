@@ -20,7 +20,7 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
       const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
       const relative = pathname.endsWith('/') ? `${pathname}index.html` : pathname;
       let body = await readFile(join(process.cwd(), 'dist', relative));
-      if (relative === '/blog/article/hello-world/index.html') body = Buffer.from(body.toString().replace(/data-turnstile-sitekey(?:="[^"]*")?/, 'data-turnstile-sitekey="test-site-key"'));
+      if (relative === '/post/hello-world/index.html') body = Buffer.from(body.toString().replace(/data-turnstile-sitekey(?:="[^"]*")?/, 'data-turnstile-sitekey="test-site-key"'));
       res.setHeader('Content-Type', contentTypes[extname(relative)] || 'application/octet-stream');
       res.end(body);
     } catch {
@@ -91,39 +91,39 @@ test('Blog 列表、本站详情、层级回复与评论投票', { timeout: 60_0
     await page.goto(`${baseUrl}/blog/`);
     const articleLink = page.locator('.blog-card h2 a').first();
     await articleLink.waitFor();
-    assert.equal(await articleLink.getAttribute('href'), '/blog/article/hello-world/');
+    assert.equal(await articleLink.getAttribute('href'), '/post/hello-world/');
     assert.equal((await articleLink.getAttribute('href')).includes('belaroprecision.local'), false);
     assert.equal(await page.locator('.blog-skeleton').count(), 0);
     assert.equal(requests.some(request => request.query.includes('BlogIndex')), false);
     const categoryFilter = page.locator('[data-category-filter]').nth(1);
     if (await categoryFilter.count()) {
       await categoryFilter.click();
-      assert.equal(await categoryFilter.getAttribute('aria-pressed'), 'true');
+      assert.equal(await categoryFilter.getAttribute('aria-current'), 'page');
       assert.equal(await page.locator('.blog-card:visible').count(), 1);
-      await page.getByRole('button', { name: 'All articles' }).click();
+      await page.getByRole('link', { name: 'All articles' }).click();
     }
     assert.equal(await page.locator('.blog-card').evaluate(el => getComputedStyle(el).borderTopStyle), 'solid');
-    assert.equal(await page.getByRole('button', { name: 'All articles' }).evaluate(el => getComputedStyle(el).minHeight), '46px');
+    assert.equal(await page.getByRole('link', { name: 'All articles' }).evaluate(el => getComputedStyle(el).minHeight), '46px');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     if (process.env.BLOG_SCREENSHOT_DIR) await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, 'blog-list-mobile.png'), fullPage: true });
     await page.setViewportSize({ width: 1440, height: 900 });
     if (process.env.BLOG_SCREENSHOT_DIR) await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, 'blog-list-desktop.png'), fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 });
 
-    const staticHtml = await (await fetch(`${baseUrl}/blog/article/hello-world/`)).text();
+    const staticHtml = await (await fetch(`${baseUrl}/post/hello-world/`)).text();
     const indexHtml = await (await fetch(`${baseUrl}/blog/`)).text();
     assert.match(indexHtml, /class="blog-card"/);
-    assert.match(indexHtml, /\/blog\/article\/hello-world\//);
+    assert.match(indexHtml, /\/post\/hello-world\//);
     const noJs = await browser.newContext({ javaScriptEnabled: false });
     const noJsPage = await noJs.newPage();
     await noJsPage.goto(`${baseUrl}/blog/`);
     assert.equal(await noJsPage.locator('.blog-card:visible').count(), 1);
-    assert.equal(await noJsPage.locator('[data-blog-filters]').isHidden(), true);
+    assert.equal(await noJsPage.locator('[data-blog-filters]').isVisible(), true);
     await noJs.close();
     assert.match(staticHtml, /data-prerendered="true"/);
     assert.match(staticHtml, /Welcome to WordPress/);
-    assert.match(staticHtml, /rel="canonical" href="https:\/\/belaroprecision.com\/blog\/article\/hello-world\/?"/);
-    await page.goto(`${baseUrl}/blog/article/hello-world/`);
+    assert.match(staticHtml, /rel="canonical" href="https:\/\/belaroprecision.com\/post\/hello-world\/?"/);
+    await page.goto(`${baseUrl}/post/hello-world/`);
     await page.getByRole('heading', { level: 1, name: 'CNC Guide' }).waitFor();
     assert.equal(await page.getByText('Thanks for sharing.').count(), 1);
     assert.equal(await page.locator('.comment').count(), 2);

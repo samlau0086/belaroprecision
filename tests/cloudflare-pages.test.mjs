@@ -19,6 +19,15 @@ test('Pages 内容协商与 VPS 的显式 Accept 权重约定一致', () => {
   ]) assert.equal(prefersMarkdown(accept), expected, accept);
 });
 
+test('Pages 旧文章地址返回 301 并保留查询参数', async () => {
+  const worker = createWorker([{ path: '/blog/article/hello-world/', markdown: '# Old' }, { path: '/post/hello-world/', markdown: '# New' }], 'https://belaroprecision.com');
+  for (const accept of ['text/html', 'text/markdown']) {
+    const response = await worker.fetch(new Request('https://belaroprecision.com/blog/article/hello-world/?source=test', { headers: { Accept: accept } }), {});
+    assert.equal(response.status, 301);
+    assert.equal(response.headers.get('location'), '/post/hello-world/?source=test');
+  }
+});
+
 test('Pages Worker 的别名、HEAD、缓存、内部路径与异常处理', async () => {
   const worker = createWorker([{ path: '/', markdown: '# Home' }, { path: '/about/', markdown: '# About' }], 'https://belaroprecision.com');
   const calls = [];
