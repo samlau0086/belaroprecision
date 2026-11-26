@@ -81,7 +81,7 @@ test('行业页：行业锚点、零件与服务链接、SEO、FAQ 和响应式'
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px 不应横向溢出`);
       const positions = await page.locator('#automation > div').evaluateAll(nodes => nodes.map(node => { const { x, y } = node.getBoundingClientRect(); return { x, y }; }));
       assert.ok(width <= 700 ? positions[0].x === positions[1].x && positions[1].y > positions[0].y : positions[1].x > positions[0].x, `${width}px 行业详情列数`);
-      assert.equal(await page.locator('.breadcrumbs').evaluate(node => getComputedStyle(node).marginBottom), width <= 700 ? '28px' : '38px');
+      assert.equal(await page.locator('nav[aria-label="Breadcrumb"]').count(), 0);
       if ([390, 1440].includes(width)) {
         for (const image of await page.locator('main img').all()) {
           await image.scrollIntoViewIfNeeded();

@@ -66,7 +66,7 @@ test('Quality 七项主题、能力边界、锚点和响应式布局', async () 
     assert.equal((await page.request.get(`${baseUrl}${reportLink}`)).status(), 200);
     assert.doesNotMatch(await page.locator('main').innerText(), /±0\.01/);
     assert.equal(await page.locator('main a[href="#rfq-form"]').count(), 2);
-    assert.equal(await page.locator('.breadcrumbs [aria-current="page"]').innerText(), 'Quality');
+    assert.equal(await page.locator('nav[aria-label="Breadcrumb"]').count(), 0);
     assert.match(await page.title(), /Quality & Inspection/);
     assert.match(await page.locator('link[rel="canonical"]').getAttribute('href'), /\/quality\/$/);
     const screenshots = await mkdtemp(join(tmpdir(), 'belaro-quality-'));
@@ -90,6 +90,16 @@ test('Quality 七项主题、能力边界、锚点和响应式布局', async () 
     }
     await page.locator('.quality-nav a[href="#packing"]').click();
     assert.match(page.url(), /#packing$/);
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const path of ['/about/', '/privacy-policy/', '/cookie-policy/', '/terms-of-use/']) {
+        await page.goto(`${baseUrl}${path}`);
+        assert.equal(await page.locator('nav[aria-label="Breadcrumb"]').count(), 0, `${path} 不显示面包屑`);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${path} ${width}px 不应横向溢出`);
+      }
+      await page.goto(`${baseUrl}/services/cnc-milling/`);
+      assert.equal(await page.locator('nav[aria-label="Breadcrumb"]').count(), 1, '服务子页面保留面包屑');
+    }
     assert.deepEqual(errors, []);
     console.log(`Quality 截图：${screenshots}`);
   } finally {
