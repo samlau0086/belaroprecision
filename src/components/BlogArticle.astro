@@ -397,7 +397,8 @@ const breadcrumbCategory = articleBreadcrumbCategory(post?.categories?.nodes);
 </script>
 
 <style>
-  .article-page { min-height: 70vh; background: #fff; padding-bottom: 5rem; }
+  /* 全宽模块以文章页面为参照，避免 100vw 将滚动条宽度计入而产生横向溢出。 */
+  .article-page { container-type: inline-size; min-height: 70vh; background: #fff; padding-bottom: 5rem; }
   .article-shell { max-width: 1208px; margin: 0 auto; padding-inline: 1.5rem; }
   .article-body { padding-top: 2.5rem; }
   .article-status { min-height: 1.5rem; color: #536273; }

@@ -32,7 +32,7 @@ const newTab = !isDocument && block.link?.target === '_blank';
 ---
 
 <section
-  class:list={['fixed-background', { 'fixed-background--wide': option(block.width) === 'wide' }]}
+  class:list={['fixed-background', { 'fixed-background--wide': option(block.width) === 'wide', 'fixed-background--full-width': option(block.width) === 'full_width' }]}
   style={{ minHeight: `${minHeight}px`, '--fixed-background-image': backgroundUrl ? `url(${JSON.stringify(backgroundUrl)})` : undefined }}
 >
   <div class="fixed-background__content">
@@ -78,6 +78,7 @@ const newTab = !isDocument && block.link?.target === '_blank';
   .fixed-background::before { content: ''; position: absolute; inset: calc(var(--background-travel, 0px) / -2) 0; z-index: -1; pointer-events: none; background-image: var(--fixed-background-image, none); background-position: center; background-size: cover; transform: translate3d(0, var(--background-offset, 0px), 0); }
   .fixed-background::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: rgb(0 0 0 / 55%); }
   .fixed-background--wide { width: min(1440px, calc(100vw - 3rem)); margin-inline: calc((100% - min(1440px, calc(100vw - 3rem))) / 2); }
+  .fixed-background--full-width { width: 100cqw; margin-inline: calc((100% - 100cqw) / 2); }
   .fixed-background .fixed-background__content { min-width: 0; max-width: 720px; overflow-wrap: anywhere; }
   .fixed-background .fixed-background__content h2 { margin: 0 0 1rem; color: #fff; font-size: 2rem; line-height: 1.25; letter-spacing: 0; }
   .fixed-background .fixed-background__content p { margin: 0; color: #fff; white-space: pre-line; }

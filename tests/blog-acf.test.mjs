@@ -95,6 +95,8 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
       { __typename: type('FixedBackground'), heading: 'Invalid widget data', buttonType: 'document', document: { node: { mediaItemUrl: 'javascript:alert(2)' } }, backgroundImage: { node: { sourceUrl: 'javascript:alert(3)' } }, minHeight: '480px; color:red', width: 'invalid' },
       { __typename: type('FixedBackground'), heading: 'Unsafe widget link', buttonType: 'link', buttonLabel: 'Unsafe widget button', link: { url: 'data:text/html,bad' }, minHeight: -20 },
       { __typename: type('FixedBackground'), heading: 'Long widget content', description: 'LongWord'.repeat(70), buttonType: 'document', document: { node: { mediaItemUrl: '/specification.pdf' } }, minHeight: 100, width: 'wide' },
+      ...['full_width', ['full_width']].map(width => ({ __typename: type('FixedBackground'), heading: 'Full width background', backgroundImage: { node: { sourceUrl: '/images/machined-parts/machined-block-main.webp' } }, width })),
+      ...['content', 'full_width', ['full_width'], 'invalid'].map(width => ({ __typename: type('Image'), image: { node: { sourceUrl: '/images/machined-parts/machined-block-main.webp', altText: 'Width test image' } }, caption: 'Width test caption', width })),
     ] } },
     { databaseId: 2, slug: 'legacy-test', title: 'Legacy', content: '<p>Old article content</p>', excerpt: '', date: '2026-01-01T00:00:00Z', categories: { nodes: [] }, articleContent: null },
   ];
@@ -140,6 +142,8 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
     assert.match(articleContentFields, /on ArticleContentContentBlocksFixedBackgroundLayout/);
     for (const field of ['buttonType', 'buttonLabel', 'document { node { mediaItemUrl } }', 'backgroundImage { node { sourceUrl altText } }', 'minHeight width']) assert.ok(articleContentFields.includes(field), field);
     assert.match(html, /href="https:\/\/example.com\/specification.pdf"/);
+    assert.match(html, /class="fixed-background fixed-background--full-width"/);
+    assert.match(html, /class="article-image article-image--full-width"/);
     assert.doesNotMatch(html, /Legacy content|bad\(\)|javascript:alert|Bad link|Unsafe widget button|must-not-use|480px; color:red/);
     const legacy = await readFile(join(output, 'post/legacy-test/index.html'), 'utf8');
     assert.ok(legacy.includes('Old article content'));
@@ -241,7 +245,7 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
         const articleBounds = await page.locator('.article-content').boundingBox();
         const widgets = page.locator('.fixed-background');
-        assert.equal(await widgets.count(), 5);
+        assert.equal(await widgets.count(), 7);
         const wideBounds = await widgets.nth(0).boundingBox();
         const contentBounds = await widgets.nth(1).boundingBox();
         assert.equal(wideBounds.height, 560);
@@ -249,6 +253,26 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         assert.ok(Math.abs(contentBounds.width - articleBounds.width) < 1, `${width}px 正文宽度`);
         assert.ok(wideBounds.width >= contentBounds.width, `${width}px 宽幅不窄于正文`);
         if (width > 1208) assert.ok(wideBounds.width > contentBounds.width, `${width}px 宽幅超出正文`);
+        const pageWidth = await page.evaluate(() => document.documentElement.clientWidth);
+        for (const fullWidth of [widgets.nth(5), widgets.nth(6), ...await page.locator('.article-image--full-width').all()]) {
+          const bounds = await fullWidth.boundingBox();
+          assert.ok(Math.abs(bounds.x) < 1 && Math.abs(bounds.width - pageWidth) < 1, `${width}px 全宽模块左右贴合页面，无横向溢出`);
+          assert.equal(await fullWidth.evaluate(element => element.scrollWidth <= element.clientWidth), true);
+          if (process.env.BLOG_SCREENSHOT_DIR) {
+            await fullWidth.scrollIntoViewIfNeeded();
+            await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `full-width-${width}-${await fullWidth.evaluate(element => element.tagName)}.png`) });
+          }
+        }
+        const images = page.locator('.article-image').filter({ hasText: 'Width test caption' });
+        for (const index of [0, 3]) {
+          const bounds = await images.nth(index).boundingBox();
+          assert.ok(Math.abs(bounds.x - articleBounds.x) < 1 && Math.abs(bounds.width - articleBounds.width) < 1, '正文及无效宽度仍使用正文布局');
+        }
+        for (const image of await images.locator('img').all()) {
+          await image.evaluate(element => element.decode());
+          assert.ok(await image.evaluate(element => Math.abs(element.clientWidth / element.clientHeight - element.naturalWidth / element.naturalHeight) < 0.02), '图片保持原始宽高比');
+        }
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
         assert.equal(await widgets.nth(2).evaluate(element => getComputedStyle(element).minHeight), '480px');
         assert.equal(await widgets.nth(2).evaluate(element => getComputedStyle(element, '::before').backgroundImage), 'none');
         assert.equal(await widgets.nth(3).locator('a').count(), 0);

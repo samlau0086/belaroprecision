@@ -400,7 +400,7 @@ Layout 标签为“固定背景”，名称为 `fixed_background`，GraphQL 类�
 | 按钮链接 | `link` | Link | 返回 Link Array；条件显示：button_type 等于 link | `link` |
 | 按钮文档 | `document` | File | 返回 File ID；条件显示：button_type 等于 document；允许 pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip | `document` |
 | 容器最小高度 | `min_height` | Number | 必填；默认 480，最小 100，最大 2000，步进 1，后缀 px | `minHeight` |
-| 容器宽度 | `width` | Select | `content : 正文宽度`、`wide : 宽幅`；默认 content；返回 Value；关闭多选 | `width` |
+| 容器宽度 | `width` | Select | `content : 正文宽度`、`wide : 宽幅`、`full_width : 全宽`；默认 content；返回 Value；关闭多选 | `width` |
 
 在文章的内容模块中选择“固定背景（Fixed Background）”，可配置：
 
@@ -413,13 +413,15 @@ Layout 标签为“固定背景”，名称为 `fixed_background`，GraphQL 类�
 | 按钮链接 | ACF Link，支持 URL 和新窗口选项；新窗口带安全 `rel` |
 | 按钮文档 | ACF File，GraphQL 为 `document { node { mediaItemUrl } }`；支持 PDF、Office 文档、TXT 和 ZIP，点击打开文档地址，是否下载由文件服务器决定 |
 | 容器最小高度 | 100–2000 的整数，单位 px，默认 480；内容较长时容器自动增高，前端异常值回退 480px |
-| 容器宽度 | 正文宽度（`content`）或宽幅（`wide`）；宽幅最大 1440px，在窄屏保留页面边距 |
+| 容器宽度 | 正文宽度（`content`）、宽幅（`wide`）或全宽（`full_width`）；宽幅最大 1440px，在窄屏保留页面边距；全宽铺满页面可用宽度，不保留左右页面边距 |
+
+图片 Layout（`image`）的“展示宽度”同样支持 `full_width : 全宽`，图片保持原始宽高比，说明文字跟随图片容器。请在现有图片 Layout 和固定背景 Layout 的 `width` Select 字段 Choices 中分别追加 `full_width : 全宽`，保留已有选项、默认值与字段名，返回格式保持 Value。前端兼容单值和数组返回；无需修改 GraphQL 查询或新增字段。全宽模块使用文章页面容器的可用宽度计算，不将桌面滚动条宽度计入，避免横向溢出。保存后台配置并选择全宽后，仍须重新构建发布前端才能更新线上页面。
 
 该布局名称保留 `fixed_background`，显示效果为滚动视差：容器与文字正常滚动，背景以约一半速度移动，在容器内逐步露出图片的不同裁切位置，而不是图片与文字整体同步移动。背景使用绝对定位的加高伪元素，结合被动滚动监听和 `requestAnimationFrame` 更新 `transform`，不依赖 `background-attachment: fixed`；上下预留完整视差行程并由容器裁剪，桌面和触屏均生效。尺寸变化自动重算。按该模块的效果要求，即使系统报告 `prefers-reduced-motion: reduce` 也保留直接随滚动变化的视差，不添加惯性或自动播放动画；禁用 JavaScript 时显示随模块滚动的静态背景。此约定仅限该模块，网站其他组件继续保留各自的减少动态效果处理。图片居中覆盖并叠加遮罩；未设置有效图片时显示深色底色，不安全的图片、文档和链接协议会被忽略。
 
 **发布顺序：先保存上述 ACF Layout，并在 GraphiQL 中确认 schema 出现 `ArticleContentContentBlocksFixedBackgroundLayout` 及上述字段，再构建部署前端。** 前端查询新增了该布局片段，后台尚未注册类型时构建会失败，不应先部署前端。WordPress 发布或修改模块后仍须重新构建。后台实际字段名不同或已存在同名布局时，先核对字段与 `src/lib/blog.mjs` 一致，不要直接覆盖。当前本地测试使用模拟 GraphQL，不代表已配置或验证真实 ACF 后台。
 
-回归命令：`node --test tests/blog.test.mjs tests/blog-acf.test.mjs`。ACF 测试自动启动模拟 GraphQL 并构建临时站点，验证两类按钮、图片加载、安全协议、高度、宽幅与正文宽度、长内容、旧文章回退，并对比桌面/触屏实际滚动前后的背景像素。减少动态效果模式下同样验证 50% 位移与裁切变化，覆盖首次加载及运行中切换偏好；禁用 JavaScript 时验证静态背景。未安装 Playwright 时仅执行静态检查并输出提示。设置 `BLOG_SCREENSHOT_DIR` 为已有绝对目录可保存响应式截图。
+回归命令：`node --test tests/blog.test.mjs tests/blog-acf.test.mjs`。ACF 测试自动启动模拟 GraphQL 并构建临时站点，验证两类按钮、图片加载、安全协议、高度、宽幅与正文宽度、图片与背景全宽、长内容、旧文章回退，并对比桌面/触屏实际滚动前后的背景像素。全宽测试覆盖 320–2560px、单值与数组返回、无横向溢出及图片原始宽高比。减少动态效果模式下同样验证 50% 位移与裁切变化，覆盖首次加载及运行中切换偏好；禁用 JavaScript 时验证静态背景。未安装 Playwright 时仅执行静态检查并输出提示。设置 `BLOG_SCREENSHOT_DIR` 为已有绝对目录可保存响应式截图。
 
 评论表单使用 WPGraphQL 自带的 `createComment` mutation，支持顶层评论和 `parent` 层级回复。WordPress 必须启用文章评论、允许符合站点策略的匿名评论，并配置评论审核与反垃圾措施；访客邮箱只提交到 WordPress，不在页面展示。提交成功后页面重新读取公开评论，处于待审核状态的评论不会立即显示。
 

@@ -30,7 +30,7 @@ for (const block of blocks) {
       {type === 'ArticleContentContentBlocksRichTextLayout' && <div class="rich-text" set:html={sanitizeBlogHtml(block.content)} />}
       {type === 'ArticleContentContentBlocksHeadingLayout' && <Heading>{block.text}</Heading>}
       {type === 'ArticleContentContentBlocksImageLayout' && imageUrl && (
-        <figure class:list={['article-image', { wide: option(block.width) === 'wide' }]}>
+        <figure class:list={['article-image', { wide: option(block.width) === 'wide', 'article-image--full-width': option(block.width) === 'full_width' }]}>
           <img src={imageUrl} alt={image?.altText || ''} loading="lazy" />
           {block.caption && <figcaption>{block.caption}</figcaption>}
         </figure>
@@ -69,6 +69,7 @@ for (const block of blocks) {
   .article-image img { display: block; width: 100%; height: auto; }
   .article-image figcaption { margin-top: .6rem; color: #687788; font-size: .9rem; }
   .article-image.wide { margin-inline: 0; }
+  .article-image--full-width { width: 100cqw; margin-inline: calc((100% - 100cqw) / 2); }
   .media-text { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 2rem; margin: 2.5rem 0; }
   .media-text img { display: block; width: 100%; height: auto; }
   .media-text.reverse img { order: 2; }
