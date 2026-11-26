@@ -24,11 +24,13 @@ for (const block of blocks) {
   const linkUrl = safeUrl(block?.link?.url);
   const headingLevel = option(block?.level) === 'h3' ? 'h3' : 'h2';
   const Heading = headingLevel;
+  const width = option(block.width);
+  const widthClass = width === 'wide' ? 'article-block--wide' : width === 'full_width' ? 'article-block--full-width' : undefined;
   return (
     <>
       {type === 'ArticleContentContentBlocksFixedBackgroundLayout' && <FixedBackground block={block} />}
-      {type === 'ArticleContentContentBlocksRichTextLayout' && <div class="rich-text" set:html={sanitizeBlogHtml(block.content)} />}
-      {type === 'ArticleContentContentBlocksHeadingLayout' && <Heading>{block.text}</Heading>}
+      {type === 'ArticleContentContentBlocksRichTextLayout' && <div class:list={['rich-text', 'article-block', widthClass]} set:html={sanitizeBlogHtml(block.content)} />}
+      {type === 'ArticleContentContentBlocksHeadingLayout' && <Heading class:list={['article-block', widthClass]}>{block.text}</Heading>}
       {type === 'ArticleContentContentBlocksImageLayout' && imageUrl && (
         <figure class:list={['article-image', { wide: option(block.width) === 'wide', 'article-image--full-width': option(block.width) === 'full_width' }]}>
           <img src={imageUrl} alt={image?.altText || ''} loading="lazy" />
@@ -36,25 +38,25 @@ for (const block of blocks) {
         </figure>
       )}
       {type === 'ArticleContentContentBlocksMediaTextLayout' && (
-        <section class:list={['media-text', { reverse: option(block.imagePosition) === 'right' }]}>
+        <section class:list={['media-text', 'article-block', widthClass, { reverse: option(block.imagePosition) === 'right' }]}>
           {imageUrl && <img src={imageUrl} alt={image?.altText || ''} loading="lazy" />}
           <div>{block.heading && <h2>{block.heading}</h2>}<div set:html={sanitizeBlogHtml(block.content)} /></div>
         </section>
       )}
       {type === 'ArticleContentContentBlocksCalloutLayout' && (
-        <aside class="callout">
+        <aside class:list={['callout', 'article-block', widthClass]}>
           {option(block.variant) === 'quote' ? <blockquote>{block.content}</blockquote> : <p>{block.content}</p>}
           {block.attribution && <p class="attribution">{block.attribution}</p>}
         </aside>
       )}
       {type === 'ArticleContentContentBlocksSpecTableLayout' && (
-        <div class="spec-table">
+        <div class:list={['spec-table', 'article-block', widthClass]}>
           {block.heading && <h2>{block.heading}</h2>}
           <table><tbody>{(block.rows || []).map(row => <tr><th scope="row">{row.label}</th><td>{row.value}</td></tr>)}</tbody></table>
         </div>
       )}
       {type === 'ArticleContentContentBlocksCallToActionLayout' && (
-        <section class="article-cta">
+        <section class:list={['article-cta', 'article-block', widthClass]}>
           {block.heading && <h2>{block.heading}</h2>}
           {block.description && <p>{block.description}</p>}
           {linkUrl && block.link?.title && <a href={linkUrl} target={block.link.target === '_blank' ? '_blank' : undefined} rel={block.link.target === '_blank' ? 'noopener noreferrer' : undefined}>{block.link.title}</a>}
@@ -71,6 +73,7 @@ for (const block of blocks) {
   .article-image.wide { margin-inline: 0; }
   .article-image--full-width { width: 100cqw; margin-inline: calc((100% - 100cqw) / 2); }
   .media-text { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 2rem; margin: 2.5rem 0; }
+  .media-text > * { min-width: 0; }
   .media-text img { display: block; width: 100%; height: auto; }
   .media-text.reverse img { order: 2; }
   .media-text h2, .spec-table h2, .article-cta h2 { margin-top: 0; }
@@ -84,6 +87,9 @@ for (const block of blocks) {
   .spec-table th { width: 40%; }
   .article-cta { margin: 2.5rem 0; padding: 1.5rem; background: #eaf0f2; }
   .article-cta a { display: inline-block; padding: .6rem 1rem; background: #a95412; color: #fff; font-weight: 700; text-decoration: none; }
+  .article-block { min-width: 0; overflow-wrap: anywhere; }
+  .article-block.article-block--wide { width: min(1440px, calc(100cqw - 3rem)); margin-inline: calc((100% - min(1440px, calc(100cqw - 3rem))) / 2); }
+  .article-block.article-block--full-width { width: 100cqw; margin-inline: calc((100% - 100cqw) / 2); }
   @media (max-width: 620px) {
     .article-image.wide { margin-inline: 0; }
     .media-text { grid-template-columns: 1fr; gap: 1rem; }

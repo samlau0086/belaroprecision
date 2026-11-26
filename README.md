@@ -384,6 +384,24 @@ Blog 列表在构建期读取已发布文章，最多展示前 12 篇；分类�
 
 文章详情在构建时读取 ACF PRO 的 `articleContent.contentBlocks`，通过 Astro 模块按顺序呈现富文本、标题、图片、图文组合、提示/引用、参数表和行动引导。字段组须启用 WPGraphQL for ACF 并公开 `articleContent`，Flexible Content 布局及字段名必须与 `src/lib/blog.mjs` 的查询匹配；参数表的参数值 GraphQL 字段为 `value`。后台字段变更需同步修改查询。没有内容模块的旧文章使用 WordPress `content`；有模块的文章不会拼接旧正文，未知布局构建时输出警告且不会自动显示。富文本仍执行 HTML 白名单清理，模块链接和图片地址限制为安全协议。静态文章正文以最近一次构建为准，浏览器读取评论时不会覆盖它；发布、更新或删除文章后仍需重新构建部署。
 
+#### Post ACF 通用宽度设置
+
+富文本（`RichText`）、标题（`Heading`）、图文组合（`MediaText`）、提示/引用（`Callout`）、参数表（`SpecTable`）和行动引导（`CallToAction`）均支持模块级宽度设置。宽度直接作用于原有模块，不改变标题层级、图文顺序、表格语义和链接行为；标题与内容一起展开，图文组合在移动端仍为单列。
+
+在上述每个现有 Layout 中添加 Select 子字段，标签为“展示宽度”，ACF 字段名和 GraphQL 字段名均为 `width`，开启 GraphQL 显示，默认值 `content`，返回格式 Value，关闭多选。Choices：
+
+```text
+content : 正文宽度
+wide : 宽幅
+full_width : 全宽
+```
+
+`content` 与正文对齐；`wide` 居中展开，最大 1440px，窄屏保留 24px 左右边距；`full_width` 贴合文章页面左右边缘。字段为空、未设置或值无效时使用正文宽度；兼容单值和数组返回。全宽采用已有文章页面容器的可用宽度，避免将滚动条计入宽度。图片和固定背景继续使用各自已有的宽度字段。
+
+**发布前先在 WordPress 配置好这 6 个 `width` 字段，并在 GraphiQL 中确认对应 Layout 类型可查询 `width`，再构建部署前端。** 本次已更新 `src/lib/blog.mjs` 的 6 个查询片段，后台 schema 缺少任意一个字段均会导致构建失败；字段存在但旧文章尚未设置值不影响构建与显示。本仓库不包含后台字段组定义，本次未修改真实 WordPress 配置，也未新增依赖或环境变量。
+
+回归测试使用模拟 GraphQL 构建页面，验证 6 种模块的正文、宽幅与全宽布局，覆盖 320–2560px、单值/数组返回、空值/无效值回退、长文本、图文响应式排列和页面横向溢出；命令见下方固定背景模块测试说明。
+
 #### Post ACF 固定背景内容模块
 
 沿用之前为 Post 定义的 ACF PRO Flexible Content 方案，在 **ACF → Field Groups → Blog Article Content → content_blocks** 中手动新增 Layout，不创建 WordPress Widget、Gutenberg Block 或额外插件，不新建字段组。保留原字段组的 Post Type 等于 Post 显示规则和 `articleContent` GraphQL 配置。

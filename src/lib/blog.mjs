@@ -17,13 +17,13 @@ export const articleContentFields = `
   articleContent {
     contentBlocks {
       __typename
-      ... on ArticleContentContentBlocksRichTextLayout { content }
-      ... on ArticleContentContentBlocksHeadingLayout { text level }
+      ... on ArticleContentContentBlocksRichTextLayout { content width }
+      ... on ArticleContentContentBlocksHeadingLayout { text level width }
       ... on ArticleContentContentBlocksImageLayout { image { node { sourceUrl altText } } caption width }
-      ... on ArticleContentContentBlocksMediaTextLayout { heading content image { node { sourceUrl altText } } imagePosition }
-      ... on ArticleContentContentBlocksCalloutLayout { variant content attribution }
-      ... on ArticleContentContentBlocksSpecTableLayout { heading rows { label value } }
-      ... on ArticleContentContentBlocksCallToActionLayout { heading description link { url title target } }
+      ... on ArticleContentContentBlocksMediaTextLayout { heading content width image { node { sourceUrl altText } } imagePosition }
+      ... on ArticleContentContentBlocksCalloutLayout { variant content attribution width }
+      ... on ArticleContentContentBlocksSpecTableLayout { heading width rows { label value } }
+      ... on ArticleContentContentBlocksCallToActionLayout { heading description width link { url title target } }
       ... on ArticleContentContentBlocksFixedBackgroundLayout {
         heading description buttonType buttonLabel link { url title target }
         document { node { mediaItemUrl } }

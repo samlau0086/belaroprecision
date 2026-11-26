@@ -80,6 +80,19 @@ async function assertBackgroundScroll(page) {
 
 test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全内容', { timeout: 180_000 }, async t => {
   const type = name => `ArticleContentContentBlocks${name}Layout`;
+  const widthCases = ['content', 'wide', 'full_width', ['wide'], ['full_width'], undefined, 'invalid'];
+  const widthLayouts = ['RichText', 'Heading', 'MediaText', 'Callout', 'SpecTable', 'CallToAction'];
+  const widthBlocks = widthLayouts.flatMap(layout => widthCases.map((width, index) => {
+    const label = `Layout width: ${layout} ${index}`;
+    return {
+      __typename: type(layout), width, heading: label, text: label, level: index % 2 ? 'h2' : 'h3',
+      content: layout === 'Callout' ? label : `<p>${label}</p><p>${'LongWord'.repeat(60)}</p>`,
+      variant: index % 2 ? 'quote' : 'note', attribution: 'Width test author',
+      image: { node: { sourceUrl: '/images/machined-parts/machined-block-main.webp', altText: label } },
+      imagePosition: 'right', rows: [{ label: 'Material', value: 'Aluminum' }],
+      description: 'Width test description', link: { url: '/contact/', title: 'Width test action' },
+    };
+  }));
   const posts = [
     { databaseId: 1, slug: 'acf-test', title: 'ACF article', content: '<p>Legacy content</p>', excerpt: 'Example', date: '2026-01-01T00:00:00Z', categories: { nodes: [] }, articleContent: { contentBlocks: [
       { __typename: type('RichText'), content: '<p>Rich content</p><script>bad()</script>' },
@@ -97,6 +110,7 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
       { __typename: type('FixedBackground'), heading: 'Long widget content', description: 'LongWord'.repeat(70), buttonType: 'document', document: { node: { mediaItemUrl: '/specification.pdf' } }, minHeight: 100, width: 'wide' },
       ...['full_width', ['full_width']].map(width => ({ __typename: type('FixedBackground'), heading: 'Full width background', backgroundImage: { node: { sourceUrl: '/images/machined-parts/machined-block-main.webp' } }, width })),
       ...['content', 'full_width', ['full_width'], 'invalid'].map(width => ({ __typename: type('Image'), image: { node: { sourceUrl: '/images/machined-parts/machined-block-main.webp', altText: 'Width test image' } }, caption: 'Width test caption', width })),
+      ...widthBlocks,
     ] } },
     { databaseId: 2, slug: 'legacy-test', title: 'Legacy', content: '<p>Old article content</p>', excerpt: '', date: '2026-01-01T00:00:00Z', categories: { nodes: [] }, articleContent: null },
   ];
@@ -140,6 +154,10 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
     assert.match(html, /<h3[^>]*>Section heading<\/h3>/);
     assert.match(html, /href="\/contact\/"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
     assert.match(articleContentFields, /on ArticleContentContentBlocksFixedBackgroundLayout/);
+    for (const layout of widthLayouts) {
+      const fragment = articleContentFields.match(new RegExp(`on ${type(layout)} \\{([^\n]+)`));
+      assert.ok(fragment && /\bwidth\b/.test(fragment[1]), `${layout} 的 GraphQL 查询包含 width`);
+    }
     for (const field of ['buttonType', 'buttonLabel', 'document { node { mediaItemUrl } }', 'backgroundImage { node { sourceUrl altText } }', 'minHeight width']) assert.ok(articleContentFields.includes(field), field);
     assert.match(html, /href="https:\/\/example.com\/specification.pdf"/);
     assert.match(html, /class="fixed-background fixed-background--full-width"/);
@@ -244,6 +262,34 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         assert.equal(await page.getByText('Runtime replacement').count(), 0);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
         const articleBounds = await page.locator('.article-content').boundingBox();
+        const layoutBlocks = page.locator('.article-block').filter({ hasText: 'Layout width:' });
+        assert.equal(await layoutBlocks.count(), widthBlocks.length);
+        for (let index = 0; index < widthBlocks.length; index++) {
+          const block = layoutBlocks.nth(index);
+          const data = widthBlocks[index];
+          const value = Array.isArray(data.width) ? data.width[0] : data.width;
+          const pageWidth = await page.evaluate(() => document.documentElement.clientWidth);
+          const expectedWidth = value === 'full_width' ? pageWidth : value === 'wide' ? Math.min(1440, pageWidth - 48) : articleBounds.width;
+          const bounds = await block.boundingBox();
+          assert.ok(Math.abs(bounds.width - expectedWidth) < 1 && Math.abs(bounds.x - (pageWidth - expectedWidth) / 2) < 1, `${width}px ${data.__typename} ${JSON.stringify(data.width)} 宽度及居中正确`);
+          assert.ok(await block.evaluate(element => element.scrollWidth <= element.clientWidth + 1), '模块内容不溢出');
+          if (data.__typename === type('Heading')) assert.equal(await block.evaluate(element => element.tagName.toLowerCase()), data.level, '保留标题语义');
+          if (data.__typename === type('MediaText')) {
+            const image = block.locator('img');
+            await image.evaluate(element => element.decode());
+            const imageBounds = await image.boundingBox();
+            const textBounds = await block.locator('div').first().boundingBox();
+            if (width <= 620) assert.ok(imageBounds.y + imageBounds.height <= textBounds.y + 1, '移动端图文单列且图片在前');
+            else assert.ok(textBounds.x + textBounds.width <= imageBounds.x + 1, '桌面端保留右图排列');
+          }
+        }
+        if (process.env.BLOG_SCREENSHOT_DIR) {
+          for (const layout of widthLayouts) {
+            await layoutBlocks.filter({ hasText: `Layout width: ${layout} 2` }).scrollIntoViewIfNeeded();
+            await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `layout-${layout}-${width}.png`) });
+          }
+          await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+        }
         const widgets = page.locator('.fixed-background');
         assert.equal(await widgets.count(), 7);
         const wideBounds = await widgets.nth(0).boundingBox();
