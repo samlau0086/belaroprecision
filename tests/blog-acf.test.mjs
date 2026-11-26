@@ -8,17 +8,20 @@ import { join } from 'node:path';
 import { extname } from 'node:path';
 import { articleContentFields } from '../src/lib/blog.mjs';
 
-// 同一视口区域在滚动后应显示相同背景；关闭图片后必须不同，避免空白误通过。
-async function assertBackgroundScroll(page, fixed = true) {
+// 同时比较视口和容器内的取样，区分视差、固定背景与普通滚动。
+async function assertBackgroundScroll(page, parallax = true) {
   const widget = page.locator('.fixed-background').first();
   const content = widget.locator('.fixed-background__content');
   await content.evaluate(element => { element.style.visibility = 'hidden'; });
   const top = await widget.evaluate(element => element.getBoundingClientRect().top + scrollY);
   await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), top - 200);
+  const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await settle();
   const bounds = await widget.boundingBox();
+  const offsetBefore = await widget.evaluate(element => Number.parseFloat(element.style.getPropertyValue('--background-offset')));
   const clip = { x: bounds.x + 8, y: 260, width: Math.min(120, bounds.width - 16), height: 60 };
   // 先截取视口再裁剪，避免 screenshot.clip 使用文档坐标而改变固定背景的取样位置。
-  const sample = async () => {
+  const sample = async (region = clip) => {
     const screenshot = await page.screenshot();
     return page.evaluate(async ({ data, clip }) => {
       const image = new Image();
@@ -30,14 +33,25 @@ async function assertBackgroundScroll(page, fixed = true) {
       const scale = image.naturalWidth / innerWidth;
       canvas.getContext('2d').drawImage(image, clip.x * scale, clip.y * scale, clip.width * scale, clip.height * scale, 0, 0, clip.width, clip.height);
       return canvas.toDataURL();
-    }, { data: screenshot.toString('base64'), clip });
+    }, { data: screenshot.toString('base64'), clip: region });
   };
   const before = await sample();
+  const containerBefore = await sample({ ...clip, y: bounds.y + 140 });
+  if (process.env.BLOG_SCREENSHOT_DIR) {
+    await content.evaluate(element => { element.style.removeProperty('visibility'); });
+    await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `parallax-${page.viewportSize().width}-${parallax ? 'enabled' : 'reduced'}-before.png`) });
+    await content.evaluate(element => { element.style.visibility = 'hidden'; });
+  }
   await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), top - 100);
+  await settle();
   const afterBounds = await widget.boundingBox();
   assert.ok(Math.abs(bounds.y - afterBounds.y - 100) < 1, '模块随页面滚动 100px');
+  const offsetAfter = await widget.evaluate(element => Number.parseFloat(element.style.getPropertyValue('--background-offset')));
+  assert.ok(Math.abs(offsetAfter - offsetBefore - (parallax ? 50 : 0)) < 1, '背景相对容器的视差位移符合预期');
   const after = await sample();
-  assert.equal(after === before, fixed, `${page.viewportSize().width}px ${fixed ? '滚动后同一视口区域的背景像素保持不变' : '减少动态效果时背景随模块滚动'}`);
+  assert.ok(after !== before, '背景实际移动，不是固定在屏幕上');
+  const containerAfter = await sample({ ...clip, y: afterBounds.y + 140 });
+  assert.equal(containerAfter !== containerBefore, parallax, `${page.viewportSize().width}px ${parallax ? '容器内图片裁切随滚动改变' : '减少动态效果时图片与容器同步滚动'}`);
   const image = await widget.evaluate(element => {
     const value = element.style.getPropertyValue('--fixed-background-image');
     element.style.setProperty('--fixed-background-image', 'none');
@@ -47,7 +61,16 @@ async function assertBackgroundScroll(page, fixed = true) {
   await widget.evaluate((element, value) => element.style.setProperty('--fixed-background-image', value), image);
   await content.evaluate(element => { element.style.removeProperty('visibility'); });
   if (process.env.BLOG_SCREENSHOT_DIR) {
-    await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `fixed-background-${page.viewportSize().width}-${fixed ? 'fixed' : 'reduced'}.png`) });
+    await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `parallax-${page.viewportSize().width}-${parallax ? 'enabled' : 'reduced'}-after.png`) });
+  }
+  for (const y of [top - page.viewportSize().height + 40, top + bounds.height - 40]) {
+    await page.evaluate(top => window.scrollTo({ top, behavior: 'instant' }), y);
+    await settle();
+    assert.equal(await widget.evaluate(element => {
+      const style = getComputedStyle(element, '::before');
+      const offset = style.transform === 'none' ? 0 : new DOMMatrixReadOnly(style.transform).m42;
+      return parseFloat(style.top) + offset <= 1 && parseFloat(style.bottom) - offset <= 1;
+    }), true, '进入和离开视口时背景仍覆盖整个模块');
   }
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 }
@@ -144,6 +167,7 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
     try {
       browser = await chromium.launch({ headless: true });
       const page = await browser.newPage();
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
       const baseUrl = `http://127.0.0.1:${staticServer.address().port}`;
       const errors = [];
       const graphqlRequests = [];
@@ -197,6 +221,8 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
       await noJsPage.goto(`${baseUrl}/category/dfm-engineering/`);
       assert.equal(await noJsPage.locator('[data-blog-card]:visible h2').textContent(), 'ACF article');
       assert.equal(await noJsPage.locator('[data-blog-filters]').isVisible(), true);
+      await noJsPage.goto(`${baseUrl}/post/acf-test/`);
+      assert.equal(await noJsPage.locator('.fixed-background').first().evaluate(element => getComputedStyle(element, '::before').transform), 'matrix(1, 0, 0, 1, 0, 0)');
       await noJs.close();
       for (const width of [320, 390, 768, 1440, 2560]) {
         await page.setViewportSize({ width, height: 900 });
@@ -226,7 +252,7 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         assert.equal((await widgets.nth(4).locator('a').textContent()).trim(), 'Download document');
         assert.equal(await widgets.nth(0).locator('h2').evaluate(element => getComputedStyle(element).color), 'rgb(255, 255, 255)');
         assert.equal(await widgets.nth(0).locator('a').evaluate(element => getComputedStyle(element).color), 'rgb(255, 255, 255)');
-        assert.equal(await widgets.nth(0).evaluate(element => getComputedStyle(element, '::before').position), 'fixed');
+        assert.equal(await widgets.nth(0).evaluate(element => getComputedStyle(element, '::before').position), 'absolute');
         const imageLoaded = await widgets.nth(0).evaluate(async element => {
           const url = getComputedStyle(element, '::before').backgroundImage.slice(5, -2);
           const image = new Image();
@@ -251,10 +277,10 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
       await page.emulateMedia({ reducedMotion: 'reduce' });
       assert.equal(await page.locator('.fixed-background').first().evaluate(element => getComputedStyle(element, '::before').position), 'absolute');
       await assertBackgroundScroll(page, false);
-      const touch = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+      const touch = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'no-preference' });
       const touchPage = await touch.newPage();
       await touchPage.goto(`${baseUrl}/post/acf-test/`);
-      assert.equal(await touchPage.locator('.fixed-background').first().evaluate(element => getComputedStyle(element, '::before').position), 'fixed');
+      assert.equal(await touchPage.locator('.fixed-background').first().evaluate(element => getComputedStyle(element, '::before').position), 'absolute');
       await touchPage.locator('.fixed-background').first().evaluate(async element => {
         const image = new Image();
         image.src = getComputedStyle(element, '::before').backgroundImage.slice(5, -2);

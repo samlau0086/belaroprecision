@@ -46,10 +46,37 @@ const newTab = !isDocument && block.link?.target === '_blank';
   </div>
 </section>
 
+<script>
+  const backgrounds = [...document.querySelectorAll<HTMLElement>('.fixed-background')];
+  if (backgrounds.length) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      // 先统一读取布局，再写入偏移，避免多个模块反复触发布局计算。
+      const measurements = backgrounds.map(element => ({ element, bounds: element.getBoundingClientRect() }));
+      for (const { element, bounds } of measurements) {
+        const travel = reducedMotion.matches ? 0 : (window.innerHeight + bounds.height) * 0.5;
+        const offset = Math.max(-travel / 2, Math.min(travel / 2, (window.innerHeight / 2 - bounds.top - bounds.height / 2) * 0.5));
+        element.style.setProperty('--background-travel', `${travel}px`);
+        element.style.setProperty('--background-offset', `${offset}px`);
+      }
+    };
+    const scheduleUpdate = () => { if (!frame) frame = requestAnimationFrame(update); };
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+    window.addEventListener('pageshow', scheduleUpdate);
+    reducedMotion.addEventListener('change', scheduleUpdate);
+    const observer = new ResizeObserver(scheduleUpdate);
+    backgrounds.forEach(element => observer.observe(element));
+    update();
+  }
+</script>
+
 <style>
-  /* 裁剪固定背景层，但不创建 transform 包含块，保持背景相对视口固定。 */
-  .fixed-background { position: relative; isolation: isolate; clip-path: inset(0); display: grid; place-items: center; margin: 2.5rem 0; padding: 3rem 1.5rem; background-color: #26384a; color: #fff; text-align: center; }
-  .fixed-background::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-image: var(--fixed-background-image, none); background-position: center; background-size: cover; }
+  /* 背景上下留出视差行程，滚动到模块边缘时也不会露出空白。 */
+  .fixed-background { position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: center; margin: 2.5rem 0; padding: 3rem 1.5rem; background-color: #26384a; color: #fff; text-align: center; }
+  .fixed-background::before { content: ''; position: absolute; inset: calc(var(--background-travel, 0px) / -2) 0; z-index: -1; pointer-events: none; background-image: var(--fixed-background-image, none); background-position: center; background-size: cover; transform: translate3d(0, var(--background-offset, 0px), 0); }
   .fixed-background::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: rgb(0 0 0 / 55%); }
   .fixed-background--wide { width: min(1440px, calc(100vw - 3rem)); margin-inline: calc((100% - min(1440px, calc(100vw - 3rem))) / 2); }
   .fixed-background .fixed-background__content { min-width: 0; max-width: 720px; overflow-wrap: anywhere; }
@@ -62,8 +89,8 @@ const newTab = !isDocument && block.link?.target === '_blank';
     .fixed-background { padding: 2rem 1.25rem; }
     .fixed-background .fixed-background__content h2 { font-size: 1.6rem; }
   }
-  /* 仅在用户明确要求减少动态效果时关闭固定滚动效果。 */
+  /* 无脚本时自然显示静态背景；减少动态效果时同步移除视差行程。 */
   @media (prefers-reduced-motion: reduce) {
-    .fixed-background::before { position: absolute; }
+    .fixed-background::before { inset: 0; transform: none; }
   }
 </style>
