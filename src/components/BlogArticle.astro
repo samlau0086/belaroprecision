@@ -383,8 +383,8 @@ const blocks = post?.articleContent?.contentBlocks;
 </script>
 
 <style>
-  .article-page { min-height: 70vh; background: #f6f8fa; padding: 2rem 1.25rem 5rem; }
-  .article-shell { max-width: 860px; margin: 0 auto; }
+  .article-page { min-height: 70vh; background: #f6f8fa; padding: 2rem 0 5rem; }
+  .article-shell { max-width: 1208px; margin: 0 auto; padding-inline: 1.5rem; }
   .breadcrumbs { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 2.5rem; color: #687788; font-size: .9rem; }
   .breadcrumbs a { color: #3f5369; }
   .article-status { min-height: 1.5rem; color: #536273; }
@@ -434,7 +434,6 @@ const blocks = post?.articleContent?.contentBlocks;
   .submit-comment { min-height: 44px; padding: .65rem 1.1rem; border: 1px solid #cf7621; border-radius: 3px; background: #cf7621; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
   .submit-comment:disabled, .comments-list :global(.vote-button:disabled) { opacity: .55; cursor: wait; }
   @media (max-width: 620px) {
-    .article-page { padding-inline: 1rem; }
     .article-header h1 { font-size: 2.25rem; }
     .comments-list :global(.comment) { padding-left: .75rem; }
     .comments-list :global(.comment .comment) { margin-left: .55rem; }

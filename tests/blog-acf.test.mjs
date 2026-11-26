@@ -77,13 +77,19 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
           : { post: { ...posts[0], content: '<p>Runtime replacement</p>', comments: { nodes: [] } } };
         return route.fulfill({ json: { data } });
       });
-      for (const width of [390, 1440]) {
+      for (const width of [390, 768, 1440, 2560]) {
         await page.setViewportSize({ width, height: 900 });
+        await page.goto(`http://127.0.0.1:${staticServer.address().port}/blog/`);
+        const listBounds = await page.locator('.blog-grid').boundingBox();
         await page.goto(`http://127.0.0.1:${staticServer.address().port}/blog/article/acf-test/`);
         await page.locator('[data-comments-section]:visible').waitFor();
         assert.equal(await page.getByText('Rich content').count(), 1);
         assert.equal(await page.getByText('Runtime replacement').count(), 0);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+        const articleBounds = await page.locator('[data-article]').boundingBox();
+        assert.ok(Math.abs(articleBounds.x - listBounds.x) < 1, `${width}px 左侧对齐`);
+        assert.ok(Math.abs(articleBounds.width - listBounds.width) < 1, `${width}px 内容宽度一致`);
+        if (process.env.BLOG_SCREENSHOT_DIR) await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `article-width-${width}.png`), fullPage: true });
       }
     } finally {
       await browser?.close();
