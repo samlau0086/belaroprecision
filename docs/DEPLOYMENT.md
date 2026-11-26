@@ -126,7 +126,7 @@ location / {
 
 若代理运行在另一个容器，代理内的 `127.0.0.1` 指向代理自身，需要按现有 Docker 网络调整上游连接方式。临时需要公网 HTTP 访问时可将 `HTTP_BIND_ADDRESS` 改为 `0.0.0.0`，并配置对应网络访问规则；这不会自动生成 HTTPS。不要把其他已使用的 80/443 端口直接改给本容器。
 
-当前站点 Canonical 域名固定为 `https://belaroprecision.com`；更换域名须同步修改 `astro.config.mjs`、`src/config.ts` 和 `public/robots.txt`。容器支持 Astro 目录路由、未知页面 HTTP 404、HTML/Markdown 内容协商和 `/_astro/` 哈希资源长期缓存；构建生成 sitemap、Markdown 和 Nginx 路由映射，静态发布 robots.txt，页面响应包含 sitemap Link 头。页面使用 `Cache-Control: no-store` 与 `Vary: Accept`，Cloudflare 不得用全站强制缓存覆盖。详细实现与验证命令见 [AGENT-MARKDOWN.md](AGENT-MARKDOWN.md)。没有自定义 404 页面。
+当前站点 Canonical 域名固定为 `https://belaroprecision.com`；更换域名须同步修改 `astro.config.mjs`、`src/config.ts` 和 `public/robots.txt`。容器支持 Astro 目录路由、行业化自定义 404、未知页面 HTTP 404、HTML/Markdown 内容协商和 `/_astro/` 哈希资源长期缓存；构建生成 sitemap、Markdown 和 Nginx 路由映射，静态发布 robots.txt，页面响应包含 sitemap Link 头。页面使用 `Cache-Control: no-store` 与 `Vary: Accept`，Cloudflare 不得用全站强制缓存覆盖。自定义错误页为 `src/pages/404.astro`，使用 CNC 零件素材，不加入 sitemap 或 Markdown 导出，并由 Nginx 与 Pages Worker 保持 404 状态返回。详细实现与验证命令见 [AGENT-MARKDOWN.md](AGENT-MARKDOWN.md)。
 
 ## 首次发布与验收
 

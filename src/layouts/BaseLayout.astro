@@ -6,7 +6,7 @@ import BackToTop from '../components/BackToTop.astro';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import LiveChat from '../components/LiveChat.astro';
 import AdAttribution from '../components/AdAttribution.astro';
-const { title = 'Precision CNC Machining for OEM Manufacturers', description = site.description, canonical } = Astro.props;
+const { title = 'Precision CNC Machining for OEM Manufacturers', description = site.description, canonical, noindex = false } = Astro.props;
 const pageTitle = title.includes('Belaro') ? title : `${title} | Belaro Precision`;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toString();
 ---
@@ -18,7 +18,8 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site.domain).toStr
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalUrl} />
+    {!noindex && <link rel="canonical" href={canonicalUrl} />}
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <meta name="theme-color" content="#101f35" />
     <script is:inline>window.dataLayer = window.dataLayer || [];</script>
     {googleTagManagerId && <script is:inline>

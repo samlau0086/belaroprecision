@@ -55,8 +55,12 @@ export async function buildMarkdown(pages, dir, site) {
   const output = new URL('_agent-markdown/', dir);
   await mkdir(output, { recursive: true });
   const routes = [];
+  const seenPaths = new Set();
   for (const [index, { pathname }] of pages.entries()) {
     const path = new URL(pathname, site).pathname;
+    if (/^\/(?:blog\/article(?:\/|$)|404(?:\.html|\/|$))/.test(path)) continue;
+    if (seenPaths.has(path)) continue;
+    seenPaths.add(path);
     const canonical = path.endsWith('/') ? path : `${path}/`;
     const html = await readFile(new URL(`.${canonical}index.html`, dir), 'utf8');
     const filename = `${index}.md`;

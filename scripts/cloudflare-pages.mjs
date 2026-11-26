@@ -21,8 +21,12 @@ export async function buildPages(pages, dir, site) {
   // 仅允许处理独立的 Pages 输出目录，避免清理 VPS 产物或其他用户目录。
   if (resolve(fileURLToPath(dir)) !== resolve('dist-pages')) throw new Error('Pages 输出目录必须为 dist-pages');
   const content = [];
+  const seenPaths = new Set();
   for (const [index, { pathname }] of pages.entries()) {
     const path = new URL(pathname, site).pathname;
+    if (/^\/(?:blog\/article(?:\/|$)|404(?:\.html|\/|$))/.test(path)) continue;
+    if (seenPaths.has(path)) continue;
+    seenPaths.add(path);
     content.push({
       path: path.endsWith('/') ? path : `${path}/`,
       markdown: await readFile(new URL(`_agent-markdown/${index}.md`, dir), 'utf8'),
@@ -48,5 +52,6 @@ export async function buildPages(pages, dir, site) {
   Cache-Control: no-store
   X-Robots-Tag: noindex
 `);
-  await writeFile(new URL('404.html', dir), '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>404 | Belaro Precision</title><h1>Page not found</h1><a href="/">Belaro Precision</a></html>\n');
+  // 保留 Astro 生成的行业化错误页，避免被简陋的静态占位页覆盖。
+  await readFile(new URL('404.html', dir), 'utf8');
 }

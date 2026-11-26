@@ -46,7 +46,12 @@ export function createWorker(pages, site) {
         return respond('Bad Request', 400, 'text/plain; charset=utf-8');
       }
       const page = routes.get(path);
-      if (!page) return respond('<!doctype html><html lang="en"><title>404 | Belaro Precision</title><h1>Page not found</h1><a href="/">Belaro Precision</a></html>', 404, 'text/html; charset=utf-8');
+      if (!page) {
+        headers.set('X-Robots-Tag', 'noindex');
+        // 无论 Accept 为何都显示同一错误页，且不转发条件头或 Range。
+        const asset = await env.ASSETS.fetch(new Request(new URL('/404.html', url), { method: request.method }));
+        return respond(asset.body, 404, 'text/html; charset=utf-8');
+      }
 
       const oldArticle = /^\/blog\/article\/([a-zA-Z0-9][a-zA-Z0-9-]*)\/?$/.exec(path);
       if (oldArticle) {

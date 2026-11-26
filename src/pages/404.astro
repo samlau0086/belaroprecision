@@ -1,0 +1,114 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import partsImage from '../assets/images/pages/services/services-cnc-part-families-hero.webp';
+---
+
+<BaseLayout title="404 - Page Not Found" description="This page could not be located. Return to Belaro Precision for drawing-based CNC machining, machined parts and project enquiries." noindex>
+  <Header />
+  <main class="not-found-page" id="main-content">
+    <section class="error-section" aria-labelledby="error-title">
+      <div class="container">
+        <div class="error-register"><span>BELARO PRECISION / PAGE LOCATION</span><span class="error-status">404 / NOT FOUND</span></div>
+        <div class="error-layout">
+          <div class="error-copy">
+            <p class="error-kicker">A little off the toolpath.</p>
+            <h1 id="error-title">This page is<br /><em>out of position.</em></h1>
+            <p class="error-description">We couldn’t locate the page you’re looking for. The link may have changed, or the address may be incorrect.</p>
+            <div class="error-actions">
+              <a class="button button-orange" href="/">Back to Home <span aria-hidden="true">&#8594;</span></a>
+              <a class="text-link" href="/services/">Explore Capabilities <span aria-hidden="true">&#8599;</span></a>
+            </div>
+          </div>
+          <div class="error-drawing" aria-hidden="true">
+            <div class="drawing-label"><span>REFERENCE / 404</span><span>PAGE NOT LOCATED</span></div>
+            <div class="error-number"><span>4</span><span class="missing-part">0</span><span>4</span></div>
+            <div class="drawing-datum"><span>LOCATION UNDEFINED</span></div>
+            <div class="drawing-photo"><Image src={partsImage} alt="" widths={[400, 640, 960]} sizes="(max-width: 800px) calc(100vw - 48px), 560px" loading="eager" decoding="async" /></div>
+            <div class="drawing-footer"><span>CNC MILLING / CNC TURNING</span><span>BELARO</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="error-routes" aria-labelledby="routes-title">
+      <div class="container">
+        <div class="routes-heading"><h2 id="routes-title">Let’s get you back on track.</h2><p>Your next component starts here.</p></div>
+        <div class="routes-grid">
+          <a href="/machined-parts/"><span class="route-index">01 / COMPONENTS</span><span class="route-title">Machined Parts <span aria-hidden="true">&#8599;</span></span><span class="route-description">Brackets, shafts, housings &amp; more.</span></a>
+          <a href="/quality/"><span class="route-index">02 / INSPECTION</span><span class="route-title">Quality &amp; Inspection <span aria-hidden="true">&#8599;</span></span><span class="route-description">Drawing review through to delivery.</span></a>
+          <a href="/contact/#rfq-form"><span class="route-index">03 / YOUR PROJECT</span><span class="route-title">Request a Quote <span aria-hidden="true">&#8599;</span></span><span class="route-description">Share your drawing and requirements.</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .not-found-page { letter-spacing: 0; }
+  .error-section { background: #f4f6f8; padding: 28px 0 64px; }
+  .error-register { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid #d7dde3; color: #536170; font: 600 16px var(--display); }
+  .error-status { color: #9b4413; }
+  .error-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; padding-top: 44px; }
+  .error-copy, .error-drawing { min-width: 0; }
+  .error-kicker { color: #9b4413; font-weight: 700; margin-bottom: 16px; }
+  .error-copy h1 { font-size: 48px; line-height: 1.16; letter-spacing: 0; margin: 0 0 24px; }
+  .error-copy h1 em { color: var(--ink); }
+  .error-description { color: #536170; max-width: 440px; margin-bottom: 30px; }
+  .error-actions { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
+  .error-actions .button { background: var(--orange); color: var(--navy); letter-spacing: 0; }
+  .error-actions .button:hover { background: #ff9b60; }
+  .error-drawing { position: relative; background-image: linear-gradient(#dfe4e9 1px, transparent 1px), linear-gradient(90deg, #dfe4e9 1px, transparent 1px); background-size: 28px 28px; padding: 18px 22px 0; }
+  .drawing-label, .drawing-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: #536170; font: 600 16px var(--display); }
+  .error-number { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; text-align: center; height: 188px; font: 800 164px/1 var(--display); color: var(--navy); }
+  .missing-part { position: relative; display: grid; place-items: center; height: 136px; width: 100%; border: 2px dashed #a54c19; border-radius: 50%; color: transparent; }
+  .missing-part::before, .missing-part::after { content: ''; position: absolute; background: #a54c19; }
+  .missing-part::before { width: calc(100% + 24px); height: 1px; }
+  .missing-part::after { height: calc(100% + 24px); width: 1px; }
+  .drawing-datum { border-top: 1px solid #a54c19; text-align: center; margin: 0 20px 16px; color: #9b4413; font-size: 16px; }
+  .drawing-datum span { background: #f4f6f8; padding: 0 10px; position: relative; top: -14px; }
+  .drawing-photo { margin: -12px -22px 0; }
+  .drawing-photo :global(img) { width: 100%; height: auto; mix-blend-mode: multiply; }
+  .drawing-footer { padding-block: 14px; border-top: 1px solid #cbd3dc; }
+  .error-routes { padding: 44px 0 64px; background: #fff; }
+  .routes-heading { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 26px; }
+  .routes-heading h2 { font-size: 26px; line-height: 1.35; letter-spacing: 0; margin: 0; }
+  .routes-heading p { margin: 0; color: #536170; }
+  .routes-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+  .routes-grid > a { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 2px solid var(--line); }
+  .route-index { font-size: 16px; color: #536170; }
+  .route-title { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font: 700 20px/1.4 var(--display); }
+  .route-title > span { color: #9b4413; }
+  .route-description { color: #536170; }
+  .routes-grid > a:hover { border-color: var(--orange); }
+  .error-actions a:focus-visible, .routes-grid > a:focus-visible { outline: 3px solid #a54c19; outline-offset: 6px; }
+  @media (max-width: 1100px) {
+    .error-layout { gap: 32px; }
+    .error-copy h1 { font-size: 40px; }
+    .error-number { font-size: 128px; height: 160px; }
+    .missing-part { height: 112px; }
+  }
+  @media (max-width: 800px) {
+    .error-section { padding-bottom: 40px; }
+    .error-register { flex-wrap: wrap; }
+    .error-layout { grid-template-columns: 1fr; gap: 36px; padding-top: 32px; }
+    .error-copy h1 { font-size: 38px; }
+    .error-description { max-width: 560px; }
+    .error-drawing { width: 100%; max-width: 560px; justify-self: center; }
+    .error-number { font-size: 144px; height: 170px; }
+    .missing-part { height: 120px; max-width: 140px; justify-self: center; }
+    .routes-grid { grid-template-columns: 1fr; gap: 26px; }
+    .error-routes { padding: 36px 0 56px; }
+  }
+  @media (max-width: 380px) {
+    :global(.footer-grid) { grid-template-columns: minmax(0, 1fr); }
+    :global(.footer-brand) { grid-column: auto; }
+    .error-copy h1 { font-size: 32px; }
+    .error-number { font-size: 104px; height: 132px; }
+    .missing-part { height: 90px; }
+    .error-drawing { padding-inline: 14px; }
+    .drawing-photo { margin-inline: -14px; }
+  }
+</style>
