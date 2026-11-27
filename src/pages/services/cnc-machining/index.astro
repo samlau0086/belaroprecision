@@ -71,7 +71,7 @@ const faqs = [
 
     <section class="section section-soft" aria-labelledby="parts-title">
       <div class="container">
-        <div class="section-intro"><span class="eyebrow">PARTS FOR INDUSTRIAL ASSEMBLIES</span><h2 id="parts-title">Does your part look familiar?</h2><p>Brackets, housings, shafts and more for automation, machinery, fluid systems and test equipment. These are representative visual references, not customer cases or stocked products.</p></div>
+        <div class="section-intro"><span class="eyebrow">PARTS FOR INDUSTRIAL ASSEMBLIES</span><h2 id="parts-title">Does your part look familiar?</h2><p>Explore illustrated brackets, housings, shafts and other component types for industrial equipment.</p></div>
         <div class="machining-parts">{machinedParts.map(part => <article><img src={`/images/machined-parts/${part.image}`} alt={`Representative ${part.title.toLowerCase()} for drawing-based CNC machining`} width="600" height="400" loading="lazy" decoding="async"/><h3>{part.title}</h3><p>{part.application}</p></article>)}</div>
       </div>
     </section>

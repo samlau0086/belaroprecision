@@ -108,7 +108,7 @@
 
 首页“代表性零件”、CNC Milling“典型零件”和 CNC Turning“典型零件”卡片直接复用 `public/images/machined-parts/` 中六类零件的主图，并通过 `src/data/machined-parts.ts` 的 `image` 字段保持类别与图片映射一致。
 
-Quality 页面按七项采购问题提供主题锚点、评审要点和询价入口，已移除未经确认的固定公差范围。检测方法示例不代表实际设备资产；设备、校准状态、文件可用性与检验覆盖率须在报价和订单阶段确认。当前缺少经企业核实的设备清单和报告样本，页面不承诺默认提供全部文件、正式 FAI/PPAP 或认证，后续取得确认资料后再补充。
+Quality 页面按七项采购问题提供主题锚点、评审要点和询价入口，已移除未经确认的固定公差范围和虚构的报告样本展示。检测方法示例不代表实际设备资产；设备、校准状态、文件可用性与检验覆盖率须在报价和订单阶段确认。当前缺少经企业核实的设备清单和报告样本，页面不承诺默认提供全部文件、正式 FAI/PPAP 或认证，后续取得确认资料后再补充。
 
 2026 年 11 月 23 日 Quality 配图补齐：用户 `webp/` 的 3 张新增图原样复制至 `src/assets/images/pages/quality/`，分别接入测量可达性、检验覆盖和偏差隔离评审区域。加上已复用图纸评审图及 6 张保留图，10 个规划图位均已展示；四个单图主题采用桌面图文双列、手机上下排列，新增图等比完整显示并懒加载，报告原图入口保持不变。来源和实际能力仍须核实，详见 [Quality 图片接入记录](docs/image-requirements/quality.md#5-实际接入记录)。
 
@@ -571,7 +571,7 @@ Industries 页面位于 `src/pages/industries/index.astro`，保留首页引用�
 | --- | --- |
 | Industries 自动化、机械轴系、气动接口、测试设备 | `industry-automation-fixture`、`industry-machinery-shaft-assembly`、`industry-fluid-interface`、`industry-test-equipment-mounting` |
 | About 车间、3 轴、联动五轴、车床、团队 | `about-workshop-overview`、`about-3-axis-cnc`、`about-simultaneous-5-axis-cnc`、`about-cnc-lathe`、`about-team-at-work` |
-| Quality 检测设备、尺寸测量、报告、包装、标识 | `quality-inspection-tools`、`quality-critical-dimension-check`、`quality-dimensional-report-sample`、`quality-protective-packaging`、`quality-batch-identification` |
+| Quality 检测设备、尺寸测量、包装、标识 | `quality-inspection-tools`、`quality-critical-dimension-check`、`quality-protective-packaging`、`quality-batch-identification` |
 
 About 和 Quality 复用 `MediaGallery.astro`，桌面双列、手机单列；报告以完整原比例展示，可打开原始大图。页面已按要求移除所有 Illustrative 展示标签及相关图片 Alt 中的该表述，保留工艺说明；报告仍明确为样本，包装空白标签不代表真实批次记录。包装内容采用用户确认的单层加厚珍珠棉与硬纸箱方式；未增加设备型号、认证或检测能力承诺。
 
@@ -645,7 +645,7 @@ Production 补图与布局调整（2026 年 11 月 24 日）：Approve the order
 
 ### Illustrative 文案移除验证（2026 年 11 月 10 日）
 
-- 已移除 About、Quality、Industries、Machined Parts 的 Illustrative 展示文案及图片 Alt 中的该表述，保留工艺说明和检测报告样本名称。
+- About、Quality、Industries、Machined Parts 展示工艺和零件类型；示意内容需避免被理解为已验证的客户案例或设备资产。Quality 页面不再展示虚构的检测报告样本。
 - `npm run build` 通过；`node --test tests/about.test.mjs tests/industries.test.mjs tests/quality.test.mjs tests/machined-parts.test.mjs` 的 4 项浏览器测试全部通过，覆盖图片加载、链接及响应式布局；未部署。
 
 ### Astro audit 与图片优化验证（2026 年 11 月 8 日）

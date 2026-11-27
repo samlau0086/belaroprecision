@@ -47,7 +47,7 @@ export const materialPages: MaterialPage[] = [
         ['Lead restrictions & alternatives', 'If lead content is restricted, state the permitted composition and application requirements. Request a specific alternative for procurement and machining review; C360 must not be treated as a lead-free grade.'],
         ['Service environment', 'Identify fluid contact, operating conditions and any electrical, drinking-water or other compliance requirements. Suitability and supporting documentation require separate agreement.'],
       ] },
-      { id: 'components', title: 'Typical Brass Components', intro: 'Component families below describe possible drawing-based enquiries, not stocked products or certified end-use assemblies.', items: [
+      { id: 'components', title: 'Typical Brass Components', intro: 'Explore illustrated component families for drawing-based enquiries.', items: [
         ['Connectors & threaded adapters', 'Internal and external threads, ports, wrench flats and seating faces. Specify thread standard, engagement, sealing geometry and any leak-test requirement.'],
         ['Bushings & sleeves', 'Concentric bores, shoulders, grooves and mating diameters. Mark fit, wall thickness and surface requirements.'],
         ['Custom inserts & small bodies', 'Turned profiles, cross-holes, milled flats and mounting features. Identify small edges and passages where burrs could affect assembly.'],
@@ -89,7 +89,7 @@ export const materialPages: MaterialPage[] = [
         ['Carbon Steel 1045', 'Identify required hardness and any heat-treatment specification. Do not assume the same processing route or acceptance criteria as 1018.'],
         ['Alloy Steel 4140', 'Distinguish annealed, prehardened or other specified conditions. Include hardness range, test locations and any required material records.'],
       ] },
-      { id: 'components', title: 'Typical Carbon & Alloy Steel Components', intro: 'Representative drawing-based component families for equipment and machinery, not stocked products or verified customer projects.', items: [
+      { id: 'components', title: 'Typical Carbon & Alloy Steel Components', intro: 'Explore illustrated component families for equipment and machinery, quoted to your drawing.', items: [
         ['Shafts, pins & sleeves', 'Turned diameters, shoulders, bores and grooves reviewed for fit, runout, hardness and final surface requirements.'],
         ['Blocks, plates & mounting parts', 'Milled faces, pockets, slots and hole patterns reviewed for flatness, locating datums and machining access.'],
         ['Custom housings & bodies', 'Multi-face features, bores and threaded interfaces reviewed against material condition and critical load-bearing requirements.'],
@@ -131,7 +131,7 @@ export const materialPages: MaterialPage[] = [
         ['Titanium Grade 5', 'State the exact material specification and condition, including any additional acceptance requirements. Grade 5 does not automatically imply an ELI or implant specification.'],
         ['Material records', 'Request the required certificates and batch traceability before quotation. Documentation availability and the chain of identification must be agreed before material procurement.'],
       ] },
-      { id: 'components', title: 'Typical Titanium Components', intro: 'Examples describe geometry and review priorities, not verified aerospace, medical or other regulated customer projects.', items: [
+      { id: 'components', title: 'Typical Titanium Components', intro: 'Explore illustrated component geometries. Include any required supplier approvals, qualifications and documentation with your enquiry.', items: [
         ['Brackets & mounting parts', 'Profiles, pockets and locating holes with controlled wall thickness and interface geometry.'],
         ['Shafts, sleeves & connectors', 'Rotational features and mating surfaces reviewed for fit, runout, thread details and assembly requirements.'],
         ['Custom housings & bodies', 'Multi-face features, internal access and edge requirements reviewed together with inspection feasibility.'],
@@ -173,7 +173,7 @@ export const materialPages: MaterialPage[] = [
         ['PEEK & PTFE', 'Identify the exact formulation and any reinforcement or filler. Provide temperature, chemical exposure, load and dimensional requirements for review.'],
         ['ABS, Polycarbonate / PC & PMMA / Acrylic', 'Define grade and color, cosmetic surfaces and any optical or transparency requirements. Clear appearance, polished edges and optical performance require separate acceptance criteria.'],
       ] },
-      { id: 'components', title: 'Typical Engineering Plastics Components', intro: 'CNC milling and turning are reviewed for one-off and batch enquiries. Examples below describe part geometry, not verified application qualifications.', items: [
+      { id: 'components', title: 'Typical Engineering Plastics Components', intro: 'Explore illustrated component geometries for one-off and batch enquiries. Include any application-specific qualifications with your requirements.', items: [
         ['Bushings, sleeves & spacers', 'Turned bores, shoulders and mating diameters with fit, wall thickness and assembly conditions defined.'],
         ['Guides, wear pads & fixtures', 'Milled profiles, slots and mounting patterns reviewed against contact conditions and locating requirements.'],
         ['Housings, covers & machined blocks', 'Pockets, thin sections and multi-side holes reviewed for wall stability, appearance and assembly access.'],

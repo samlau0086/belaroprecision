@@ -76,7 +76,7 @@ const capabilities: { title: string; text: string; href: string; label: string; 
 
     <section class="section" id="applications" aria-labelledby="applications-heading">
       <div class="container">
-        <div class="industry-intro"><div><span class="eyebrow">WHERE YOUR PART FITS</span><h2 id="applications-heading">Different equipment.<br/><em>A drawing-led approach.</em></h2></div><p>These application areas help you identify relevant component types and requirements. Images illustrate where machined parts fit within equipment, rather than existing customer projects. Every enquiry is assessed against actual manufacturing capability.</p></div>
+        <div class="industry-intro"><div><span class="eyebrow">WHERE YOUR PART FITS</span><h2 id="applications-heading">Different equipment.<br/><em>A drawing-led approach.</em></h2></div><p>Explore illustrated applications and component requirements. Each enquiry is reviewed against your drawing and manufacturing needs.</p></div>
         <nav class="industry-jumps" aria-label="Industrial applications">{sectors.map((sector, index) => <a href={`#${sector.id}`}><span>{String(index + 1).padStart(2, '0')}</span>{sector.title}<span aria-hidden="true">↓</span></a>)}</nav>
         <div class="sector-details">
           {sectors.map((sector, index) => <article class="industry-detail" id={sector.id} aria-labelledby={`${sector.id}-heading`}>
@@ -95,9 +95,9 @@ const capabilities: { title: string; text: string; href: string; label: string; 
 
     <section class="section"><div class="container industries-faq"><SectionHeading eyebrow="BEFORE YOU ENQUIRE" title="Questions about your application"/><div class="faq-list">
       <details><summary>What if my industry is not listed?</summary><p>The sectors above are starting points rather than a complete list. Send your drawing, application context, material and quantity. We will assess whether the component and required process route are a fit.</p></details>
-      <details><summary>Are the illustrated components available to order?</summary><p>The illustrations describe part families rather than stock products or completed customer projects. Components are quoted to your own drawings and agreed requirements.</p></details>
+      <details><summary>Are the illustrated components available to order?</summary><p>The illustrations show component types. Parts are quoted to your drawings and agreed requirements.</p></details>
       <details><summary>Can you support initial batches and repeat OEM orders?</summary><p>Belaro focuses on drawing-based OEM and low-volume component requirements. Batch suitability, repeat-order arrangements and delivery are confirmed after reviewing the part, quantity and inspection scope.</p></details>
-      <details><summary>Do you provide industry-specific certification or testing?</summary><p>This page does not establish sector-specific certification or regulatory approval. State any certification, traceability, cleanliness, pressure testing or other acceptance requirements in your RFQ. Availability and responsibility must be confirmed in the quotation.</p></details>
+      <details><summary>Do you provide industry-specific certification or testing?</summary><p>Include any certification, regulatory approval, traceability, cleanliness or testing requirements in your RFQ. Availability and responsibility are confirmed in the quotation.</p></details>
       <details><summary>Can machining and secondary processes be reviewed together?</summary><p>Yes. Include the complete requirements for grinding, heat treatment, surface finishing or other secondary processes. These can be reviewed through the Dongguan and Shenzhen supplier network, with the included operations and documentation agreed per project.</p></details>
     </div></div></section>
 

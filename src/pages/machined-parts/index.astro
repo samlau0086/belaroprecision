@@ -26,7 +26,7 @@ import { machinedParts } from '../../data/machined-parts';
     </section>
     <section class="section" id="part-families" aria-labelledby="parts-heading">
       <div class="container">
-        <div class="parts-intro"><div><span class="eyebrow">BUILT TO YOUR REQUIREMENTS</span><h2 id="parts-heading">A starting point for<br/><em>your next component.</em></h2></div><p>These representative part images help you describe your machining needs. They are visual references rather than customer case studies or stocked products. Each enquiry is assessed against actual capability.</p></div>
+        <div class="parts-intro"><div><span class="eyebrow">BUILT TO YOUR REQUIREMENTS</span><h2 id="parts-heading">A starting point for<br/><em>your next component.</em></h2></div><p>Explore illustrated component types and share your drawing for a project-specific review.</p></div>
         <nav class="part-jumps" aria-label="Part families">{machinedParts.map(part => <a href={`#${part.id}`}>{part.title}<span aria-hidden="true">↗</span></a>)}</nav>
         <div class="parts-grid">
           {machinedParts.map((part, index) => <article class="part-card" id={part.id}>

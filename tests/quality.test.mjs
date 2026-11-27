@@ -32,13 +32,14 @@ test('Quality 七项主题、能力边界、锚点和响应式布局', async () 
       assert.equal(await page.locator(`.quality-nav a[href="#${id}"]`).count(), 1);
       assert.equal(await page.locator(`#${id} h3`).count(), 3);
     }
-    assert.match(await page.locator('#inspection').innerText(), /not equipment Belaro claims to own/);
+    assert.match(await page.locator('#inspection').innerText(), /measurement methods/);
+    assert.doesNotMatch(await page.locator('#inspection').innerText(), /inventory is not currently published/);
     assert.match(await page.locator('#documents').innerText(), /not automatic inclusions/);
     assert.match(await page.locator('#inspection-plan').innerText(), /does not mean every drawing characteristic/);
     assert.match(await page.locator('#deviations').innerText(), /written approval/);
     assert.match(await page.locator('#packing').innerText(), /lot \/ batch/);
-    assert.equal(await page.locator('.media-gallery img').count(), 5);
-    assert.equal(await page.locator('main img').count(), 10);
+    assert.equal(await page.locator('.media-gallery img').count(), 4);
+    assert.equal(await page.locator('main img').count(), 9);
     const newImages = {
       feasibility: 'quality-bore-measurement-access',
       'inspection-plan': 'quality-inspection-coverage-selection',
@@ -52,7 +53,7 @@ test('Quality 七项主题、能力边界、锚点和响应式布局', async () 
       assert.ok((await image.getAttribute('alt')).length > 20);
       assert.ok(await image.getAttribute('srcset'));
     }
-    assert.equal(await page.locator('#documents .document-preview').count(), 1);
+    assert.equal(await page.locator('#documents .document-preview').count(), 0);
     assert.match(await page.locator('#packing').innerText(), /single thick EPE foam sheet/);
     for (const image of await page.locator('main img').all()) {
       await image.scrollIntoViewIfNeeded();
@@ -60,10 +61,6 @@ test('Quality 七项主题、能力边界、锚点和响应式布局', async () 
       await image.evaluate(node => node.decode());
       assert.ok(await image.evaluate(node => node.naturalWidth > 0));
     }
-    const report = await page.locator('.document-preview img').evaluate(node => ({ rendered: node.clientWidth / node.clientHeight, natural: node.naturalWidth / node.naturalHeight }));
-    assert.ok(Math.abs(report.rendered - report.natural) < 0.01, '报告应保持完整原比例');
-    const reportLink = await page.locator('.document-preview').getAttribute('href');
-    assert.equal((await page.request.get(`${baseUrl}${reportLink}`)).status(), 200);
     assert.doesNotMatch(await page.locator('main').innerText(), /±0\.01/);
     assert.equal(await page.locator('main a[href="#rfq-form"]').count(), 2);
     assert.equal(await page.locator('nav[aria-label="Breadcrumb"]').count(), 0);

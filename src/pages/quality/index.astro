@@ -11,12 +11,9 @@ const inspectionMedia: MediaItem[] = [
   { name: 'quality-inspection-tools', alt: 'inspection workbench with calipers, micrometers, gauge blocks and machined parts', title: 'Dimensional inspection tools', caption: 'Instrument selection, range and calibration status are confirmed for the project.' },
   { name: 'quality-critical-dimension-check', alt: 'outside micrometer measuring a steel shaft radially between upper and lower contacts', title: 'Checking a critical diameter', caption: 'Agree the measurement method and acceptance limits for critical features.' },
 ];
-const documentMedia: MediaItem[] = [
-  { name: 'quality-dimensional-report-sample', alt: 'BelaroPrecision sample dimensional inspection report with populated measurement results and an aluminum block', title: 'Sample dimensional inspection report', caption: 'Sample report with fictional part details and results. Actual report content, methods and inspection coverage are agreed per order.', document: true },
-];
 const packingMedia: MediaItem[] = [
   { name: 'quality-protective-packaging', alt: 'Machined components individually protected with thick white EPE foam inside a corrugated carton', title: 'Thick EPE foam protection', caption: 'Parts are individually wrapped in a single thick EPE foam sheet and packed in a sturdy corrugated carton; additional protection is agreed as needed.' },
-  { name: 'quality-batch-identification', alt: 'Thick EPE foam-wrapped aluminum bracket beside a corrugated carton with a blank identification label', title: 'Packing & batch identification', caption: 'Part number, revision, quantity and lot / batch information are agreed per order; the blank label is not a shipment record.' },
+  { name: 'quality-batch-identification', alt: 'Thick EPE foam-wrapped aluminum bracket beside a corrugated carton with a blank identification label', title: 'Packing & batch identification', caption: 'Part number, revision, quantity and lot / batch information are agreed per order.' },
 ];
 
 const topicMedia: Partial<Record<string, Pick<MediaItem, 'name' | 'alt'>>> = {
@@ -37,7 +34,7 @@ const topics = [
     ['Define acceptance limits', 'Agree the general tolerance standard and edition, feature-specific limits and final measurement condition. Define whether critical dimensions apply before or after secondary processing. Confirm a suitable measurement method.'],
     ['Resolve limitations early', 'If a requirement is difficult to achieve or verify, discuss the tolerance, feature design or process route before accepting the order. Any change to the customer requirement needs approval; do not silently relax a drawing limit.'],
   ] },
-  { id: 'inspection', label: 'Equipment & checkpoints', title: 'Which methods and checks will verify the part?', intro: 'A verified equipment inventory is not currently published here. Before order acceptance, request confirmation of instrument type, range, resolution, calibration status and whether checks are in-house or external. The examples below are review topics, not equipment Belaro claims to own.', cards: [
+  { id: 'inspection', label: 'Equipment & checkpoints', title: 'Which methods and checks will verify the part?', intro: 'Discuss the measurement methods, instrument range, resolution and calibration requirements for your part. Confirm whether the agreed checks will be performed in-house or externally.', cards: [
     ['Size, fit & thread checks', 'Agree suitable dimensional instruments and gauges for lengths, bores, diameters and threads. Check measuring access, range and resolution against the tolerance.'],
     ['Geometry & surface checks', 'For datum relationships, position or profile, confirm whether coordinate or optical measurement is required and available. For roughness, hardness or coatings, agree the test method, location and any specialist external testing.'],
     ['Define the checkpoints', 'Plan checks before machining, at setup / first piece, during production and before dispatch. Include material identification, selected dimensions, visual condition, quantity and labels. Specify checks after heat treatment or finishing and before features become inaccessible.'],
@@ -79,10 +76,9 @@ const topics = [
       </div>
       <div class="quality-cards">{topic.cards.map(([title, text]) => <article><h3>{title}</h3><p>{text}</p></article>)}</div>
       {topic.id === 'inspection' && <MediaGallery items={inspectionMedia} />}
-      {topic.id === 'documents' && <MediaGallery items={documentMedia} />}
       {topic.id === 'packing' && <MediaGallery items={packingMedia} />}
       {topic.id === 'inspection' && <p class="related-link"><a class="text-link" href="/services/secondary-processes/">Include secondary process requirements <span aria-hidden="true">→</span></a></p>}
-      {topic.id === 'documents' && <p class="quality-footnote">This website does not claim quality certifications or accredited laboratory status. Confirm project-specific evidence before ordering.</p>}
+      {topic.id === 'documents' && <p class="quality-footnote">Please specify any required certifications or accredited testing in your enquiry so availability can be confirmed before ordering.</p>}
     </div></section>)}
     <section class="cta-section"><div class="container cta-inner"><div><span class="eyebrow eyebrow-light">START WITH THE REQUIREMENT</span><h2>Send the drawing.<br/><em>Include the acceptance criteria.</em></h2><p>Share the revision, material, quantity, critical features, inspection coverage, document templates and packing requirements. We can then clarify feasibility and the quality scope for quotation.</p></div><a class="button button-orange button-large" href="#rfq-form">Request a Quote <span aria-hidden="true">↗</span></a></div></section>
     <RfqSection description="Include the drawing revision, critical dimensions, inspection coverage, documents and acceptance criteria." />
