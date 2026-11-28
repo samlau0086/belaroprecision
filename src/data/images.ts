@@ -1,7 +1,6 @@
 import aboutWorkshop from '../assets/images/about-workshop.webp';
 import workshopOverview from '../assets/images/about-workshop-overview.webp';
 import threeAxis from '../assets/images/about-3-axis-cnc.webp';
-import fiveAxis from '../assets/images/about-simultaneous-5-axis-cnc.webp';
 import lathe from '../assets/images/about-cnc-lathe.webp';
 import team from '../assets/images/about-team-at-work.webp';
 import automation from '../assets/images/industry-automation-fixture.webp';
@@ -54,7 +53,6 @@ import millingHousingMaskedMatingFace from '../assets/images/pages/services/mill
 export const images = {
   'about-workshop-overview': workshopOverview,
   'about-3-axis-cnc': threeAxis,
-  'about-simultaneous-5-axis-cnc': fiveAxis,
   'about-cnc-lathe': lathe,
   'about-team-at-work': team,
   'industry-automation-fixture': automation,

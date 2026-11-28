@@ -128,6 +128,8 @@ About 内容展示优化：应用方向改为分类标签，公司身份改为�
 
 About 车间图库的五轴图片直接复用 `src/assets/images/pages/services/milling-five-axis-contoured-mount.webp`，与 CNC Milling 服务页共享资源；原 `about-simultaneous-5-axis-cnc.webp` 文件保留，不再用于该图位。
 
+旧五轴图片未纳入 Git，不能作为部署依赖；共享图片映射已移除其遗留导入和键。执行 `node --test tests/image-assets.test.mjs` 可检查共享映射中的 WebP 文件是否存在且已被 Git 跟踪，避免本地未跟踪图片掩盖远端构建缺失资源。
+
 2026 年 11 月 22 日 About 配图接入：用户 `About/` 目录中的两张新图复制到 `src/assets/images/pages/about/`；Hero 改为全幅等比裁切背景，企业概况移到其下方。正文新增装夹图及三张跨页复用图，原有五张车间、设备和协作图保留，正文统一按原始比例完整展示。Astro Image 提供响应式资源，Hero 优先加载、正文懒加载。规划的 11 个图位已接入 10 个，配套工艺共享壳体图仍未交付；来源与许可待企业确认，不能按 `verified` 文件名推定已核验实拍。位置和来源记录见 [About 图片需求](docs/image-requirements/about.md)。
 
 本次验证：`npm run build` 通过，生成 21 页；`node --test tests/about.test.mjs tests/site-navigation.test.mjs tests/site-typography.test.mjs` 三项通过。About 覆盖 320–2558px 的 11 种宽度、10 张图片解码与比例、背景铺满、概况区样式、链接、SEO、FAQ 和无脚本显示，390px 与 1440px 全页截图已复核；指定 `ABOUT_BASE_URL=http://127.0.0.1:4323` 的本地开发服务专项测试也通过。没有新增依赖或环境变量，未部署、未提交真实询盘；项目未配置独立类型检查及 ESLint 脚本，本次未执行。
