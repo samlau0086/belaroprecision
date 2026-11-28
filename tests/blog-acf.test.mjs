@@ -8,6 +8,17 @@ import { join } from 'node:path';
 import { extname } from 'node:path';
 import { articleContentFields } from '../src/lib/blog.mjs';
 
+async function assertMinimumFontSize(page) {
+  const violations = await page.locator('body *').evaluateAll(elements => elements.flatMap(element => {
+    if (element.matches('script,style,noscript,template')) return [];
+    const hasText = [...element.childNodes].some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+    if (!hasText && !element.matches('input:not([type=checkbox],[type=radio],[type=hidden]),textarea,select')) return [];
+    const size = Number.parseFloat(getComputedStyle(element).fontSize);
+    return size < 16 ? [{ tag: element.tagName, class: element.className, size }] : [];
+  }));
+  assert.deepEqual(violations, [], `${page.viewportSize().width}px ${new URL(page.url()).pathname} 字号至少为 16px`);
+}
+
 // 同时比较视口和容器内的取样，区分视差、固定背景与普通滚动。
 async function assertBackgroundScroll(page) {
   const motion = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'enabled');
@@ -147,6 +158,18 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
     child.stderr.on('data', chunk => { log += chunk; });
     const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
     assert.equal(code, 0, log);
+    // 使用同一模拟构建检查全站，覆盖真实后台无文章或不可用时遗漏的页面。
+    const typographyEnv = { ...process.env, TYPOGRAPHY_DIST: output };
+    delete typographyEnv.NODE_TEST_CONTEXT;
+    const typography = spawn(process.execPath, ['--test', 'tests/site-typography.test.mjs'], {
+      cwd: process.cwd(), env: typographyEnv,
+    });
+    let typographyLog = '';
+    typography.stdout.on('data', chunk => { typographyLog += chunk; });
+    typography.stderr.on('data', chunk => { typographyLog += chunk; });
+    const typographyCode = await new Promise((resolve, reject) => { typography.on('error', reject); typography.on('close', resolve); });
+    assert.equal(typographyCode, 0, typographyLog);
+    t.diagnostic(typographyLog);
     const html = await readFile(join(output, 'post/acf-test/index.html'), 'utf8');
     assert.match(html, /rel="canonical" href="https:\/\/belaroprecision.com\/post\/acf-test\/"/);
     assert.match(html, /href="\/category\/dfm-engineering\/"[^>]*>Category 1<\/a>/);
@@ -207,7 +230,9 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         graphqlRequests.push(query);
         const data = query.includes('BlogVotes')
           ? { post: { belaroCommentVotes: [] } }
-          : { post: { ...posts[0], content: '<p>Runtime replacement</p>', comments: { nodes: [] } } };
+          : { post: { ...posts[0], content: '<p>Runtime replacement</p>', comments: { nodes: [
+            { databaseId: 21, content: '<p>Typography test comment.</p>', date: '2026-11-28T09:00:00Z', parentDatabaseId: 0, author: { node: { name: 'Reader' } } },
+          ] } } };
         return route.fulfill({ json: { data } });
       });
       for (const width of [390, 1440]) {
@@ -252,12 +277,16 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
       for (const width of [320, 390, 768, 1440, 2560]) {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(`http://127.0.0.1:${staticServer.address().port}/blog/`);
+        await assertMinimumFontSize(page);
         const listBounds = await page.locator('.blog-grid').boundingBox();
         const listBreadcrumb = await page.locator('.blog-breadcrumb').boundingBox();
+        const listEyebrow = await page.locator('.blog-eyebrow').boundingBox();
         const listTitle = await page.locator('.blog-heading h1').boundingBox();
         const listHeadingStyle = await page.locator('.blog-heading h1').evaluate(element => ({ fontSize: getComputedStyle(element).fontSize, lineHeight: getComputedStyle(element).lineHeight }));
         await page.goto(`http://127.0.0.1:${staticServer.address().port}/post/acf-test/`);
         await page.locator('[data-comments-section]:visible').waitFor();
+        await page.locator('.comment').waitFor();
+        await assertMinimumFontSize(page);
         assert.equal(await page.getByText('Rich content').count(), 1);
         assert.equal(await page.getByText('Runtime replacement').count(), 0);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
@@ -342,7 +371,12 @@ test('ACF 模块构建为静态页面，旧文章回退正文并清理不安全�
         const articleBreadcrumb = await page.locator('.blog-breadcrumb').boundingBox();
         const articleTitle = await page.locator('.blog-heading h1').boundingBox();
         assert.ok(Math.abs(articleBreadcrumb.x - listBreadcrumb.x) < 1 && Math.abs(articleBreadcrumb.y - listBreadcrumb.y) < 1, `${width}px 面包屑位置一致`);
-        assert.ok(Math.abs(articleTitle.x - listTitle.x) < 1 && Math.abs(articleTitle.y - listTitle.y) < 1, `${width}px 标题位置一致`);
+        // 面包屑与栏目名可自然换行；标题对齐且与前文保持相同间距，不固定绝对高度。
+        const articleEyebrow = await page.locator('.blog-eyebrow').boundingBox();
+        assert.ok(articleEyebrow.y >= articleBreadcrumb.y + articleBreadcrumb.height && listEyebrow.y >= listBreadcrumb.y + listBreadcrumb.height, `${width}px 面包屑与栏目名无重叠`);
+        const articleTitleGap = articleTitle.y - articleEyebrow.y - articleEyebrow.height;
+        const listTitleGap = listTitle.y - listEyebrow.y - listEyebrow.height;
+        assert.ok(articleTitleGap >= 0 && listTitleGap >= 0 && Math.abs(articleTitle.x - listTitle.x) < 1 && Math.abs(articleTitleGap - listTitleGap) < 1, `${width}px 标题左侧及栏目名后间距一致`);
         assert.deepEqual(await page.locator('.blog-heading h1').evaluate(element => ({ fontSize: getComputedStyle(element).fontSize, lineHeight: getComputedStyle(element).lineHeight })), listHeadingStyle);
         await assertBackgroundScroll(page);
         if (process.env.BLOG_SCREENSHOT_DIR) await page.screenshot({ path: join(process.env.BLOG_SCREENSHOT_DIR, `article-width-${width}.png`), fullPage: true });

@@ -2,11 +2,38 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile, readdir } from 'node:fs/promises';
+import { resolve, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 
+test('源码字号定义不得低于 16px，包含尚未生成的 Blog 页面', async () => {
+  const root = new URL('../src/', import.meta.url);
+  const files = (await readdir(root, { recursive: true })).filter(file => /\.(astro|css)$/.test(file));
+  const violations = [];
+  for (const file of files) {
+    const source = await readFile(new URL(file.replaceAll('\\', '/'), root), 'utf8');
+    const styles = file.endsWith('.css') ? [source] : [...source.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)].map(match => match[1]);
+    for (const style of styles) {
+      for (const declaration of style.matchAll(/\b(font-size|font)\s*:\s*([^;}]+)/g)) {
+        const value = declaration[2].trim();
+        // max() 等带下限表达式由浏览器计算值测试兜底，静态检查覆盖直接字号和 font 简写。
+        const size = declaration[1] === 'font-size'
+          ? value.match(/^(\d*\.?\d+)(px|rem|em|%)\s*(?:!important)?$/)
+          : value.match(/(?:^|\s)(\d*\.?\d+)(px|rem|em|%)(?=[\s/])/);
+        if (!size) continue;
+        const pixels = Number(size[1]) * ({ px: 1, rem: 16, em: 16, '%': .16 }[size[2]]);
+        if (pixels < 16) violations.push({ file, declaration: declaration[0] });
+      }
+    }
+  }
+  assert.deepEqual(violations, [], '发现低于 16px 的字号定义');
+});
+
 test('全站文字至少 16px，桌面和移动端均无横向溢出', async () => {
-  const root = new URL('../dist/', import.meta.url);
-  const pages = (await readdir(root, { recursive: true })).filter(file => file.endsWith('index.html'));
+  const root = process.env.TYPOGRAPHY_DIST
+    ? pathToFileURL(resolve(process.env.TYPOGRAPHY_DIST) + sep)
+    : new URL('../dist/', import.meta.url);
+  const pages = (await readdir(root, { recursive: true })).filter(file => file.endsWith('.html'));
   assert.ok(pages.length > 0, '请先构建站点');
   const server = createServer(async (req, res) => {
     try {
@@ -33,7 +60,8 @@ test('全站文字至少 16px，桌面和移动端均无横向溢出', async () 
         await page.goto(`${base}/${path}`);
         // 展开 FAQ、可选表单和移动导航，覆盖通常隐藏的文字。
         await page.locator('details').evaluateAll(elements => elements.forEach(el => { el.open = true; }));
-        if (width <= 1100) await page.locator('[data-menu-toggle]').click();
+        const menuToggle = page.locator('[data-menu-toggle]');
+        if (width <= 1100 && await menuToggle.isVisible()) await menuToggle.click();
         const violations = await page.evaluate(() => [...document.querySelectorAll('body *')].flatMap(el => {
           if (el.matches('script,style,noscript,template')) return [];
           const hasText = [...el.childNodes].some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
@@ -45,6 +73,7 @@ test('全站文字至少 16px，桌面和移动端均无横向溢出', async () 
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}px /${path} 横向溢出`);
       }
     }
+    console.log(`已验证 ${pages.length} 个 HTML 页面、8 种宽度，共 ${pages.length * 8} 次字号与溢出检查`);
   } finally {
     await browser?.close();
     await new Promise(resolve => server.close(resolve));

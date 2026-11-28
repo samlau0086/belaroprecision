@@ -551,6 +551,10 @@ RFQ 人机验证为可选功能。未配置 `PUBLIC_TURNSTILE_SITE_KEY`（含仅
 
 全站文字最小字号为 **16px**，桌面、平板和手机端一致；包括导航、页脚、标签、图片说明、表单提示与政策页面。页面及组件局部样式中的 `font-size`、`font` 简写和媒体查询也须遵守此限制；`small`、`sub`、`sup` 在全局样式中设有 16px 下限。新增样式时保留现有较大的标题字号。构建后执行 `node --test tests/site-typography.test.mjs`，检查全部静态页面的计算字号及响应式溢出。
 
+2026 年 11 月 28 日补齐黄铜、碳钢材料页，以及 Blog 标题区、列表、评论和内容模块中的小字号，统一为 16px。字号回归增加源码直接字号检查（包括 `rem` 和 `font` 简写），并将 404 等所有构建 HTML 纳入八种屏幕宽度的浏览器检查；即使后台暂未发布文章，Blog 组件的直接字号定义仍会检查。执行 `node --test tests/blog-acf.test.mjs` 可构建临时模拟文章与分类，自动调用全站字号检查，并验证动态评论与内容模块的字号；`TYPOGRAPHY_DIST` 可指定字号测试使用的构建目录，默认仍为 `dist/`。模拟构建不作为发布产物，第三方嵌入服务内部的文字不受本站 CSS 控制。
+
+本轮验证：上述模拟构建及 Blog 回归通过，31 个 HTML 页面在 320、390、700、701、1024、1100、1101、1440px 下共 248 次字号与横向溢出检查通过；动态评论及模块另覆盖 320–2560px，黄铜页已复核桌面和手机截图。Blog 数据层 10 项测试通过。真实后台 `npm run build` 重试仍因 WordPress GraphQL 超时失败，`dist/` 为不完整产物，不得发布；公开内容回归也因此缺少构建页面，未完成。未部署，未执行未配置的完整类型检查或 ESLint。
+
 页面摄影和工艺图片分两类管理：既有根路径素材位于 `public/images/`，Machined Parts 分类主图和细节图位于 `public/images/machined-parts/`；需要 Astro 构建期优化的页面素材位于 `src/assets/images/`，通过 `src/data/images.ts` 显式映射并由 `ProcessImage.astro` 或 `MediaGallery.astro` 输出响应式图片。页面图片保持响应式宽度，非首屏图片默认 lazy。当前本地 WebP 素材包括首页铣削与车削主视觉、铣削与车削工艺细节、质量检验、OEM 批量生产、二次工艺、About 车间与设备团队场景、Industries 四类应用场景、Quality 检测与交付场景、RFQ 评审场景，以及六类 Machined Parts 代表性图片。上线前仍须确认授权、生成来源和公开范围；示意图片不代表客户案例、库存产品、设备资产证明或真实检测记录，实际能力仍需以图纸和项目评审为准。
 
 Machined Blocks 卡片的细节图库使用 `machined-block-pocket.webp`（型腔与加工纹路）和 `machined-block-threaded-hole.webp`（螺纹孔与倒角），文件位于 `public/images/machined-parts/`；原始素材保留在 `webp/Machined Blocks/`。

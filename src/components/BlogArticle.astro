@@ -403,8 +403,8 @@ const breadcrumbCategory = articleBreadcrumbCategory(post?.categories?.nodes);
   .article-body { padding-top: 2.5rem; }
   .article-status { min-height: 1.5rem; color: #536273; }
   .article-status:empty { display: none; }
-  .voting-status { color: #687788; font-size: .85rem; }
-  .section-label { margin: 0 0 .65rem; color: #a95412; font-size: .78rem; font-weight: 700; text-transform: uppercase; }
+  .voting-status { color: #687788; font-size: 16px; }
+  .section-label { margin: 0 0 .65rem; color: #a95412; font-size: 16px; font-weight: 700; text-transform: uppercase; }
   .article-featured { display: block; width: 100%; max-height: 520px; margin: 0 0 2.5rem; object-fit: cover; }
   .article-featured[hidden] { display: none; }
   .article-content { color: #26384a; font-size: 1.08rem; line-height: 1.8; }
@@ -417,22 +417,22 @@ const breadcrumbCategory = articleBreadcrumbCategory(post?.categories?.nodes);
   .comments-section { margin-top: 4rem; padding-top: 3rem; border-top: 1px solid #ccd5de; }
   .comments-heading, .comment-form-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
   .comments-heading h2, .comment-form h3 { margin: 0; color: #10233d; }
-  .comments-heading > span { color: #687788; font-size: .9rem; }
+  .comments-heading > span { color: #687788; font-size: 16px; }
   .comments-list { margin-top: 2rem; }
   .comments-empty { color: #687788; }
   .comments-list :global(.comment) { padding: 1.25rem 0 1.25rem 1rem; border-top: 1px solid #d8dfe6; border-left: 2px solid #d8dfe6; }
   .comments-list :global(.comment .comment) { margin-left: 1.5rem; }
   .comments-list :global(.comment > header) { display: flex; flex-wrap: wrap; align-items: baseline; gap: .75rem; }
   .comments-list :global(.comment > header strong) { color: #10233d; }
-  .comments-list :global(.comment > header time) { color: #748292; font-size: .8rem; }
+  .comments-list :global(.comment > header time) { color: #748292; font-size: 16px; }
   .comments-list :global(.comment-content) { color: #3b4c5e; line-height: 1.65; }
   .comments-list :global(.comment-content p) { margin: .7rem 0; }
   .comments-list :global(.comment-actions) { display: flex; align-items: center; gap: .35rem; min-height: 34px; }
-  .comments-list :global(.vote-button) { display: inline-flex; align-items: center; gap: .25rem; min-width: 38px; min-height: 34px; padding: .25rem .45rem; border: 1px solid transparent; background: transparent; color: #5c6c7d; cursor: pointer; }
+  .comments-list :global(.vote-button) { display: inline-flex; align-items: center; gap: .25rem; min-width: 38px; min-height: 34px; padding: .25rem .45rem; border: 1px solid transparent; background: transparent; color: #5c6c7d; font: inherit; cursor: pointer; }
   .comments-list :global(.vote-button svg) { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .comments-list :global(.vote-button[aria-pressed="true"]) { color: #a95412; }
   .comments-list :global(.vote-button:hover), .comments-list :global(.reply-button:hover), .cancel-reply:hover { color: #a95412; }
-  .comments-list :global(.reply-button), .cancel-reply { min-height: 34px; padding: .25rem .55rem; border: 0; background: transparent; color: #526477; font: inherit; font-size: .85rem; cursor: pointer; }
+  .comments-list :global(.reply-button), .cancel-reply { min-height: 34px; padding: .25rem .55rem; border: 0; background: transparent; color: #526477; font: inherit; font-size: 16px; cursor: pointer; }
   .comment-form { margin-top: 3rem; padding: 1.5rem; border: 1px solid #d8dfe6; background: #fff; }
   .comment-form-heading { margin-bottom: 1.25rem; }
   .comment-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -440,7 +440,7 @@ const breadcrumbCategory = articleBreadcrumbCategory(post?.categories?.nodes);
   .comment-form input, .comment-form textarea { width: 100%; border: 1px solid #aeb9c5; border-radius: 3px; padding: .75rem; color: #17293d; font: inherit; }
   .comment-form textarea { resize: vertical; }
   .comment-form input:focus, .comment-form textarea:focus, .article-shell :global(button:focus-visible) { outline: 3px solid #f2a34a; outline-offset: 2px; }
-  .form-note, .form-status { color: #687788; font-size: .85rem; }
+  .form-note, .form-status { color: #687788; font-size: 16px; }
   .form-status { min-height: 1.3rem; }
   .submit-comment { min-height: 44px; padding: .65rem 1.1rem; border: 1px solid #cf7621; border-radius: 3px; background: #cf7621; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
   .submit-comment:disabled, .comments-list :global(.vote-button:disabled) { opacity: .55; cursor: wait; }
