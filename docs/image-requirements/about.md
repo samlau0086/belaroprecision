@@ -4,7 +4,7 @@
 - 页面 slug：`about`
 - 扫描依据：[src/pages/about/index.astro](../../src/pages/about/index.astro)、[src/components/SecondaryProcessSupport.astro](../../src/components/SecondaryProcessSupport.astro)
 - 编制日期：2026 年 11 月 22 日。
-- 状态：11 个规划图位已接入，区域供应商网络共享壳体图已补齐。 来源与真实性仍需确认。当前跨页状态见 [核对记录](cross-page-reuse.md)。
+- 状态：原规划 11 个图位；2026 年 11 月 28 日按用户要求移除制造范围下方的 07 装夹图位，当前展示 10 张图片，区域供应商网络共享壳体图已补齐。来源与真实性仍需确认。当前跨页状态见 [核对记录](cross-page-reuse.md)。
 - 通用制作规格、来源限制及跨页复用规则见[总索引](README.md)。
 
 ## 1. 扫描结论
@@ -83,7 +83,7 @@ Hero 优先采集并核实企业现场全幅照片；保留企业概况文本。
 
 ### 07. #manufacturing-scope / 3+2
 
-- 状态：新增。
+- 状态：已于 2026 年 11 月 28 日按用户要求移除展示；原图文件保留，以下为历史规划。
 - 优先级：P1。
 - 英文文件名：`about-indexed-milling-fixture.webp`。
 - 建议交付路径：`src/assets/images/pages/about/about-indexed-milling-fixture.webp`（待制作后建立）。

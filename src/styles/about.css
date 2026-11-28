@@ -16,7 +16,7 @@
 .about-page .company-profile dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px;margin:0}
 .about-page .company-profile dl>div{border-top:1px solid var(--line);padding:12px 0 0}
 .about-page .about-body-image{margin-top:28px;min-width:0}
-.about-page .about-fixture-image,.about-page .about-handoff-image{max-width:640px;margin:36px auto 0}
+.about-page .about-handoff-image{max-width:640px;margin:36px auto 0}
 .about-page .about-body-image img,.about-page #workshop-team img{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:auto;object-fit:contain}
 @media(max-width:700px){.about-page .about-hero{padding:28px 0 40px;min-height:580px}.about-page .about-hero h1{font-size:38px}.about-page .about-hero-media img{object-position:68% center}.about-page .about-hero::before{background:linear-gradient(90deg,rgba(5,16,21,.9),rgba(5,16,21,.65))}.about-page .company-profile{grid-template-columns:minmax(0,1fr);gap:24px}.about-page .company-profile dl{grid-template-columns:minmax(0,1fr)}}
 .about-page .mini-label{font-size:16px;font-weight:700;letter-spacing:1.5px;color:#566477}

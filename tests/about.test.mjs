@@ -36,17 +36,18 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     assert.match(await page.locator('main details').nth(1).textContent(), /suppliers in Dongguan and Shenzhen/);
     assert.equal(await page.locator('.working-steps li').count(), 4);
     assert.equal(await page.locator('#manufacturing-scope article').count(), 2);
+    assert.equal(await page.locator('#manufacturing-scope img, .about-fixture-image').count(), 0);
+    assert.equal(await page.locator('#manufacturing-scope .container > :last-child').getAttribute('class'), 'scope-grid');
     assert.match(await page.locator('#manufacturing-scope').innerText(), /OWN MACHINING CAPABILITY/);
     assert.equal(await page.locator('#supplier-coordination .supplier-steps > li').count(), 4);
     assert.match(await page.locator('#supplier-coordination').innerText(), /confidentiality/);
     assert.equal(await page.locator('#workshop-team article').count(), 3);
     assert.doesNotMatch(await page.locator('main').innerText(), /illustrative/i);
     assert.equal(await page.locator('#workshop-team img').count(), 5);
-    assert.equal(await page.locator('main img').count(), 11);
+    assert.equal(await page.locator('main img').count(), 10);
     const imageMapping = [
       ['.about-hero-media', 'about-verified-workshop-hero'],
       ['#our-approach .about-drawing-image', 'home-drawing-led-component-review'],
-      ['#manufacturing-scope .about-fixture-image', 'about-indexed-milling-fixture'],
       ['#supplier-coordination .about-handoff-image', 'quality-batch-identification'],
       ['.about-quality .about-quality-image', 'quality-critical-dimension-check'],
     ];
@@ -129,7 +130,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
           assert.ok(Math.abs(metrics.height - metrics.width / metrics.ratio) < 1, `${width}px 正文保持原始比例`);
         }
       }
-      for (const selector of ['.about-fixture-image', '.about-handoff-image']) {
+      for (const selector of ['.about-handoff-image']) {
         assert.ok((await page.locator(selector).boundingBox()).width <= 640);
       }
       if ([390, 1440].includes(width)) {
