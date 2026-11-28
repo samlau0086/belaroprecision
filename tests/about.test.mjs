@@ -48,6 +48,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     const imageMapping = [
       ['.about-hero-media', 'about-verified-workshop-hero'],
       ['#our-approach .about-drawing-image', 'home-drawing-led-component-review'],
+      ['#workshop-team .media-card:nth-child(2)', 'milling-five-axis-contoured-mount'],
       ['#supplier-coordination .about-handoff-image', 'quality-batch-identification'],
       ['.about-quality .about-quality-image', 'quality-critical-dimension-check'],
     ];
@@ -117,9 +118,13 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
       for (const img of await page.locator('main img').all()) {
         await img.scrollIntoViewIfNeeded();
         await img.evaluate(node => node.decode());
-        const metrics = await img.evaluate(node => {
+        const metrics = await img.evaluate(async node => {
           const r = node.getBoundingClientRect();
-          return { width: r.width, height: r.height, ratio: node.naturalWidth / node.naturalHeight, fit: getComputedStyle(node).objectFit };
+          // 使用实际像素比例，避免 srcset 密度换算后的自然尺寸取整误差。
+          const bitmap = await createImageBitmap(await (await fetch(node.currentSrc)).blob());
+          const ratio = bitmap.width / bitmap.height;
+          bitmap.close();
+          return { width: r.width, height: r.height, ratio, fit: getComputedStyle(node).objectFit };
         });
         assert.ok(metrics.width > 0 && metrics.height > 0);
         if (await img.evaluate(node => !!node.closest('.about-hero-media'))) {
