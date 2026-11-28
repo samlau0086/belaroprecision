@@ -53,10 +53,10 @@ Hero 优先采集并核实企业现场全幅照片；保留企业概况文本。
 
 ### 04. #workshop-team / 五轴装夹
 
-- 状态：2026 年 11 月 28 日改为复用 CNC Milling 服务页图片。
+- 状态：2026 年 11 月 28 日按用户要求恢复原五轴图片，保持图库比例一致。
 - 优先级：P0。
 - 英文文件名：`about-simultaneous-5-axis-cnc.webp`。
-- 当前资源：[src/assets/images/pages/services/milling-five-axis-contoured-mount.webp](../../src/assets/images/pages/services/milling-five-axis-contoured-mount.webp)；原 `about-simultaneous-5-axis-cnc.webp` 文件保留，不再用于该图位。
+- 当前资源：[src/assets/images/about-simultaneous-5-axis-cnc.webp](../../src/assets/images/about-simultaneous-5-axis-cnc.webp)，随代码纳入 Git。
 - 展示比例：4:3；常规正文建议母版 1600 × 1200px，报告等原始比例资源例外。
 - 制作提示词／保留要求：当前页面已接入。保留但必须核实来源、设备或人物真实性和公开许可；不能因为存在文件就将其当作自有资产证明。真实性未确认时仅作场景示意，需真实证明时必须改用实拍，不以 AI 生成替换。
 - 英文 Alt 草案：`Tilted rotary-table machining setup`。

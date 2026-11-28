@@ -21,5 +21,4 @@ test('共享图片映射只引用存在且已纳入 Git 的资源', async () => 
     const repositoryPath = relative(fileURLToPath(root), fileURLToPath(asset)).replaceAll('\\', '/');
     assert.ok(tracked.has(repositoryPath), `图片未纳入 Git：${repositoryPath}`);
   }
-  assert.doesNotMatch(source, /about-simultaneous-5-axis-cnc/);
 });

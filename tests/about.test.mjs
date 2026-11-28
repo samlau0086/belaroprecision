@@ -48,7 +48,7 @@ test('About：能力边界、链接、SEO、FAQ 与响应式布局', async () =>
     const imageMapping = [
       ['.about-hero-media', 'about-verified-workshop-hero'],
       ['#our-approach .about-drawing-image', 'home-drawing-led-component-review'],
-      ['#workshop-team .media-card:nth-child(2)', 'milling-five-axis-contoured-mount'],
+      ['#workshop-team .media-card:nth-child(2)', 'about-simultaneous-5-axis-cnc'],
       ['#supplier-coordination .about-handoff-image', 'quality-batch-identification'],
       ['.about-quality .about-quality-image', 'quality-critical-dimension-check'],
     ];

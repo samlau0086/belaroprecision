@@ -126,9 +126,9 @@ About 内容展示优化：应用方向改为分类标签，公司身份改为�
 
 2026 年 11 月 28 日 About 图片调整：移除制造范围双栏卡片下方的装夹图片及其容器和专用样式，保留两张范围卡片、其他图片与原图文件；页面当前展示 10 张图片。
 
-About 车间图库的五轴图片直接复用 `src/assets/images/pages/services/milling-five-axis-contoured-mount.webp`，与 CNC Milling 服务页共享资源；原 `about-simultaneous-5-axis-cnc.webp` 文件保留，不再用于该图位。
+About 车间图库的五轴图片按用户要求恢复为 `src/assets/images/about-simultaneous-5-axis-cnc.webp`，保持与相邻设备图一致的原始比例；CNC Milling 服务页继续使用 `milling-five-axis-contoured-mount.webp`。
 
-旧五轴图片未纳入 Git，不能作为部署依赖；共享图片映射已移除其遗留导入和键。执行 `node --test tests/image-assets.test.mjs` 可检查共享映射中的 WebP 文件是否存在且已被 Git 跟踪，避免本地未跟踪图片掩盖远端构建缺失资源。
+恢复的五轴图片必须随代码一起提交到 Git，避免再次出现远端构建缺失资源。执行 `node --test tests/image-assets.test.mjs` 可检查共享映射中的 WebP 文件是否存在且已被 Git 跟踪，避免本地未跟踪图片掩盖远端构建缺失资源。
 
 2026 年 11 月 22 日 About 配图接入：用户 `About/` 目录中的两张新图复制到 `src/assets/images/pages/about/`；Hero 改为全幅等比裁切背景，企业概况移到其下方。正文新增装夹图及三张跨页复用图，原有五张车间、设备和协作图保留，正文统一按原始比例完整展示。Astro Image 提供响应式资源，Hero 优先加载、正文懒加载。规划的 11 个图位已接入 10 个，配套工艺共享壳体图仍未交付；来源与许可待企业确认，不能按 `verified` 文件名推定已核验实拍。位置和来源记录见 [About 图片需求](docs/image-requirements/about.md)。
 
