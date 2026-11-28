@@ -2,7 +2,7 @@ import { resolveLiveChatConfig } from './lib/livechat-config.mjs';
 
 export const site = {
   name: 'Belaro Precision',
-  shortName: 'BELARO',
+  shortName: 'BELARO PRECISION',
   legalName: 'Shenzhen GEEKMATE Technology Co., Ltd.',
   legalNameZh: '深圳市极客码头科技有限公司',
   location: "Shajing, Bao'an District, Shenzhen, Guangdong, China",

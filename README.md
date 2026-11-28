@@ -55,6 +55,8 @@
 
 ## 4. 已有页面与功能边界
 
+网站品牌名称统一使用 **Belaro Precision**，不得简称为 Belaro；全大写场景使用 **BELARO PRECISION**。该约定适用于页面正文、导航链接、栏目标题、SEO 描述、无障碍文案及装饰水印；页头和页脚可保留上下两行组成的完整品牌标志。域名、邮箱、资源路径、接口名称和已有浏览器存储键保持原值，不属于品牌展示简称。WordPress 文章内容由后台维护，发布时也应遵循此命名约定。构建后执行 `node --test tests/brand-name.test.mjs`，检查源码和所有 HTML 页面的品牌展示。
+
 页眉和页脚品牌图标统一使用 `public/belaroprecision-logo.webp`，桌面端以 80×56px、700px 及以下以 64×48px 显示；使用 `object-fit: cover` 等比放大并裁去原图上下留白，保留完整图案和右侧 BELARO / PRECISION 文字。页脚图标使用白底承托，以保持深色背景下的辨识度。
 
 | 路由 | 当前实现 |

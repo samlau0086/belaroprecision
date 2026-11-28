@@ -29,7 +29,7 @@ const breadcrumbCategory = articleBreadcrumbCategory(post?.categories?.nodes);
           <nav class="blog-breadcrumb" aria-label="Breadcrumb">
             <a href="/">Home</a><span aria-hidden="true">/</span><a href="/blog/">Blog</a><span data-breadcrumb-category hidden={!breadcrumbCategory}><span aria-hidden="true">/</span> <a href={breadcrumbCategory ? categoryPath(breadcrumbCategory.slug) : undefined}>{breadcrumbCategory?.name}</a></span><span aria-hidden="true">/</span><span aria-current="page">Article</span>
           </nav>
-          <p class="blog-eyebrow" data-article-categories>{post?.categories?.nodes?.map(category => category.name).join(' · ') || 'The Belaro journal'}</p>
+          <p class="blog-eyebrow" data-article-categories>{post?.categories?.nodes?.map(category => category.name).join(' · ') || 'The Belaro Precision journal'}</p>
           <h1 data-article-title>{post ? title : ''}</h1>
           <time class="blog-intro" data-article-date datetime={post?.date}>{post?.date ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(post.date)) : ''}</time>
         </div>
@@ -306,7 +306,7 @@ const breadcrumbCategory = articleBreadcrumbCategory(post?.categories?.nodes);
           if (root.dataset.prerendered !== 'true') {
             const title = plainText(post.title) || 'Article';
             articleElement.querySelector('[data-article-title]').textContent = title;
-            articleElement.querySelector('[data-article-categories]').textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ') || 'The Belaro journal';
+            articleElement.querySelector('[data-article-categories]').textContent = (post.categories?.nodes || []).map(category => category.name).join(' · ') || 'The Belaro Precision journal';
             const category = articleBreadcrumbCategory(post.categories?.nodes);
             const categoryBreadcrumb = articleElement.querySelector('[data-breadcrumb-category]');
             const categoryLink = categoryBreadcrumb.querySelector('a');

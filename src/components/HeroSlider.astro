@@ -24,7 +24,7 @@ const slides = [
   },
 ];
 ---
-<section id="home-hero" class="hero hero-slider" aria-label="Belaro machining highlights" aria-roledescription="carousel" data-hero-slider data-home-module="hero">
+<section id="home-hero" class="hero hero-slider" aria-label="Belaro Precision machining highlights" aria-roledescription="carousel" data-hero-slider data-home-module="hero">
   <div class="hero-backdrops" aria-hidden="true">
     {slides.map((slide, index) => <Image class:list={['hero-backdrop', { 'is-active': index === 0 }]} src={slide.image} alt="" widths={[640, 960, 1280, slide.image.width]} sizes="100vw" hidden={index !== 0} style={{ objectPosition: slide.position }} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" fetchpriority={index === 0 ? 'high' : 'low'} />)}
   </div>
